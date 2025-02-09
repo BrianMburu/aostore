@@ -2,44 +2,21 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useParams } from 'next/navigation'
 
 import { motion } from 'framer-motion';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import {
-    StarIcon, ChevronLeftIcon, ArrowUpTrayIcon, ChatBubbleLeftIcon,
-    GiftIcon, LightBulbIcon, BugAntIcon, ChevronRightIcon
-} from '@heroicons/react/24/outline';
-import 'swiper/css';
+import { ChevronLeftIcon, GiftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
-import { AppData, Review } from '@/types/dapp';
-import DAppCard from '@/app/ui/Dapps/DappCard';
+import { AppData, AppDataMini, Review } from '@/types/dapp';
 import DappReviewForm from '@/app/ui/Dapps/DappReviewForm';
 import DappReviews from '@/app/ui/Dapps/DappReviews';
 import { DappDetailsSkeleton } from '@/app/ui/Dapps/DappDetailsSkeleton';
-import { AppAirdropData } from '@/types/airDrop';
+import { AppAirdropDataMini } from '@/types/airDrop';
+
 import DappSupport from '@/app/ui/Dapps/DappSupport';
-
-const dummyAppData: AppData = {
-    appName: "AO Social",
-    companyName: "AO Foundation",
-    websiteUrl: "#",
-    projectType: "Social",
-    appIconUrl: "https://picsum.photos/200",
-    coverUrl: "https://picsum.photos/1600/900",
-    description: "A decentralized social platform built on AO Computer protocol...".repeat(5),
-    ratings: 4.5,
-    appId: "ao-social",
-    bannerUrls: {
-        main: ["https://picsum.photos/1200/600", "https://picsum.photos/1200/601", "https://picsum.photos/1200/602", "https://picsum.photos/1200/603"],
-    },
-    createdTime: Date.now() - 86400000 * 30,
-    protocol: "aocomputer",
-    totalRatings: 245
-
-    // ... other fields
-};
+import DappBanner from '@/app/ui/Dapps/DappBanner';
+import DappHeader from '@/app/ui/Dapps/DappHeader';
+import DAppCardMini from '@/app/ui/Dapps/DappCardMini';
 
 const dummyReviews: Review[] = Array.from({ length: 10 }, (_, i) => ({
     reviewId: `rev-${i}`,
@@ -54,7 +31,31 @@ const dummyReviews: Review[] = Array.from({ length: 10 }, (_, i) => ({
     // ... other fields
 }));
 
-const dummyAirdrops: AppAirdropData[] = Array.from({ length: 4 }, (_, i) => ({
+const dummyAppData: AppData = {
+    appName: "AO Social",
+    companyName: "AO Foundation",
+    company: "AO Foundation",
+    websiteUrl: "#",
+    projectType: "Social",
+    appIconUrl: "https://picsum.photos/200",
+    coverUrl: "https://picsum.photos/1600/900",
+    description: "A decentralized social platform built on AO Computer protocol...".repeat(5),
+    ratings: 4.5,
+    appId: "ao-social",
+    bannerUrls: {
+        main: ["https://picsum.photos/1200/600", "https://picsum.photos/1200/601", "https://picsum.photos/1200/602", "https://picsum.photos/1200/603"],
+    },
+    createdTime: Date.now() - 86400000 * 30,
+    protocol: "aocomputer",
+    totalRatings: 245,
+    reviews: dummyReviews,
+    twitterUrl: "",
+    discordUrl: "",
+    upvotes: [],
+    downvotes: []
+};
+
+const dummyAirdrops: AppAirdropDataMini[] = Array.from({ length: 4 }, (_, i) => ({
     airdropId: `airdrop-${i}`,
     title: `Social Airdrop #${i + 1}`,
     appname: `AO Social - ${i}`,
@@ -70,6 +71,24 @@ const fetchAppDetails = async (appId: string): Promise<AppData> => {
     return { ...dummyAppData, appId };
 };
 
+const fetchSimilarApps = async (appId: string, page: number): Promise<{ data: AppDataMini[] }> => {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    // const dapps = 
+    // {projectType, protocol, ratings }
+
+    const start = (page - 1) * 5;
+    return { data: dummySimilarDApps.slice(start, start + 5) };
+};
+
+const fetchCompanyApps = async (appId: string, page: number): Promise<{ data: AppDataMini[] }> => {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    // const dapps = 
+    // {companyName, ratings }
+
+    const start = (page - 1) * 5;
+    return { data: dummyCompanyDApps.slice(start, start + 5) };
+};
+
 const fetchReviews = async (appId: string, page: number): Promise<{ data: Review[], hasMore: boolean }> => {
     await new Promise(resolve => setTimeout(resolve, 800));
     const start = (page - 1) * 5;
@@ -79,7 +98,7 @@ const fetchReviews = async (appId: string, page: number): Promise<{ data: Review
     };
 };
 
-const fetchAirDrops = async (appId: string, page: number): Promise<{ data: AppAirdropData[], hasMore: boolean }> => {
+const fetchAirDrops = async (appId: string, page: number): Promise<{ data: AppAirdropDataMini[], hasMore: boolean }> => {
     await new Promise(resolve => setTimeout(resolve, 800));
     const start = (page - 1) * 5;
     return {
@@ -95,40 +114,32 @@ const developerInfo = {
     forum: "https://forum.ao.dev"
 };
 
-const dummySimilarDApps: AppData[] = Array.from({ length: 4 }, (_, i) => ({
-    appName: `AO sim app ${i}`,
-    companyName: "AO Foundation",
-    websiteUrl: "#",
+const dummySimilarDApps: AppDataMini[] = Array.from({ length: 4 }, (_, i) => ({
+    projectName: `AO sim app ${i}`,
+    companyName: `AO Foundation`,
+    company: `AO Foundation`,
     projectType: "Social",
     appIconUrl: `https://picsum.photos/2${i}0`,
     coverUrl: "https://picsum.photos/1600/900",
-    description: "A decentralized social platform built on AO Computer protocol...".repeat(5),
     ratings: 4.5,
     appId: `ao-social_${i}`,
-    bannerUrls: {
-        main: ["https://picsum.photos/1200/600", "https://picsum.photos/1200/601", "https://picsum.photos/1200/602", "https://picsum.photos/1200/603"],
-    },
     createdTime: Date.now() - 86400000 * 30,
     protocol: "aocomputer",
-    totalRatings: 245
+    totalRatings: 245 + i
 }));
 
-const dummyDApps = Array.from({ length: 4 }, (_, i) => ({
-    appName: `AO sim app ${i}`,
-    companyName: "AO Foundation",
-    websiteUrl: "#",
+const dummyCompanyDApps: AppDataMini[] = Array.from({ length: 4 }, (_, i) => ({
+    projectName: `AO sim app ${i}`,
+    companyName: `AO Foundation`,
+    company: `AO Foundation`,
     projectType: "Social",
     appIconUrl: `https://picsum.photos/2${i}0`,
     coverUrl: "https://picsum.photos/1600/900",
-    description: "A decentralized social platform built on AO Computer protocol...".repeat(5),
     ratings: 4.5,
     appId: `ao-social_${i}`,
-    bannerUrls: {
-        main: ["https://picsum.photos/1200/600", "https://picsum.photos/1200/601"],
-    },
     createdTime: Date.now() - 86400000 * 30,
     protocol: "aocomputer",
-    totalRatings: 245
+    totalRatings: 245 + i
 }));
 
 export default function AppDetailsPage() {
@@ -139,18 +150,17 @@ export default function AppDetailsPage() {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [hasMoreReviews, setHasMoreReviews] = useState(true);
 
-    const [airdrops, setAirdrops] = useState<AppAirdropData[] | []>([]);
+    const [airdrops, setAirdrops] = useState<AppAirdropDataMini[] | []>([]);
 
     const params = useParams();
     const appId = params.appId as string;
-    console.log(appId);
 
     useEffect(() => {
         const loadData = async () => {
             const [appDetails, initialReviews, initialAirdrops] = await Promise.all([
                 fetchAppDetails(appId),
                 fetchReviews(appId, 1),
-                fetchAirDrops(appId, 1)
+                fetchAirDrops(appId, 1),
             ]);
 
             setAppData(appDetails);
@@ -192,71 +202,10 @@ export default function AppDetailsPage() {
             {appData ?
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* App Header */}
-                    <div className="flex flex-col md:flex-row gap-8 mb-8">
-                        <Image
-                            src={appData.appIconUrl}
-                            alt={appData.appName}
-                            width={160}
-                            height={160}
-                            className="w-32 h-32 rounded-2xl"
-                        />
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                {appData.appName}
-                            </h1>
-                            <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-                                {appData.companyName}
-                            </p>
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="flex items-center">
-                                    {[...Array(5)].map((_, i) => (
-                                        <StarIcon
-                                            key={i}
-                                            className={`h-5 w-5 ${i < appData.ratings ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
-                                        />
-                                    ))}
-                                </div>
-                                <span className="text-gray-600 dark:text-gray-300">
-                                    {appData.totalRatings} reviews
-                                </span>
-                                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-full text-sm ">
-                                    {appData.projectType}
-                                </span>
-                            </div>
-                            <a
-                                href={appData.websiteUrl}
-                                className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
-                            >
-                                <ArrowUpTrayIcon className="h-5 w-5 mr-2" />
-                                Visit Website
-                            </a>
-                        </div>
-                    </div>
+                    <DappHeader appData={appData} />
 
                     {/* Banner Carousel */}
-                    <div className="mb-8">
-                        <Swiper
-                            spaceBetween={20}
-                            slidesPerView={1}
-                            freeMode={true}
-                            pagination={{
-                                clickable: true,
-                            }}
-                            className="rounded-2xl overflow-hidden mySwiper"
-                        >
-                            {appData.bannerUrls.main.map((url, i) => (
-                                <SwiperSlide key={i}>
-                                    <img
-                                        src={url}
-                                        alt={`Banner ${i + 1}`}
-                                        width={1600}
-                                        height={900}
-                                        className="w-full h-96 object-cover"
-                                    />
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-                    </div>
+                    <DappBanner mainBannerImageUrls={appData.bannerUrls.main} />
 
                     {/* Tabs */}
                     <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
@@ -316,7 +265,7 @@ export default function AppDetailsPage() {
                                             {dummySimilarDApps
                                                 ?.slice(0, 4)
                                                 .map(dapp => (
-                                                    <DAppCard key={dapp.appId} dapp={dapp} />
+                                                    <DAppCardMini key={dapp.appId} dapp={dapp} />
                                                 ))}
                                         </div>
                                     </section>
@@ -325,11 +274,11 @@ export default function AppDetailsPage() {
                                     <section>
                                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">More from {appData.companyName}</h2>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                            {dummyDApps
+                                            {dummyCompanyDApps
                                                 .filter(dapp => dapp.companyName === appData.companyName)
                                                 .slice(0, 4)
                                                 .map(dapp => (
-                                                    <DAppCard key={dapp.appId} dapp={dapp} />
+                                                    <DAppCardMini key={dapp.appId} dapp={dapp} />
                                                 ))}
                                         </div>
                                     </section>
@@ -341,7 +290,7 @@ export default function AppDetailsPage() {
                             <div className="space-y-6">
                                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Events & Offers</h2>
                                 {airdrops.map(airdrop => (
-                                    // <AirdropCard key={airdrop.id} airdrop={airdrop} timeFormatter={timeFormatter} />
+                                    // <AirdropCard key={airdrop.airdropId} airdrop={airdrop} timeFormatter={timeFormatter} />
                                     <motion.div
                                         key={airdrop.airdropId}
                                         initial={{ opacity: 0, y: 20 }}

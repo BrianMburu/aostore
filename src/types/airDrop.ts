@@ -12,3 +12,13 @@ export interface AppAirdropData {
     airdropId: string;
     status: 'active' | 'claimed' | 'pending' | 'expired';
 }
+
+export interface AppAirdropDataMini {
+    title: string;
+    airdropId: string;
+    amount: number;
+    publishTime: number;
+    expiryTime: number;
+    appname: string;
+    status: 'active' | 'claimed' | 'pending' | 'expired';
+}

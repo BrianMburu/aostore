@@ -24,7 +24,7 @@ export interface AppData {
     appName: string;
     companyName: string;
     websiteUrl: string;
-    projectType: string;
+    projectType: ProjectType;
     appIconUrl: string;
     coverUrl: string;
     company: string;
@@ -41,7 +41,19 @@ export interface AppData {
     upvotes: Record<string, any>;
     totalRatings: number;
 }
-
+export interface AppDataMini {
+    projectName: string;
+    projectType: ProjectType;
+    appIconUrl: string;
+    coverUrl: string;
+    company: string;
+    companyName: string;
+    ratings: number;
+    appId: string;
+    createdTime: number;
+    protocol: string;
+    totalRatings: number;
+}
 export interface Reply {
     replyId: string;
     comment: string;

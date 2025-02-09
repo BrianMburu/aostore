@@ -1,9 +1,17 @@
-import * as z from 'zod';
+import z from 'zod';
 
 const SupportFormSchema = z.object({
-    request: z.enum(['bug', 'feature'], { invalid_type_error: 'Please select a valid request type.' }),
+    request: z.enum(['bug', 'feature'], {
+        errorMap: (issue, ctx) => {
+            if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+                return { message: 'Please select a valid request type.' };
+            }
+            return { message: ctx.defaultError };
+        },
+    }),
     message: z.string().min(10, 'Message must be at least 10 characters.'),
-})
+});
+
 
 export type State = {
     errors?: {

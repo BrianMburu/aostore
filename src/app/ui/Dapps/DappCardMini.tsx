@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { AppDataMini, Project } from '@/types/dapp';
+import { AppDataMini } from '@/types/dapp';
 
-export default function DAppCard({ dapp }: { dapp: AppDataMini | Project }) {
+export default function DAppCardMini({ dapp }: { dapp: AppDataMini }) {
     return (
         <motion.div
             whileHover={{ y: -4 }}
@@ -19,13 +19,10 @@ export default function DAppCard({ dapp }: { dapp: AppDataMini | Project }) {
                         alt={dapp.projectName}
                         width={100}
                         height={100}
-                        className="w-20 h-20 rounded-2xl mb-4"
+                        className="w-30 h-30 rounded-2xl mb-4"
                     />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center">
-                        {dapp.projectName}
-                    </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                        {dapp.companyName}
+                        {dapp.projectName}
                     </p>
                     <div className="flex items-center gap-1 mb-4">
                         {[...Array(5)].map((_, i) => (

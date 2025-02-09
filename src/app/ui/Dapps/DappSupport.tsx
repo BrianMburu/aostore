@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ChatBubbleLeftIcon, BugAntIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 import DappSupportForm from './DappSupportForm';
+import { useParams } from 'next/navigation';
 
 interface DeveloperInfo {
     name?: string;
@@ -16,6 +17,9 @@ interface DappSupportProps {
 }
 
 const DappSupport: React.FC<DappSupportProps> = ({ developerInfo }) => {
+    const params = useParams();
+    const appId = params.appId;
+
     return (
         <section className='bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm'>
             <div className='flex flex-col md:flex-row gap-8'>
@@ -46,8 +50,7 @@ const DappSupport: React.FC<DappSupportProps> = ({ developerInfo }) => {
                         </h3>
                         {developerInfo?.forum && (
                             <Link
-                                href={developerInfo.forum}
-                                target="_blank"
+                                href={`/dapps/${appId}/forum`}
                                 className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
                             >
                                 <ChatBubbleLeftIcon className="h-5 w-5 mr-2" />
