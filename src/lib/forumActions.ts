@@ -1,5 +1,7 @@
 import * as z from 'zod';
-import { ForumPost, updateOptions } from '@/types/forum';
+import { ForumPost, ForumReply, updateOptions } from '@/types/forum';
+import { User } from '@/types/user';
+import { ForumService } from '@/services/ao/forumService';
 
 const categories = updateOptions.map(opt => opt.value) as [string, ...string[]];
 
@@ -64,5 +66,47 @@ export async function postForumQuestion(userId: string, prevState: State, formDa
 
     } catch {
         return { message: "AO Error: failed to send Support Request." }
+    }
+}
+
+export type ForumReplyState = {
+    errors?: {
+        content?: string[],
+    },
+    reply?: ForumReply | null
+    message?: string | null
+}
+
+export const replySchema = z.object({
+    content: z.string().min(10, 'Answer must be at least 10 characters').max(1000, "Answer must have a max of 1000 characters"),
+});
+
+export async function sendAnswer(appId: string, reviewId: string, user: User, prevState: ForumReplyState, formData: FormData) {
+    const validatedFields = replySchema.safeParse({
+        content: formData.get('content'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has errors. Failed to send reply.',
+        };
+    }
+
+    try {
+        // Simulate a network delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const replyData: Partial<ForumReply> = {
+            ...validatedFields.data,
+            author: user.walletAddress,
+        }
+
+        const reply = await ForumService.submitReply(appId, reviewId, replyData);
+
+        return { message: 'success', reply: reply };
+
+    } catch {
+        return { message: 'AO Error: failed to send reply.' };
     }
 }

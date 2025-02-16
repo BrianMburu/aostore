@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { dummyPosts, ForumPost } from '@/types/forum';
-import { simulateAPI } from '@/utils/forum';
+import { ForumPost } from '@/types/forum';
+import { ForumService } from '@/services/ao/forumService';
 import { ForumPostItemMini } from '@/app/ui/forum/PostItemMini';
 import ForumQuestion from '@/app/ui/forum/ForumQuestion';
 import ForumAnswer from '@/app/ui/forum/ForumAnswer';
@@ -23,15 +23,12 @@ export default function ForumPostPage() {
     useEffect(() => {
         const loadPost = async () => {
             try {
-                const foundPost = dummyPosts.find(p => p.postId === postId);
-                const postData = await simulateAPI(foundPost);
+                const postData = await ForumService.fetchPost(appId, postId);
                 setPost(postData || null);
 
                 if (postData) {
-                    const suggested = dummyPosts
-                        .filter(p => p.topic === postData.topic && p.postId !== postId)
-                        .slice(0, 5);
-                    setSuggestedPosts(suggested);
+                    const { posts, } = await ForumService.fetchForumPosts(appId, { page: '1', topic: postData.topic })
+                    setSuggestedPosts(posts);
                 }
             } finally {
                 setLoading(false)

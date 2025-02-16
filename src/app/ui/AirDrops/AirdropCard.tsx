@@ -7,10 +7,14 @@ import { motion } from 'framer-motion';
 import { RocketLaunchIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { AppAirdropData } from '@/types/airDrop';
 
-export function AirdropCard({ airdrop, timeFormatter }: {
+export function AirdropCard({ airdrop }: {
     airdrop: AppAirdropData,
-    timeFormatter: Intl.DateTimeFormat
 }) {
+    const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
     const statusColors = {
         active: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
         claimed: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
@@ -30,7 +34,7 @@ export function AirdropCard({ airdrop, timeFormatter }: {
                     <RocketLaunchIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{airdrop.appname}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{airdrop.title}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         {airdrop.status.charAt(0).toUpperCase() + airdrop.status.slice(1)}
                     </p>

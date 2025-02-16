@@ -5,8 +5,8 @@ import toast from 'react-hot-toast';
 import { StarIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import { Review } from '@/types/dapp';
-import Loader from '../Loader';
+import { Review } from '@/types/review';
+import Loader from '../../Loader';
 import { State, sendReview } from '@/lib/reviewActions';
 
 

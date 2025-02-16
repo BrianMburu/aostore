@@ -8,7 +8,7 @@ export interface AppAirdropData {
     title: string;
     description: string;
     airdropsReceivers: string[];
-    appname: string;
+    appName: string;
     airdropId: string;
     status: 'active' | 'claimed' | 'pending' | 'expired';
 }
@@ -19,6 +19,6 @@ export interface AppAirdropDataMini {
     amount: number;
     publishTime: number;
     expiryTime: number;
-    appname: string;
+    appName: string;
     status: 'active' | 'claimed' | 'pending' | 'expired';
 }

@@ -5,11 +5,13 @@ import toast from 'react-hot-toast';
 import { postForumQuestion, State } from '@/lib/forumActions';
 import { ForumPost, updateOptions } from '@/types/forum';
 import Loader from '../Loader';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ForumQuestionForm({ setPosts }: { setPosts: React.Dispatch<React.SetStateAction<ForumPost[]>> }) {
     const initial_state: State = { message: null, errors: {}, post: null }
+    const { user } = useAuth()
 
-    const [state, formAction, isSubmitting] = useActionState(postForumQuestion.bind(null, 'user.wallet'), initial_state)
+    const [state, formAction, isSubmitting] = useActionState(postForumQuestion.bind(null, user ? user.walletAddress : "no-user"), initial_state)
 
     useEffect(() => {
         if (state.message === 'success' && state.post) {

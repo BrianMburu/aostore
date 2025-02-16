@@ -1,4 +1,4 @@
-import { like } from "@/services/ao/forumService";
+import { ForumService } from '@/services/ao/forumService';
 import { ForumPost, ForumReply } from "@/types/forum";
 import { formatActivityTime } from "@/utils/forum";
 import { HandThumbUpIcon } from "@heroicons/react/24/outline";
@@ -25,8 +25,7 @@ export default function ForumAnswer({ reply, setPost }: { reply: ForumReply, set
         });
 
 
-        // Simulate update in dummy data
-        const response = replyId ? await like(postId) : await like(postId, replyId);
+        const response = replyId ? await ForumService.like(postId) : await ForumService.like(postId, replyId);
         const data = await response.json();
 
         if (data.success) {

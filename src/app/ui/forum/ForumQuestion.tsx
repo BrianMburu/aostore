@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { ShareIcon } from "@heroicons/react/24/outline";
 import { HandThumbUpIcon } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
-import { like } from "@/services/ao/forumService";
+import { ForumService } from '@/services/ao/forumService';
 
 export default function ForumQuestion({ post, setPost }: { post: ForumPost, setPost: React.Dispatch<React.SetStateAction<ForumPost | null>> }) {
     const params = useParams();
@@ -20,7 +20,7 @@ export default function ForumQuestion({ post, setPost }: { post: ForumPost, setP
         });
 
         // Simulate update in dummy data
-        const response = await like(postId)
+        const response = await ForumService.like(postId)
         const data = await response.json();
 
         if (data.success) {

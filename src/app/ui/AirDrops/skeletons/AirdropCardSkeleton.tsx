@@ -15,7 +15,7 @@
 //     );
 // }
 
-export function AirdropSkeleton() {
+export function AirdropCardSkeleton() {
     return (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
             <div className="animate-pulse space-y-4">

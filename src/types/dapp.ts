@@ -18,9 +18,10 @@ export const projectTypes = [
 export type Protocol = 'aocomputer' | 'arweave';
 export type ProjectType = typeof projectTypes[number];
 
-
+export type Verified = 'verified' | 'unverified';
 
 export interface AppData {
+    appId: string;
     appName: string;
     companyName: string;
     websiteUrl: string;
@@ -30,17 +31,19 @@ export interface AppData {
     company: string;
     description: string;
     ratings: number;
-    appId: string;
     bannerUrls: Record<string, any>;
     createdTime: number;
+    updatedAt?: number;
     discordUrl: string;
     downvotes: Record<string, any>;
-    protocol: string;
+    protocol: Protocol;
     reviews: Record<string, any>;
     twitterUrl: string;
     upvotes: Record<string, any>;
     totalRatings: number;
+    verified?: Verified;
 }
+
 export interface AppDataMini {
     projectName: string;
     projectType: ProjectType;
@@ -54,28 +57,24 @@ export interface AppDataMini {
     protocol: string;
     totalRatings: number;
 }
-export interface Reply {
-    replyId: string;
-    comment: string;
-    timestamp: number;
-    upvotes: number;
-    downvotes: number;
-    user: string;
-    username: string;
-    profileUrl: string;
+export interface FeatureRequest {
+    id: string
+    type: 'feature'
+    title: string
+    description: string
+    votes: number
+    timestamp: number
+    userId: string
+    appId: string
 }
 
-export interface Review {
-    reviewId: string;
-    username: string;
-    comment: string;
-    rating: number;
-    timestamp: number;
-    upvotes: number;
-    downvotes: number;
-    helpfulVotes: number;
-    unhelpfulVotes: number;
-    profileUrl: string;
-    voters: Record<string, any>;
-    replies: Reply[];
+export interface BugReport {
+    id: string
+    type: 'bug'
+    title: string
+    description: string
+    status: 'open' | 'in-progress' | 'resolved'
+    timestamp: number
+    userId: string
+    appId: string
 }

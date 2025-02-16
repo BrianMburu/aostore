@@ -3,7 +3,9 @@
 import Image from 'next/image'
 import { StarIcon, HandThumbUpIcon, ChatBubbleLeftIcon, ShareIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
-import { Review } from "@/types/dapp"
+import { Review } from "@/types/review"
+import { ReplyItem } from './ReplyItem'
+import { Reply } from '@/types/review'
 
 export default function ReviewItem({ review }: { review: Review }) {
     return (
@@ -55,23 +57,10 @@ export default function ReviewItem({ review }: { review: Review }) {
             </div>
 
             {/* Replies */}
-            {review.replies?.map(reply => (
-                <div key={reply.replyId} className="ml-12 mt-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                    <div className="flex items-start gap-4">
-                        <Image
-                            src={reply.profileUrl}
-                            alt={reply.username}
-                            height={40}
-                            width={40}
-                            className="w-8 h-8 rounded-full"
-                        />
-                        <div>
-                            <h4 className="font-medium text-gray-900 dark:text-white">{reply.username}</h4>
-                            <p className="text-gray-600 dark:text-gray-300">{reply.comment}</p>
-                        </div>
-                    </div>
-                </div>
+            {review.replies?.map((reply: Reply) => (
+                <ReplyItem key={reply.replyId} reply={reply} />
             ))}
         </motion.div>
     )
 }
+
