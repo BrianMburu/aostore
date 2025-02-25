@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
-export function FloatingActionButton({ onClick }: { onClick: () => void }) {
+export function AddDappFloatingButton({ onClick }: { onClick: () => void }) {
     const [isHovered, setIsHovered] = useState(false);
 
     return (

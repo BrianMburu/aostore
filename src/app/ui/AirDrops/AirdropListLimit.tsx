@@ -40,7 +40,7 @@ export function AirdropsListLimit({ params }: { params: AidropsFilterParams }) {
     )
 }
 
-function AirdropCardCustom({ airdrop }: { airdrop: AppAirdropData }) {
+export function AirdropCardCustom({ airdrop }: { airdrop: AppAirdropData }) {
     const timeFormatter = new Intl.DateTimeFormat('en-US', {
         month: 'long',
         day: 'numeric',

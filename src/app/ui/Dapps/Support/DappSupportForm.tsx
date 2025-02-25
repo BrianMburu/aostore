@@ -4,7 +4,7 @@
 import React, { useEffect, useActionState } from 'react';
 import { sendSupportRequest, State } from '@/lib/supportActions';
 import toast from 'react-hot-toast';
-import Loader from '../Loader';
+import Loader from '../../Loader';
 
 interface DappSupportFormProps {
     requestType: string;
@@ -26,8 +26,8 @@ interface DappSupportFormProps {
 
 function DappSupportForm({
     requestType,
-    icon,
-    title,
+    // icon,
+    // title,
     placeholder,
     submitText,
     submitButtonClasses,
@@ -42,11 +42,11 @@ function DappSupportForm({
     }, [state.message]);
 
     return (
-        <form action={formAction} className="space-y-4" aria-describedby='form-error'>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+        <form action={formAction} className="space-y-3" aria-describedby='form-error'>
+            {/* <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
                 {icon}
                 {title}
-            </h3>
+            </h3> */}
 
             <input
                 name="request"
@@ -58,6 +58,21 @@ function DappSupportForm({
             <div id='sp-request-error' aria-live="polite" aria-atomic="true">
                 {state?.errors?.request &&
                     state.errors.request.map((error: string) => (
+                        <p className="mt-2 text-sm text-red-500" key={error}>
+                            {error}
+                        </p>
+                    ))}
+            </div>
+
+            <input
+                name="title"
+                placeholder={`Title for your ${requestType} request`}
+                className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
+                aria-describedby='sp-title-error'
+            />
+            <div id='sp-title-error' aria-live="polite" aria-atomic="true">
+                {state?.errors?.title &&
+                    state.errors.title.map((error: string) => (
                         <p className="mt-2 text-sm text-red-500" key={error}>
                             {error}
                         </p>
@@ -88,6 +103,7 @@ function DappSupportForm({
                     </p>
                 }
             </div>
+
             <button type="submit" disabled={isSubmitting} className={submitButtonClasses}>
                 {isSubmitting ?
                     <div className="flex items-center justify-center">

@@ -1,6 +1,7 @@
 import { DEFAULT_PAGE_SIZE } from '@/config';
 import { AppAirdropData } from '@/types/airDrop';
 import { DAPPIDS } from '@/utils/dataGenerators';
+import { DAppService } from './dappService';
 
 const dummyAirdrops: AppAirdropData[] = Array.from({ length: 48 }, (_, i) => ({
     userId: `user_${i}`,
@@ -23,6 +24,11 @@ export interface AidropsFilterParams {
 }
 
 export const AirdropService = {
+    fetchAirdrop: async (airdropId: string): Promise<AppAirdropData | undefined> => {
+        const airdrop = dummyAirdrops.find(airdrop => airdrop.airdropId === airdropId);
+        return airdrop;
+    },
+
     fetchAirdrops: async (params: AidropsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: AppAirdropData[]; total: number }> => {
         await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
 
@@ -52,6 +58,7 @@ export const AirdropService = {
             total: filteredData.length
         };
     },
+
     fetchAirdropsLimit: async (params: AidropsFilterParams, limit: number = 5): Promise<{ data: AppAirdropData[]; total: number }> => {
         await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
 
@@ -73,6 +80,38 @@ export const AirdropService = {
             total: filteredData.length
         };
     },
-    createAirdrop: async () => { },
+
+    async createAirdrop(userId: string, appId: string, airdropData: Partial<AppAirdropData>): Promise<AppAirdropData> {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const dapp = await DAppService.getDApp(appId);
+
+        if (!userId || userId === '') {
+            throw new Error('User not found');
+        }
+
+        if (!dapp) {
+            throw new Error('DApp not found');
+        }
+
+        const newAirdrop: AppAirdropData = {
+            userId: userId,
+            appId: appId,
+            appName: dapp.appName,
+            airdropId: `airdrop-${Date.now()}`,
+            amount: airdropData.amount || 0,
+            publishTime: Date.now(),
+            expiryTime: airdropData.expiryTime!,
+            tokenId: airdropData.tokenId!,
+            title: airdropData.title!,
+            description: airdropData.description!,
+            airdropsReceivers: [],
+            status: airdropData.status!,
+        };
+
+        dummyAirdrops.unshift(newAirdrop);
+        return newAirdrop;
+    },
+
     editAirdrop: async () => { }
 };

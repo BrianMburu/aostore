@@ -51,9 +51,7 @@ export async function createDapp(prevState: State, formData: FormData) {
         protocol: formData.get('protocol'),
         projectType: formData.get('projectType'),
         companyName: formData.get('companyName'),
-        bannerUrls: {
-            main: formData.get('bannerUrls')?.toString().split(',').map(url => url.trim())
-        },
+        bannerUrls: formData.get('bannerUrls')?.toString().split(',').map(url => url.trim()),
     };
 
     const validatedFields = dappSchema.safeParse(data);

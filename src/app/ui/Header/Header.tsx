@@ -7,6 +7,8 @@ import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { ProfileDropdown } from './ProfileDropdown';
 import toast from 'react-hot-toast';
+import { usePathname } from 'next/navigation';
+import clsx from 'clsx';
 
 // import  {Bars3Icon} from '@heroicons/react/24/outline';
 
@@ -16,6 +18,8 @@ interface NavLink {
 }
 
 const Header: React.FC = () => {
+    const pathname = usePathname();
+
     const { user, isConnected, login, logout } = useAuth();
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -80,7 +84,9 @@ const Header: React.FC = () => {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className="px-2 py-1 rounded-md transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                                    className={clsx("px-2 py-1 rounded-md transition-colors duration-200 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400",
+                                        pathname.includes(link.href) ? "text-indigo-600 dark:text-indigo-400" : "text-gray-700",
+                                    )}
                                 >
                                     {link.label}
                                 </Link>

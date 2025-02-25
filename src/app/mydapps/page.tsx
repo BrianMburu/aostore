@@ -1,5 +1,3 @@
-'use server'
-
 // app/mydapps/page.tsx
 import { DAppService } from '@/services/ao/dappService';
 import { DAppFilter } from '../ui/MyDapps/DappFilter';

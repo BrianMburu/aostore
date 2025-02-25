@@ -1,9 +1,9 @@
 // components/DappSupport.tsx
 import React from 'react';
 import Link from 'next/link';
-import { ChatBubbleLeftIcon, BugAntIcon, LightBulbIcon } from '@heroicons/react/24/outline';
-import DappSupportForm from './DappSupportForm';
+import { ArrowTopRightOnSquareIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
+import DappSupportTabs from './DappSupportTabs';
 
 interface DeveloperInfo {
     name?: string;
@@ -48,6 +48,16 @@ const DappSupport: React.FC<DappSupportProps> = ({ developerInfo }) => {
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                             Support Actions
                         </h3>
+
+                        <Link
+                            href={`/dapps/${appId}/feature-requests`}
+                            className="inline-flex items-center px-6 py-2 bg-green-800 hover:bg-green-900 text-white rounded-full"
+                        >
+                            View latest Submitted Requests
+                            <ArrowTopRightOnSquareIcon className="h-5 w-5 ml-2" />
+
+                        </Link>
+
                         {developerInfo?.forum && (
                             <Link
                                 href={`/dapps/${appId}/forum`}
@@ -59,25 +69,8 @@ const DappSupport: React.FC<DappSupportProps> = ({ developerInfo }) => {
                         )}
                     </div>
 
-                    {/* Report Bug Form */}
-                    <DappSupportForm
-                        requestType="bug"
-                        icon={<BugAntIcon className="h-5 w-5" />}
-                        title="Report a Bug"
-                        placeholder="Describe the issue you're experiencing..."
-                        submitText="Submit Bug Report"
-                        submitButtonClasses="px-4 py-2 bg-red-100 text-red-700 rounded-full hover:bg-red-200 dark:bg-red-900 dark:text-red-100"
-                    />
-
-                    {/* Feature Request Form */}
-                    <DappSupportForm
-                        requestType="feature"
-                        icon={<LightBulbIcon className="h-5 w-5" />}
-                        title="Request Feature"
-                        placeholder="Describe your feature request..."
-                        submitText="Submit Feature Request"
-                        submitButtonClasses="px-4 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 dark:bg-green-900 dark:text-green-100"
-                    />
+                    {/* Report Bug and Feature Request Forms */}
+                    <DappSupportTabs />
                 </div>
             </div>
         </section>

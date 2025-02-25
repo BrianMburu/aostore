@@ -4,11 +4,18 @@ export interface Message {
     appIconUrl: string;
     company: string;
     title: string;
-    message: string;
+    content: string;
     linkInfo: string;
-    currentTime: string;
+    currentTime: number;
+    updateTime?: number;
     read: boolean;
     type: MessageType;
 }
 
 export type MessageType = 'update' | 'feature' | 'bug';
+
+export const messageTypes = [
+    { key: "1", value: "update" },
+    { key: "2", value: "feature" },
+    { key: "3", value: "bug" }
+];

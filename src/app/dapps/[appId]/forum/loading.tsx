@@ -1,4 +1,4 @@
-import ForumPageSkeleton from "@/app/ui/forum/ForumSkeleton";
+import ForumPageSkeleton from "@/app/ui/forum/skeletons/ForumSkeleton";
 
 export default function Loading() {
     return (

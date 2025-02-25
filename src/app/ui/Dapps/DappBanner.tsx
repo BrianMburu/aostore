@@ -26,8 +26,8 @@ export default function DappBanner({ mainBannerImageUrls }: { mainBannerImageUrl
                             <Image
                                 src={url}
                                 alt={`Banner ${i + 1}`}
-                                width={1600}
-                                height={900}
+                                width={1200}
+                                height={800}
                                 className="w-full h-96 object-cover"
                             />
                         </SwiperSlide>

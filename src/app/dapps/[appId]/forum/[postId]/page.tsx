@@ -8,7 +8,7 @@ import { ForumService } from '@/services/ao/forumService';
 import { ForumPostItemMini } from '@/app/ui/forum/PostItemMini';
 import ForumQuestion from '@/app/ui/forum/ForumQuestion';
 import ForumAnswer from '@/app/ui/forum/ForumAnswer';
-import { ForumPostSkeleton } from '@/app/ui/forum/ForumPostSkeleton';
+import { ForumPostSkeleton } from '@/app/ui/forum/skeletons/ForumPostSkeleton';
 import { notFound } from 'next/navigation';
 
 export default function ForumPostPage() {

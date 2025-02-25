@@ -13,6 +13,7 @@ const tabs = [
     { name: 'Feature Requests', href: '/feature-requests' },
     { name: 'Analytics', href: '/analytics' },
     { name: 'Messages', href: '/messages' },
+    { name: 'Airdrops', href: '/airdrops' },
 ];
 
 export function DesktopTabs() {

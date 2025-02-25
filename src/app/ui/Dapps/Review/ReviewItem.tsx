@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { StarIcon, HandThumbUpIcon, ChatBubbleLeftIcon, ShareIcon } from '@heroicons/react/24/outline'
+import { StarIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
 import { Review } from "@/types/review"
 import { ReplyItem } from './ReplyItem'
@@ -43,16 +43,13 @@ export default function ReviewItem({ review }: { review: Review }) {
             <p className="text-gray-600 dark:text-gray-300 mb-4">{review.comment}</p>
 
             <div className="flex items-center gap-4">
-                <button className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-indigo-600">
+                {/* <button className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-indigo-600">
                     <HandThumbUpIcon className="h-5 w-5" />
                     <span>{review.upvotes}</span>
-                </button>
+                </button> */}
                 <button className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-indigo-600">
                     <ChatBubbleLeftIcon className="h-5 w-5" />
                     <span>{review.replies?.length || 0}</span>
-                </button>
-                <button className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-indigo-600">
-                    <ShareIcon className="h-5 w-5" />
                 </button>
             </div>
 

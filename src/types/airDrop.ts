@@ -10,7 +10,7 @@ export interface AppAirdropData {
     airdropsReceivers: string[];
     appName: string;
     airdropId: string;
-    status: 'active' | 'claimed' | 'pending' | 'expired';
+    status: statusType;
 }
 
 export interface AppAirdropDataMini {
@@ -22,3 +22,9 @@ export interface AppAirdropDataMini {
     appName: string;
     status: 'active' | 'claimed' | 'pending' | 'expired';
 }
+
+export const statusOptions = [
+    'active', 'claimed', 'pending', 'expired'
+] as const;
+
+export type statusType = typeof statusOptions[number];

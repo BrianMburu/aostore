@@ -1,4 +1,4 @@
-import z from 'zod';
+import * as z from 'zod';
 
 const SupportFormSchema = z.object({
     request: z.enum(['bug', 'feature'], {
@@ -9,6 +9,8 @@ const SupportFormSchema = z.object({
             return { message: ctx.defaultError };
         },
     }),
+    title: z.string().min(10, 'Title must be at least 10 characters.').max(100, 'Title must not exceed 100 characters.'),
+
     message: z.string().min(10, 'Message must be at least 10 characters.'),
 });
 
@@ -16,6 +18,7 @@ const SupportFormSchema = z.object({
 export type State = {
     errors?: {
         request?: string[],
+        title?: string[],
         message?: string[]
     },
     message?: string | null
@@ -26,6 +29,7 @@ export type State = {
 export async function sendSupportRequest(prevState: State, formData: FormData) {
     const validatedFields = SupportFormSchema.safeParse({
         request: formData.get('request'),
+        title: formData.get('title'),
         message: formData.get('message')
     })
     if (!validatedFields.success) {
@@ -35,12 +39,12 @@ export async function sendSupportRequest(prevState: State, formData: FormData) {
         };
     }
 
-    const { request, message } = validatedFields.data;
+    const { request, title, message } = validatedFields.data;
 
 
     try {
         // To Do add functionality to send request to backend
-        console.log('Data:', { request, message })
+        console.log('Data:', { request, message, title })
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         return { message: "success" }

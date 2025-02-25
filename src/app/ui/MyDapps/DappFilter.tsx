@@ -83,6 +83,5 @@ export function DAppFilter() {
                 </div>
             </div>
         </div>
-
     );
 }

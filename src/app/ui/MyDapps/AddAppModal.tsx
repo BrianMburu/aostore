@@ -11,7 +11,7 @@ import Loader from '../Loader';
 import toast from 'react-hot-toast';
 import { State, createDapp, createTemporaryDApp, dappSchema } from '@/lib/mydappActions';
 import { AppData } from '@/types/dapp';
-import { FloatingActionButton } from './AddAppFloatingButton';
+import { AddDappFloatingButton } from './AddAppFloatingButton';
 
 interface AddDAppModalProps {
     addOptimisticDApp: (data: AppData) => void;
@@ -92,7 +92,7 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
     return (
         <div>
             {/* Floating Action Button */}
-            <FloatingActionButton onClick={() => setIsOpen(true)} />
+            <AddDappFloatingButton onClick={() => setIsOpen(true)} />
 
             <ModalDialog isOpen={isOpen} onClose={() => setIsOpen(false)}>
                 <form action={formAction} className="space-y-6">

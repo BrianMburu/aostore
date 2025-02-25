@@ -6,7 +6,7 @@ import DappReviewForm from "./Review/DappReviewForm";
 import DappReviews from "./Review/DappReviews";
 import { DAppsListLimit } from "./DappListLimit";
 import { Suspense } from "react";
-import DappSupport from "./DappSupport";
+import DappSupport from "./Support/DappSupport";
 import DappCardsSkeleton from "./Skeletons/DappCardsSkeleton";
 import { AirdropsListLimit } from "../AirDrops/AirdropListLimit";
 import { AirdropsSkeletonVertical } from "../AirDrops/skeletons/AirdropsSkeleton";

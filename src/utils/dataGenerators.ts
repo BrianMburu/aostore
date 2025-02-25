@@ -1,6 +1,8 @@
 import { FeatureRequest, BugReport } from "@/types/dapp";
 import { AppData, ProjectType, projectTypes } from '@/types/dapp'
 import { Review, Reply } from "@/types/review";
+import { Message, MessageType } from '@/types/message';
+
 import { v4 as uuidv4 } from 'uuid'
 /**
  * Generates an array of appIds of specified length
@@ -428,7 +430,7 @@ function generateSingleDApp(i: number = 0): AppData {
         websiteUrl: `https://${appName.toLowerCase().replace(/\s+/g, '')}.io`,
         projectType: generateProjectType(),
         appIconUrl: `https://picsum.photos/2${i}1/?text=${appName[0]}`, // Placeholder icon `https://picsum.photos/20${i}`
-        coverUrl: `https://picsum.photos/1200/?text=${appName}`, // Placeholder cover
+        coverUrl: `https://picsum.photos/1200/800?text=${appName}`, // Placeholder cover
         description: generateDescription(),
         ratings: generateRating(),
         bannerUrls: generateBannerUrls(3),
@@ -494,7 +496,7 @@ function generateRating(): number {
  */
 function generateBannerUrls(n: number = 5): Record<string, any> {
     return {
-        main: Array.from({ length: n }, (_, i) => `https://picsum.photos/120${i}`)
+        main: Array.from({ length: n }, (_, i) => `https://picsum.photos/1200/80${i}`)
     }
 }
 
@@ -546,3 +548,87 @@ function generateRandomString(length: number): string {
 }
 
 
+
+// Utility function to generate dummy messages for testing
+/**
+ * Generates an array of dummy messages for testing purposes
+ * @param count Number of messages to generate
+ * @param baseTime Optional timestamp to start from (defaults to current time)
+ * @returns Array of Message objects
+ */
+export function generateTestMessages(count: number, baseTime: number = Date.now()): Message[] {
+    // Sample data for realistic message generation
+    const companies = ['Acme Corp', 'TechStart', 'DevTools Inc', 'CloudScale', 'DataFlow'];
+    const apps: AppData[] = generateDAppTestData(20);
+
+    // Templates for generating realistic content
+    const updateTemplates = [
+        'New version {version} is now available',
+        'Important security update released',
+        'System maintenance scheduled for {date}',
+        'Performance improvements deployed'
+    ];
+
+    const featureTemplates = [
+        'Introducing new {feature} functionality',
+        'Enhanced {feature} capabilities now available',
+        'New integration with {integration} added',
+        'Upgraded {feature} interface launched'
+    ];
+
+    const bugTemplates = [
+        'Fixed issue with {feature}',
+        'Resolved {feature} performance bottleneck',
+        'Patched security vulnerability in {feature}',
+        'Fixed crash in {feature} module'
+    ];
+
+    const features = ['authentication', 'reporting', 'analytics', 'user management', 'notifications', 'search'];
+    const integrations = ['Slack', 'Gmail', 'Teams', 'Jira', 'GitHub'];
+
+    /**
+     * Generates a random message based on the given type
+     */
+    function generateMessageContent(type: MessageType): string {
+        const getRandomItem = <T>(items: T[]): T => items[Math.floor(Math.random() * items.length)];
+
+        let template: string;
+        switch (type) {
+            case 'update':
+                template = getRandomItem(updateTemplates);
+                return template
+                    .replace('{version}', `${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}`)
+                    .replace('{date}', new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString());
+            case 'feature':
+                template = getRandomItem(featureTemplates);
+                return template
+                    .replace('{feature}', getRandomItem(features))
+                    .replace('{integration}', getRandomItem(integrations));
+            case 'bug':
+                template = getRandomItem(bugTemplates);
+                return template.replace('{feature}', getRandomItem(features));
+            default:
+                return 'Generic message content';
+        }
+    }
+
+    return Array.from({ length: count }, (_, index) => {
+        const app: AppData = apps[index % apps.length];
+        const type = ['update', 'feature', 'bug'][Math.floor(Math.random() * 3)] as MessageType;
+        const timeOffset = index * Math.floor(Math.random() * 24 * 60 * 60 * 1000); // Random offset within 24 hours
+
+        return {
+            id: `msg-${Date.now()}-${index}`,
+            appName: app.appName,
+            appIconUrl: app.appIconUrl,
+            company: companies[Math.floor(Math.random() * companies.length)],
+            title: `${type.charAt(0).toUpperCase() + type.slice(1)}: ${app.appName}`,
+            content: generateMessageContent(type),
+            linkInfo: app.websiteUrl,
+            currentTime: baseTime - timeOffset,
+            updateTime: Math.random() > baseTime - timeOffset + 3600000, // 50% chance of update, 1 hour later
+            read: Math.random() > 0.7, // 30% chance of being unread
+            type: type
+        };
+    });
+}

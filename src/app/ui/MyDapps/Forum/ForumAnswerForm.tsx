@@ -38,7 +38,7 @@ export function ForumAnswerForm({ postId }: { postId: string }) {
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 border-t dark:border-gray-700 pt-6"
         >
-            <form action={formAction} className="space-y-2 max-w-md">
+            <form action={formAction} className="space-y-2 max-w-lg">
                 <div>
                     <textarea
                         name="content"
