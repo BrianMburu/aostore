@@ -1,6 +1,5 @@
 import React from "react";
-import HeroImage from "./../../../public/aostorelogo.png"; // Replace with an Arweave/Aostore-themed image
-import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import HeroImage from "./../../../public/aostorelogo.svg"; // Replace with an Arweave/Aostore-themed image
 
 const Home = () => {
   return (
