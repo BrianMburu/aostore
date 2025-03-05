@@ -4,6 +4,7 @@ import { MyDappsAirDropFilter } from '@/app/ui/MyDapps/Airdrops/MyDappsAirDropsF
 import { AirdropService } from '@/services/ao/airdropService';
 import { Suspense } from 'react';
 import { AirdropsSkeleton } from '@/app/ui/AirDrops/skeletons/AirdropsSkeleton';
+import { AddAirDropForm } from '@/app/ui/MyDapps/Airdrops/AddAirdropForm';
 
 export default async function MyDAppsPage({ searchParams }: { searchParams: Record<string, string> }) {
 
@@ -24,6 +25,9 @@ export default async function MyDAppsPage({ searchParams }: { searchParams: Reco
 
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+                {/* Add DApp Form Modal */}
+                <AddAirDropForm />
+
                 {/* AirDrops List */}
                 <Suspense fallback={<AirdropsSkeleton n={6} />}>
                     <MyDappsAirdropsList

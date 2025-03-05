@@ -1,6 +1,5 @@
 import * as z from 'zod';
 import { ForumPost, ForumReply, updateOptions } from '@/types/forum';
-import { User } from '@/types/user';
 import { ForumService } from '@/services/ao/forumService';
 
 const categories = updateOptions.map(opt => opt.value) as [string, ...string[]];
@@ -18,7 +17,7 @@ const ForumQuestionFormSchema = z.object({
     content: z.string().min(10, 'Question description must be at least 10 characters.'),
 })
 
-export type State = {
+export type ForumPostState = {
     errors?: {
         title?: string[],
         topic?: string[],
@@ -28,7 +27,35 @@ export type State = {
     message?: string | null
 }
 
-export async function postForumQuestion(userId: string, prevState: State, formData: FormData) {
+export async function postForumQuestion(appId: string, userId: string | null, prevState: ForumPostState, formData: FormData) {
+    const validatedFields = ForumQuestionFormSchema.safeParse({
+        title: formData.get('title'),
+        topic: formData.get('topic'),
+        content: formData.get('content'),
+
+    })
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has Errors. Failed to Send Request.',
+        };
+    }
+
+    if (!userId) {
+        return { message: 'Invalid Session: User not Found!' }
+    }
+
+    try {
+        const newPost = await ForumService.createForumPost(appId, userId, validatedFields.data)
+
+        return { message: "success", post: newPost }
+
+    } catch {
+        return { message: "AO Error: failed to send Support Request." }
+    }
+}
+
+export async function editForumQuestion(postId: string, prevState: ForumPostState, formData: FormData) {
     const validatedFields = ForumQuestionFormSchema.safeParse({
         title: formData.get('title'),
         topic: formData.get('topic'),
@@ -48,21 +75,9 @@ export async function postForumQuestion(userId: string, prevState: State, formDa
     try {
         // To Do add functionality to send request to backend
         console.log('Data:', { title, topic, content })
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const newPost: ForumPost = {
-            postId: `post-${Date.now()}`,
-            title: title,
-            content: content,
-            topic: topic,
-            author: userId,
-            likes: 0,
-            replies: [],
-            createdAt: Date.now(),
-            updatedAt: Date.now()
-        }
-
-        return { message: "success", post: newPost }
+        const NewForumPost = await ForumService.editForumPost(postId, validatedFields.data)
+        return { message: "success", post: NewForumPost }
 
     } catch {
         return { message: "AO Error: failed to send Support Request." }
@@ -81,10 +96,14 @@ export const replySchema = z.object({
     content: z.string().min(10, 'Answer must be at least 10 characters').max(1000, "Answer must have a max of 1000 characters"),
 });
 
-export async function sendAnswer(appId: string, reviewId: string, user: User, prevState: ForumReplyState, formData: FormData) {
+export async function sendAnswer(postId: string, userId: string | null, prevState: ForumReplyState, formData: FormData) {
     const validatedFields = replySchema.safeParse({
         content: formData.get('content'),
     });
+
+    if (!userId) {
+        return { message: 'Invalid Session: User not Found!' }
+    }
 
     if (!validatedFields.success) {
         return {
@@ -97,12 +116,29 @@ export async function sendAnswer(appId: string, reviewId: string, user: User, pr
         // Simulate a network delay
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const replyData: Partial<ForumReply> = {
-            ...validatedFields.data,
-            author: user.walletAddress,
-        }
+        const reply = await ForumService.submitReply(postId, userId, validatedFields.data);
 
-        const reply = await ForumService.submitReply(appId, reviewId, replyData);
+        return { message: 'success', reply: reply };
+
+    } catch {
+        return { message: 'AO Error: failed to send reply.' };
+    }
+}
+
+export async function editAnswer(replyId: string, prevState: ForumReplyState, formData: FormData) {
+    const validatedFields = replySchema.safeParse({
+        content: formData.get('content'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has errors. Failed to send reply.',
+        };
+    }
+
+    try {
+        const reply = await ForumService.editReply(replyId, validatedFields.data);
 
         return { message: 'success', reply: reply };
 

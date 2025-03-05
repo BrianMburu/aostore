@@ -12,6 +12,7 @@ import { AirDropState, createAirDrop } from '@/lib/AirdropAction';
 import { useAuth } from '@/context/AuthContext';
 import { AddAirdropFloatingButton } from './AddAirDropFloatingButton';
 import { getTimeZones } from '@/utils/airdrops';
+import { AnimatedButton } from '../../animations/AnimatedButton';
 
 export const AddAirDropForm = () => {
     const searchParams = useSearchParams()
@@ -123,6 +124,7 @@ export const AddAirDropForm = () => {
                             id="amount"
                             name="amount"
                             type="number"
+                            step={0.01}
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         />
                         {state?.errors?.amount &&
@@ -199,14 +201,14 @@ export const AddAirDropForm = () => {
 
                     {/* Buttons */}
                     <div className="flex justify-end gap-4">
-                        <button
+                        <AnimatedButton
                             type="button"
                             className="px-4 py-2 text-gray-100 bg-gray-200 dark:bg-gray-500 rounded"
                             onClick={() => setIsOpen(false)}
                         >
                             Cancel
-                        </button>
-                        <button
+                        </AnimatedButton>
+                        <AnimatedButton
                             type="submit"
                             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                             disabled={isSubmitting}
@@ -219,7 +221,7 @@ export const AddAirDropForm = () => {
                             ) : (
                                 "Submit for Verification"
                             )}
-                        </button>
+                        </AnimatedButton>
                     </div>
                 </form>
             </ModalDialog>

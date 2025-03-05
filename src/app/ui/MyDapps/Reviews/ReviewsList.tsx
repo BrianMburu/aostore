@@ -16,6 +16,11 @@ import { AnimatedListItem } from '../../animations/AnimatedListItem'
 import { AnimatedButton } from '../../animations/AnimatedButton'
 import { ReviewService } from '@/services/ao/reviewService'
 import toast from 'react-hot-toast'
+import { TipForm } from '../../Dapps/TipButton'
+import { DetailedHelpfulButton } from '../DetailedHelpfulButton'
+import { DappReplyEditForm } from './ReviewReplyEditForm'
+import { useAuth } from '@/context/AuthContext'
+import { User } from '@/types/user'
 
 // ReviewsList component
 export function ReviewsList({ reviews, totalItems }: { reviews: Review[]; totalItems: number }) {
@@ -58,16 +63,17 @@ function StarRating({ rating }: { rating: number }) {
 
 // RepliesList component
 function RepliesList({ replies }: { replies: Reply[] }) {
+  const { user } = useAuth()
   return (
     <div className="mt-4 pl-6 border-l-2 dark:border-gray-700 space-y-4">
       {replies.map((reply) => (
-        <ReplyItem key={reply.replyId} reply={reply} />
+        <ReplyItem key={reply.replyId} reply={reply} user={user} />
       ))}
     </div>
   )
 }
 
-export function ReplyItem({ reply }: { reply: Reply }) {
+export function ReplyItem({ reply, user }: { reply: Reply, user: User | null }) {
   return (
     <div className="text-sm">
       <div className="flex items-center gap-2">
@@ -75,6 +81,7 @@ export function ReplyItem({ reply }: { reply: Reply }) {
         <span className="text-gray-500 dark:text-gray-400 text-xs">
           {new Date(reply.timestamp).toLocaleDateString()}
         </span>
+        {user && user.walletAddress == reply.user && <DappReplyEditForm reply={reply} />}
       </div>
       <p className="text-gray-600 dark:text-gray-300 mt-1">{reply.comment}</p>
     </div>
@@ -84,40 +91,6 @@ export function ReplyItem({ reply }: { reply: Reply }) {
 export function ReviewItem({ review }: { review: Review }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
 
-  const handleReplyClick = () => {
-    setShowReplyForm(!showReplyForm);
-  };
-
-  return (
-    <div className="border rounded-lg p-4 dark:border-gray-700">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="font-medium dark:text-white">{review.username}</span>
-            <StarRating rating={review.rating} />
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {new Date(review.timestamp).toLocaleDateString()}
-            </span>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
-
-          <div className='flex flex-col'>
-            <div className="mt-4 flex items-center gap-4">
-              <HelpfulButton review={review} />
-              <ReplyButton onClick={handleReplyClick} />
-            </div>
-            {showReplyForm && <ReviewReplyForm reviewId={review.reviewId} />}
-          </div>
-
-          <RepliesList replies={review.replies} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-export function HelpfulButton({ review }: { review: Review }) {
   const [isPending, startTransition] = useTransition();
   const [optimisticState, setOptimisticState] = useOptimistic(
     review,
@@ -162,25 +135,40 @@ export function HelpfulButton({ review }: { review: Review }) {
     });
   }
 
+  const handleReplyClick = () => {
+    setShowReplyForm(!showReplyForm);
+  };
+
   return (
-    <div className="flex items-center gap-2">
-      <AnimatedButton
-        disabled={isPending}
-        onClick={() => handleVote('helpful')}
-        className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-500"
-      >
-        Helpful ({optimisticState.helpfulVotes})
-      </AnimatedButton>
-      <span className="text-gray-400">•</span>
-      <AnimatedButton
-        disabled={isPending}
-        onClick={() => handleVote('unhelpful')}
-        className="text-sm text-gray-600 dark:text-gray-400 hover:text-red-500"
-      >
-        Unhelpful
-      </AnimatedButton>
+    <div className="border rounded-lg p-4 dark:border-gray-700">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="font-medium dark:text-white">{review.username}</span>
+            <StarRating rating={review.rating} />
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {new Date(review.timestamp).toLocaleDateString()}
+            </span>
+          </div>
+          <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
+
+          <div className='flex flex-col'>
+            <div className="mt-4 flex items-center gap-4">
+              <DetailedHelpfulButton helpfulVotes={optimisticState.helpfulVotes}
+                unhelpfulVotes={optimisticState.unhelpfulVotes}
+                isPending={isPending} handleVote={handleVote}
+              />
+              <TipForm recipientWallet={review.userId} />
+              <ReplyButton onClick={handleReplyClick} />
+            </div>
+            {showReplyForm && <ReviewReplyForm reviewId={review.reviewId} />}
+          </div>
+
+          <RepliesList replies={review.replies} />
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
 

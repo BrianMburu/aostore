@@ -57,24 +57,3 @@ export interface AppDataMini {
     protocol: string;
     totalRatings: number;
 }
-export interface FeatureRequest {
-    id: string
-    type: 'feature'
-    title: string
-    description: string
-    votes: number
-    timestamp: number
-    userId: string
-    appId: string
-}
-
-export interface BugReport {
-    id: string
-    type: 'bug'
-    title: string
-    description: string
-    status: 'open' | 'in-progress' | 'resolved'
-    timestamp: number
-    userId: string
-    appId: string
-}

@@ -113,5 +113,5 @@ export const AirdropService = {
         return newAirdrop;
     },
 
-    editAirdrop: async () => { }
+    async editAirdrop() { }
 };

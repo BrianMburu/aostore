@@ -1,10 +1,13 @@
 'use client'
 
 // components/DappSupportForm.tsx
-import React, { useEffect, useActionState } from 'react';
-import { sendSupportRequest, State } from '@/lib/supportActions';
+import React, { useActionState } from 'react';
+import { sendSupportRequest, FeatureRequestState } from '@/lib/supportActions';
 import toast from 'react-hot-toast';
 import Loader from '../../Loader';
+import { useAuth } from '@/context/AuthContext';
+import { useParams } from 'next/navigation';
+import { AnimatedButton } from '../../animations/AnimatedButton';
 
 interface DappSupportFormProps {
     requestType: string;
@@ -15,31 +18,28 @@ interface DappSupportFormProps {
     submitButtonClasses: string;
 }
 
-// const DappSupportForm: React.FC<DappSupportFormProps> = ({
-//     requestType,
-//     icon,
-//     title,
-//     placeholder,
-//     submitText,
-//     submitButtonClasses,
-// }) => 
-
 function DappSupportForm({
     requestType,
-    // icon,
-    // title,
     placeholder,
     submitText,
     submitButtonClasses,
 }: DappSupportFormProps) {
-    const initialState: State = { message: null, errors: {} };
-    const [state, formAction, isSubmitting] = useActionState(sendSupportRequest, initialState)
+    const initialState: FeatureRequestState = { message: null, errors: {} };
 
-    useEffect(() => {
-        if (state.message === 'success') {
-            toast.success('Support request submitted successfully!');
-        }
-    }, [state.message]);
+    const params = useParams();
+    const appId = params.appId as string;
+    const { user } = useAuth();
+    const [state, formAction, isSubmitting] = useActionState(
+
+        async (prevState: FeatureRequestState, _formData: FormData) => {
+            const newState = await sendSupportRequest(appId, user, prevState, _formData);
+            if (newState.message === 'success' && newState.request) {
+
+                toast.success('Support request submitted successfully!');
+            }
+            return newState
+
+        }, initialState);
 
     return (
         <form action={formAction} className="space-y-3" aria-describedby='form-error'>
@@ -49,15 +49,15 @@ function DappSupportForm({
             </h3> */}
 
             <input
-                name="request"
+                name="type"
                 value={requestType}
                 className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                 aria-describedby='sp-request-error'
                 hidden readOnly
             />
             <div id='sp-request-error' aria-live="polite" aria-atomic="true">
-                {state?.errors?.request &&
-                    state.errors.request.map((error: string) => (
+                {state?.errors?.type &&
+                    state.errors.type.map((error: string) => (
                         <p className="mt-2 text-sm text-red-500" key={error}>
                             {error}
                         </p>
@@ -80,15 +80,15 @@ function DappSupportForm({
             </div>
 
             <textarea
-                name="message"
+                name="description"
                 placeholder={placeholder}
                 className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                 aria-describedby='sp-message-error'
                 rows={3}
             />
             <div id='sp-message-error' aria-live="polite" aria-atomic="true">
-                {state?.errors?.message &&
-                    state.errors.message.map((error: string) => (
+                {state?.errors?.description &&
+                    state.errors.description.map((error: string) => (
                         <p className="mt-2 text-sm text-red-500" key={error}>
                             {error}
                         </p>
@@ -104,7 +104,7 @@ function DappSupportForm({
                 }
             </div>
 
-            <button type="submit" disabled={isSubmitting} className={submitButtonClasses}>
+            <AnimatedButton type="submit" disabled={isSubmitting} className={submitButtonClasses}>
                 {isSubmitting ?
                     <div className="flex items-center justify-center">
                         <Loader />
@@ -112,7 +112,7 @@ function DappSupportForm({
                     </div> :
                     submitText
                 }
-            </button>
+            </AnimatedButton>
         </form>
     );
 };

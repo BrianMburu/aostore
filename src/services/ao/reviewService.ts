@@ -1,5 +1,6 @@
 import { DEFAULT_PAGE_SIZE } from "@/config";
 import { Reply, Review } from "@/types/review";
+import { Tip } from "@/types/tip";
 import { ReviewDataGenerator } from "@/utils/dataGenerators";
 import { NextResponse } from "next/server";
 
@@ -62,7 +63,45 @@ export const ReviewService = {
 
     },
 
-    async submitReply(appId: string, reviewId: string, replyData: Partial<Reply>): Promise<Reply> {
+    async createReview(appId: string, reviewData: Partial<Review>): Promise<Review> {
+        // Simulate a delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const newReview = {
+            ...reviewData,
+            profileUrl: 'https://picsum.photos/40',
+            reviewId: `rev-${Date.now()}`,
+            timestamp: Date.now(),
+            upvotes: 0,
+            downvotes: 0,
+            helpfulVotes: 0,
+            unhelpfulVotes: 0,
+            voters: [],
+            replies: [],
+        } as Review;
+
+        testReviews.unshift(newReview);
+        // Return the updated review array
+        return newReview;
+    },
+
+    async updateReview(reviewId: string, reviewData: Partial<Review>): Promise<Review> {
+        // Simulate a delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Simulate update in dummy data
+        const postIndex = testReviews.findIndex(p => p.reviewId === reviewId);
+
+        testReviews[postIndex] = {
+            ...testReviews[postIndex],
+            ...reviewData
+        };
+
+        // Return the updated review array
+        return testReviews[postIndex];
+    },
+
+    async submitReply(reviewId: string, replyData: Partial<Reply>): Promise<Reply> {
         // Simulate a delay
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -76,19 +115,47 @@ export const ReviewService = {
         if (!review.replies) {
             review.replies = [];
         }
-        const newReply: Reply = {
+        const newReply = {
             ...replyData,
             replyId: crypto.randomUUID(),
             timestamp: Date.now(),
             upvotes: 0,
             downvotes: 0,
-        }
+        } as Reply;
 
         // Add the reply to the beginning of the replies array
         review.replies.unshift(newReply);
 
         // Return the updated replies array
         return newReply;
+    },
+
+    async updateReply(replyId: string, replyData: Partial<Reply>): Promise<Reply> {
+        // Simulate a delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Test Review
+        const testReviewId = "review-5"
+
+        // Find the review by reviewId
+        const review = testReviews.find((review: Review) => review.reviewId === testReviewId);
+        if (!review) {
+            throw new Error('Review not found');
+        }
+
+        // Ensure replies array exists
+        if (!review.replies) {
+            review.replies = [];
+        }
+        // Simulate update in dummy data
+        const replyIndex = testReviews.findIndex(p => p.reviewId === replyData.replyId);
+
+
+        // Add the reply to the beginning of the replies array
+        review.replies[replyIndex] = replyData as Reply;
+
+        // Return the updated replies array
+        return review.replies[replyIndex];
     },
 
     async helpfulVote(reviewId: string) {
@@ -117,5 +184,12 @@ export const ReviewService = {
         testReviews[postIndex].unhelpfulVotes++;
 
         return NextResponse.json({ success: true });
+    },
+    async tip(tipData: Tip) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Add Ao handler
+
+        const newTip = tipData;
+        return newTip
     },
 }

@@ -1,9 +1,9 @@
-import { FeatureRequest, BugReport } from "@/types/dapp";
 import { AppData, ProjectType, projectTypes } from '@/types/dapp'
 import { Review, Reply } from "@/types/review";
 import { Message, MessageType } from '@/types/message';
 
 import { v4 as uuidv4 } from 'uuid'
+import { BugReport, FeatureRequest } from '@/types/support';
 /**
  * Generates an array of appIds of specified length
  */
@@ -105,9 +105,10 @@ export class ReviewDataGenerator {
 
         return {
             appId: DAPPIDS[i],
-            reviewId: `review-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            reviewId: `review-${i}`,
             username: this.usernames[Math.floor(Math.random() * this.usernames.length)],
             comment: commentPool[Math.floor(Math.random() * commentPool.length)],
+            userId: `User${i}`,//uuidv4(),
             rating,
             timestamp: this.generateTimestamp(),
             upvotes,
@@ -249,9 +250,9 @@ export function generateTestData(count: number, ratio: number = 0.6): (FeatureRe
         const isFeature = Math.random() < ratio
 
         if (isFeature) {
-            items.push(generateFeatureRequest())
+            items.push(generateFeatureRequest(i))
         } else {
-            items.push(generateBugReport())
+            items.push(generateBugReport(i))
         }
     }
 
@@ -262,26 +263,28 @@ export function generateTestData(count: number, ratio: number = 0.6): (FeatureRe
 /**
  * Generates a single random feature request
  */
-function generateFeatureRequest(): FeatureRequest {
+function generateFeatureRequest(i: number): FeatureRequest {
     const prefix = featureTitlePrefixes[Math.floor(Math.random() * featureTitlePrefixes.length)]
     const verb = featureVerbs[Math.floor(Math.random() * featureVerbs.length)]
     const object = featureObjects[Math.floor(Math.random() * featureObjects.length)]
 
     return {
-        id: uuidv4(),
+        appId: DAPPIDS[i],
+        id: `request-${i}`,//uuidv4(),
         type: 'feature',
         title: `${prefix} ${verb} ${object}`,
         description: generateFeatureDescription(verb, object),
-        votes: Math.floor(Math.random() * 100),
+        helpfulVotes: Math.floor(Math.random() * 20),
+        unhelpfulVotes: Math.floor(Math.random() * 5),
         timestamp: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000), // Random time in last 30 days
-        userId: `user_${Math.floor(Math.random() * 1000)}`
+        userId: `user_${i}`
     }
 }
 
 /**
  * Generates a single random bug report
  */
-function generateBugReport(): BugReport {
+function generateBugReport(i: number): BugReport {
     const prefix = bugTitlePrefixes[Math.floor(Math.random() * bugTitlePrefixes.length)]
     const scenario = bugScenarios[Math.floor(Math.random() * bugScenarios.length)]
 
@@ -289,13 +292,16 @@ function generateBugReport(): BugReport {
     const randomStatus = statuses[Math.floor(Math.random() * statuses.length)]
 
     return {
+        appId: DAPPIDS[i],
         id: uuidv4(),
         type: 'bug',
         title: `${prefix} ${scenario}`,
         description: generateBugDescription(scenario),
         status: randomStatus,
+        helpfulVotes: Math.floor(Math.random() * 20),
+        unhelpfulVotes: Math.floor(Math.random() * 5),
         timestamp: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000), // Random time in last 30 days
-        userId: `user_${Math.floor(Math.random() * 1000)}`
+        userId: `user_${i}`
     }
 }
 

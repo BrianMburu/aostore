@@ -47,7 +47,7 @@ export default function PaginationControls({
                 <select
                     value={currentPage}
                     onChange={(e) => createPageURL(Number(e.target.value))}
-                    className="dark:bg-gray-800 dark:text-white rounded p-2 text-sm"
+                    className="dark:bg-gray-800 dark:text-white rounded py-2 pl-2 pr-7 flex justify between text-xs"
                     aria-label="Select page"
                 >
                     {Array.from({ length: totalPages }, (_, i) => (

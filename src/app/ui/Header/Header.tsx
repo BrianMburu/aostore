@@ -7,8 +7,10 @@ import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { ProfileDropdown } from './ProfileDropdown';
 import toast from 'react-hot-toast';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
+import Image from 'next/image';
+import { AnimatedButton } from '../animations/AnimatedButton';
 
 // import  {Bars3Icon} from '@heroicons/react/24/outline';
 
@@ -19,6 +21,8 @@ interface NavLink {
 
 const Header: React.FC = () => {
     const pathname = usePathname();
+    const router = useRouter()
+
 
     const { user, isConnected, login, logout } = useAuth();
 
@@ -73,10 +77,19 @@ const Header: React.FC = () => {
             <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
                     {/* Left Section - Logo and Navigation */}
-                    <div className="flex items-center space-x-8">
-                        <Link href="/" className="flex-shrink-0">
-                            <span className="text-2xl font-bold text-indigo-600">AOStore</span>
-                        </Link>
+                    <div className="flex items-center space-x-10">
+                        <AnimatedButton onClick={() => router.push("/")}
+                            className="flex-shrink-0">
+                            <Image
+                                className="dark:invert"
+                                src="/AO.svg"
+                                alt="AOStore logo"
+                                width={35}
+                                height={35}
+                                priority
+                            />
+                            {/* <span className="text-2xl font-bold text-indigo-600">AOStore</span> */}
+                        </AnimatedButton>
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex space-x-6">
@@ -103,7 +116,7 @@ const Header: React.FC = () => {
                                 isDisconnecting={isDisconnecting}
                             />
                         ) : (
-                            <button
+                            <AnimatedButton
                                 onClick={handleConnectWallet}
                                 disabled={isLoading}
                                 className="hidden md:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
@@ -135,11 +148,11 @@ const Header: React.FC = () => {
                                 ) : (
                                     'Sign in'
                                 )}
-                            </button>
+                            </AnimatedButton>
                         )}
 
                         {/* Mobile Menu Button */}
-                        <button
+                        <AnimatedButton
                             className="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         >
@@ -148,7 +161,7 @@ const Header: React.FC = () => {
                             ) : (
                                 <Menu className="h-6 w-6" aria-hidden="true" />
                             )}
-                        </button>
+                        </AnimatedButton>
                     </div>
                 </div>
 

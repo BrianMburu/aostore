@@ -1,8 +1,5 @@
 // components/DappSupport.tsx
 import React from 'react';
-import Link from 'next/link';
-import { ArrowTopRightOnSquareIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
-import { useParams } from 'next/navigation';
 import DappSupportTabs from './DappSupportTabs';
 
 interface DeveloperInfo {
@@ -17,9 +14,6 @@ interface DappSupportProps {
 }
 
 const DappSupport: React.FC<DappSupportProps> = ({ developerInfo }) => {
-    const params = useParams();
-    const appId = params.appId;
-
     return (
         <section className='bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm'>
             <div className='flex flex-col md:flex-row gap-8'>
@@ -48,25 +42,6 @@ const DappSupport: React.FC<DappSupportProps> = ({ developerInfo }) => {
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                             Support Actions
                         </h3>
-
-                        <Link
-                            href={`/dapps/${appId}/feature-requests`}
-                            className="inline-flex items-center px-6 py-2 bg-green-800 hover:bg-green-900 text-white rounded-full"
-                        >
-                            View latest Submitted Requests
-                            <ArrowTopRightOnSquareIcon className="h-5 w-5 ml-2" />
-
-                        </Link>
-
-                        {developerInfo?.forum && (
-                            <Link
-                                href={`/dapps/${appId}/forum`}
-                                className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
-                            >
-                                <ChatBubbleLeftIcon className="h-5 w-5 mr-2" />
-                                Visit Developer Forum
-                            </Link>
-                        )}
                     </div>
 
                     {/* Report Bug and Feature Request Forms */}

@@ -1,6 +1,7 @@
+'use client'
+
 import { useAuth } from "@/context/AuthContext";
 import { ForumReplyState, sendAnswer } from "@/lib/forumActions";
-import { useParams } from "next/navigation";
 import { useActionState } from "react";
 import toast from "react-hot-toast";
 import { AnimatedButton } from "../../animations/AnimatedButton";
@@ -9,24 +10,22 @@ import { motion } from "framer-motion";
 
 export function ForumAnswerForm({ postId }: { postId: string }) {
     const { user } = useAuth();
-    const params = useParams();
-    const appId = params.appId as string;
 
     const initialState: ForumReplyState = { message: null, errors: {}, reply: null }
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ForumReplyState, _formData: FormData) => {
             try {
-                const newState = await sendAnswer(appId, postId, user!, prevState, _formData);
+                const newState = await sendAnswer(postId, user?.walletAddress || null, prevState, _formData);
 
                 if (newState.message === 'success' && newState.reply) {
                     toast.success("Reply posted successfully!");
                 }
 
                 return newState
-            } catch {
 
-                toast.error("Failed to update DApp. Please try again.");
+            } catch {
+                toast.error("Failed to submit Post. Please try again.");
                 return initialState
             }
 
@@ -52,6 +51,14 @@ export function ForumAnswerForm({ postId }: { postId: string }) {
                                 {error}
                             </p>
                         ))}
+                </div>
+                {/* Form Error */}
+                <div id='form-error' aria-live="polite" aria-atomic="true">
+                    {state?.message && state?.message != "success" &&
+                        <p className="text-sm text-red-500">
+                            {state.message}
+                        </p>
+                    }
                 </div>
                 <div className="flex justify-end gap-4">
                     <AnimatedButton

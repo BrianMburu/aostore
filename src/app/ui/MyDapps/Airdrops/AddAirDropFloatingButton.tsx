@@ -2,12 +2,13 @@
 'use client';
 import { useState } from 'react';
 import { PlusIcon } from '@heroicons/react/24/solid';
+import { AnimatedButton } from '../../animations/AnimatedButton';
 
 export function AddAirdropFloatingButton({ onClick }: { onClick: () => void }) {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <button
+        <AnimatedButton
             onClick={onClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -17,6 +18,6 @@ export function AddAirdropFloatingButton({ onClick }: { onClick: () => void }) {
             {isHovered && (
                 <span className="pr-2 text-sm font-medium">Add Airdrop</span>
             )}
-        </button>
+        </AnimatedButton>
     );
 }

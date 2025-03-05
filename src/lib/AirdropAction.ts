@@ -11,7 +11,7 @@ export type AirDropState = {
 export const airdropSchema = z.object({
     title: z.string().min(3, 'Name must be at least 3 characters'),
     tokenId: z.string().max(100, 'Token must not exceed 100 characters'),
-    amount: z.number().min(0, 'Amount must be greater than 0'),
+    amount: z.number().gt(0, 'Amount must be greater than 0'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
     expiryTime: z
         .number().refine((val) => val > Date.now(), {

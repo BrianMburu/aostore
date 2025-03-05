@@ -1,7 +1,8 @@
 
-import { AppData, BugReport, FeatureRequest, projectTypes, Reply, Review } from "@/types/dapp";
+import { AppData } from "@/types/dapp";
 import { DEFAULT_PAGE_SIZE } from '@/config'
-import { DAPPIDS, generateDAppTestData, generateTestData, ReviewDataGenerator } from "@/utils/dataGenerators";
+import { DAPPIDS, generateDAppTestData } from "@/utils/dataGenerators";
+import { Tip } from "@/types/tip";
 
 // services/dapps.ts
 export interface DAppsFilterParams {
@@ -13,16 +14,6 @@ export interface DAppsFilterParams {
     page?: string;
     fv_page?: string
 }
-
-// Generate test data
-const generator = new ReviewDataGenerator();
-
-// For testing a list of reviews
-const testReviews = generator.generateReviews(20);
-// For testing specific scenarios
-// const negativeReview = generator.generateReviewWithRating(1);
-// const neutralReview = generator.generateReviewWithRating(3);
-// const positiveReview = generator.generateReviewWithRating(5);
 
 const dummyDApps: AppData[] = generateDAppTestData(20)
 
@@ -40,19 +31,6 @@ const dummyDApps: AppData[] = generateDAppTestData(20)
 
 // Test FeatureRequests:
 // // Generate 20 items with 80% features, 20% bugs
-const testFeaturesRequestData = generateTestData(20, 0.8);
-
-interface ReviewSortParams {
-    sort?: string,
-    rating?: string,
-    search?: string,
-    page?: string,
-}
-
-interface FeatureBugParams {
-    type?: string,
-    page?: string,
-}
 
 export const DAppService = {
     async getDApp(appId: string): Promise<AppData | undefined> {
@@ -200,42 +178,11 @@ export const DAppService = {
         // Simulate verification process
     },
 
-    async getFeatureRequests(appId: string, params: FeatureBugParams, useInfiniteScroll: boolean = false): Promise<{ data: (FeatureRequest | BugReport)[], total: number }> {
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+    async tip(tipData: Tip) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Add Ao handler
 
-        // Find the DApp by appId
-        const dapp = dummyDApps.find(dapp => dapp.appId === appId);
-        if (!dapp) {
-            throw new Error('DApp not found');
-        }
-
-        const requests = testFeaturesRequestData as (FeatureRequest | BugReport)[];
-        // Filter the reviews based on rating
-        const filteredRequests = requests.filter(request => {
-            const matchesType = !params.type || request.type === params.type;
-            return matchesType
-        });
-
-        // Pagination
-        const page = Number(params.page) || 1;
-        const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
-
-
-        // Sort the filtered reviews
-        const sortedRequests = filteredRequests
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-
-        // Slice the data for the current page
-        const data = useInfiniteScroll
-            ? sortedRequests.slice(0, page * itemsPerPage)
-            : sortedRequests.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
-        return {
-            data,
-            total: filteredRequests.length
-        };
-
+        const newTip = tipData;
+        return newTip
     },
 };

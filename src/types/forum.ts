@@ -1,5 +1,6 @@
 // types/forum.ts
 export interface ForumPost {
+    appId: string;
     postId: string;
     title: string;
     content: string;
@@ -12,6 +13,7 @@ export interface ForumPost {
 }
 
 export interface ForumReply {
+    postId: string;
     replyId: string;
     content: string;
     author: string;

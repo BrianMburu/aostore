@@ -5,22 +5,19 @@ import { sendReply } from '@/lib/reviewActions'
 import { ReplyState } from '@/lib/reviewActions'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/context/AuthContext'
-import { useParams } from 'next/navigation'
 import Loader from '../../Loader'
 import { motion } from 'framer-motion'
 import { AnimatedButton } from '../../animations/AnimatedButton'
 
 export function ReviewReplyForm({ reviewId }: { reviewId: string }) {
     const { user } = useAuth();
-    const params = useParams();
-    const appId = params.appId as string;
 
     const initialState: ReplyState = { message: null, errors: {}, reply: null }
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ReplyState, _formData: FormData) => {
             try {
-                const newState = await sendReply(appId, reviewId, user!, prevState, _formData);
+                const newState = await sendReply(reviewId, user!, prevState, _formData);
 
                 if (newState.message === 'success' && newState.reply) {
                     toast.success("Reply posted successfully!");
@@ -55,6 +52,14 @@ export function ReviewReplyForm({ reviewId }: { reviewId: string }) {
                                 {error}
                             </p>
                         ))}
+                </div>
+                {/* Form Error */}
+                <div id='form-error' aria-live="polite" aria-atomic="true">
+                    {state?.message && state?.message != "success" &&
+                        <p className="text-sm text-red-500">
+                            {state.message}
+                        </p>
+                    }
                 </div>
                 <div className="flex justify-end gap-4">
                     <AnimatedButton

@@ -1,5 +1,7 @@
 import { DEFAULT_PAGE_SIZE } from '@/config';
 import { ForumPost, ForumReply, updateOptions } from '@/types/forum';
+import { Tip } from '@/types/tip';
+import { DAPPIDS } from '@/utils/dataGenerators';
 import { NextResponse } from 'next/server';
 export interface FilterParams {
     topic?: string;
@@ -9,12 +11,14 @@ export interface FilterParams {
 
 const generateDummyPosts = (): ForumPost[] => Array.from({ length: 50 }, (_, i) => ({
     postId: `post-${i}`,
+    appId: DAPPIDS[i],
     title: `Discussion #${i + 1} about ${updateOptions[i % updateOptions.length].value}`,
     content: `Detailed discussion content for post ${i + 1}. `.repeat(10),
     topic: updateOptions[i % updateOptions.length].value,
     author: `user${i % 10}`,
     likes: Math.floor(Math.random() * 100),
     replies: Array.from({ length: Math.floor(Math.random() * 5) }, (_, j) => ({
+        postId: `post-${i}`,
         replyId: `reply-${i}-${j}`,
         content: `Reply ${j + 1} to post ${i + 1}. `.repeat(3),
         author: `user${j % 10}`,
@@ -65,7 +69,41 @@ export const ForumService = {
         }
         return post;
     },
-    async submitReply(appId: string, postId: string, replyData: Partial<ForumReply>): Promise<ForumReply> {
+
+    async createForumPost(appId: string, userId: string, postData: Partial<ForumPost>): Promise<ForumPost> {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const newPost = {
+            ...postData,
+            postId: `post-${Date.now()}`,
+            author: userId,
+            appId: appId,
+            likes: 0,
+            replies: [],
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        } as ForumPost;
+
+        dummyPosts.unshift(newPost);
+
+        return newPost;
+    },
+    async editForumPost(postId: string, postData: Partial<ForumPost>): Promise<ForumPost> {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Simulate update in dummy data
+        const postIndex = dummyPosts.findIndex(p => p.postId === postId);
+
+        dummyPosts[postIndex] = {
+            ...dummyPosts[postIndex],
+            ...postData
+        };
+
+        // Return the updated review array
+        return dummyPosts[postIndex];
+    },
+
+    async submitReply(postId: string, userId: string, replyData: Partial<ForumReply>): Promise<ForumReply> {
         // Simulate a delay
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -80,12 +118,14 @@ export const ForumService = {
         if (!post.replies) {
             post.replies = [];
         }
-        const newReply: ForumReply = {
+        const newReply = {
             ...replyData,
+            postId: postId,
+            author: userId,
             replyId: crypto.randomUUID(),
             createdAt: Date.now(),
             likes: 0,
-        }
+        } as ForumReply;
 
         // Add the reply to the beginning of the replies array
         post.replies.unshift(newReply);
@@ -93,6 +133,34 @@ export const ForumService = {
         // Return the updated replies array
         return newReply;
     },
+    async editReply(replyId: string, replyData: Partial<ForumReply>): Promise<ForumReply> {
+        // Simulate a delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const postId = "post-5"
+        // Find the post by postId
+        const post = dummyPosts.find((post: ForumPost) => post.postId === postId);
+
+        if (!post) {
+            throw new Error('post not found');
+        }
+
+        // Ensure replies array exists
+        if (!post.replies) {
+            post.replies = [];
+        }
+
+        // Simulate update in dummy data
+        const postIndex = post.replies.findIndex(p => p.replyId === replyId);
+
+        post.replies[postIndex] = {
+            ...post.replies[postIndex],
+            ...replyData
+        };
+
+        return post.replies[postIndex];
+    },
+
     async like(postId: string, replyId?: string) {
         await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -134,5 +202,12 @@ export const ForumService = {
         }
 
         return NextResponse.json({ success: true });
+    },
+    async tip(tipData: Tip) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Add Ao handler
+
+        const newTip = tipData;
+        return newTip
     },
 }

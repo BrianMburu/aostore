@@ -5,26 +5,31 @@ import toast from 'react-hot-toast';
 import { StarIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import { Review } from '@/types/review';
+// import { Review } from '@/types/review';
 import Loader from '../../Loader';
-import { State, sendReview } from '@/lib/reviewActions';
+import { ReviewState, sendReview } from '@/lib/reviewActions';
+import { useAuth } from '@/context/AuthContext';
+import { useParams } from 'next/navigation';
 
 
-export default function DappReviewForm({ setReviews }: { setReviews: React.Dispatch<React.SetStateAction<Review[]>> }) {
-    const initialState: State = { message: null, errors: {}, review: null };
-    const [state, formAction, isSubmitting] = useActionState(sendReview, initialState);
+export default function DappReviewForm() {
+    const { user } = useAuth();
+    const params = useParams();
+    const appId = params.appId as string;
+
+    const initialState: ReviewState = { message: null, errors: {}, review: null };
+    const [state, formAction, isSubmitting] = useActionState(sendReview.bind(null, appId, user), initialState);
     const [selectedRating, setSelectedRating] = useState(0);
 
     useEffect(() => {
         if (state.message === 'success' && state.review) {
-            setReviews(prev => state.review ? [state.review, ...prev] : prev);
+            // setReviews(prev => state.review ? [state.review, ...prev] : prev);
             toast.success('Support request submitted successfully!');
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.message, state.review]);
 
     return (
-        <div>
+        <>
             {/* Review Form */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -78,6 +83,15 @@ export default function DappReviewForm({ setReviews }: { setReviews: React.Dispa
                             ))}
                     </span>
 
+                    {/* Form Error */}
+                    <div id='form-error' aria-live="polite" aria-atomic="true">
+                        {state?.message && state?.message != "success" &&
+                            <p className="text-sm text-red-500">
+                                {state.message}
+                            </p>
+                        }
+                    </div>
+
                     {/* Submit Button with Loader */}
                     <button
                         type="submit"
@@ -95,6 +109,6 @@ export default function DappReviewForm({ setReviews }: { setReviews: React.Dispa
                     </button>
                 </form>
             </motion.div>
-        </div>
+        </>
     )
 }

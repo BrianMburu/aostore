@@ -1,5 +1,5 @@
-import FeatureRequestsSkeleton from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
+import FeatureRequestsPageSkeleton from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
 
 export default function Loading() {
-    return <FeatureRequestsSkeleton />
+    return <FeatureRequestsPageSkeleton />
 }

@@ -1,15 +1,48 @@
-import { FeatureRequest, BugReport } from "@/types/dapp";
+'use client'
+
 import { DEFAULT_PAGE_SIZE } from "@/config";
 import { AnimatedList } from "../../animations/AnimatedList";
 import { AnimatedListItem } from "../../animations/AnimatedListItem";
 import InfinityScrollControls from "../../InfinityScrollControls";
+import { notFound, useSearchParams } from "next/navigation";
+import { FeatureRequestItem } from "./FeatureRequestItem";
+import { useEffect, useState, useTransition } from "react";
+import { FeatureRequestsListSkeleton } from "./skeletons/FeatureRequestSkeleton";
+import { FeatureBugParams, SupportService } from "@/services/ao/supportServices";
+import { BugReport, FeatureRequest } from "@/types/support";
 
 interface FeatureRequestList {
-    requests: (BugReport | FeatureRequest)[];
-    totalItems: number
+    appId: string,
+    searchParams: { type?: string; search?: string }
 }
 
-export function FeatureRequestList({ requests, totalItems }: FeatureRequestList) {
+export function FeatureRequestList({ appId }: FeatureRequestList) {
+    const searchParams = useSearchParams()
+    const [requests, setRequests] = useState<(BugReport | FeatureRequest)[]>([]);
+    const [total, setTotal] = useState(0);
+    const [fetching, startTransition] = useTransition();
+
+    useEffect(() => {
+        const filterParams: FeatureBugParams = {
+            search: searchParams.get("search") || "",
+            page: searchParams.get("page") || "",
+            type: searchParams.get("type") || ""
+        }
+
+        startTransition(async () => {
+            const { data, total } = await SupportService.getFeatureRequests(appId, filterParams, true);
+
+            if (!data) return notFound();
+
+            if (data !== null) {
+                setRequests(data);
+                setTotal(total);
+            }
+        });
+    }, [appId, searchParams]);
+
+    if (fetching) return <FeatureRequestsListSkeleton />;
+
     return (
         <div className="space-y-4">
             <AnimatedList>
@@ -26,25 +59,8 @@ export function FeatureRequestList({ requests, totalItems }: FeatureRequestList)
 
             {requests &&
                 <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    totalPages={Math.ceil(total / DEFAULT_PAGE_SIZE)}
                 />}
-        </div>
-    )
-}
-
-export function FeatureRequestItem({ request }: { request: (BugReport | FeatureRequest) }) {
-    return (
-        <div className="border rounded-lg p-4 dark:border-gray-700">
-            <div className="flex items-start gap-3">
-                <div className={`w-2 h-full rounded ${request.type === 'feature' ? 'bg-green-500' : 'bg-red-500'}`} />
-                <div className="flex-1">
-                    <h3 className="font-medium dark:text-white">{request.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mt-1">{request.description}</p>
-                    <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(request.timestamp).toLocaleDateString()}
-                    </div>
-                </div>
-            </div>
         </div>
     )
 }
