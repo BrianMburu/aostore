@@ -23,9 +23,8 @@ const Header: React.FC = () => {
     const pathname = usePathname();
     const router = useRouter()
 
-
     const { user, isConnected, login, logout } = useAuth();
-
+    console.log("Auth status", user)
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     // const [isConnected, setIsConnected] = useState(user ? true : false);
     const [isLoading, setIsLoading] = useState(false);
