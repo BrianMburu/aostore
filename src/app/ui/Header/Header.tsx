@@ -1,16 +1,19 @@
-'use client'
+"use client";
 
 // components/Header.tsx
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { ProfileDropdown } from './ProfileDropdown';
-import toast from 'react-hot-toast';
-import { usePathname, useRouter } from 'next/navigation';
-import clsx from 'clsx';
-import Image from 'next/image';
-import { AnimatedButton } from '../animations/AnimatedButton';
+import React, { useState } from "react";
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { ProfileDropdown } from "./ProfileDropdown";
+import toast from "react-hot-toast";
+import { usePathname, useRouter } from "next/navigation";
+import clsx from "clsx";
+import Image from "next/image";
+import { AnimatedButton } from "../animations/AnimatedButton";
+import { useOthent } from "@/context/OthentContext";
+import Loader from "../Loader";
+import { ProfileIconSkeleton } from "./skeletons/ProfileIconSkeleton";
 
 // import  {Bars3Icon} from '@heroicons/react/24/outline';
 
@@ -21,10 +24,9 @@ interface NavLink {
 
 const Header: React.FC = () => {
     const pathname = usePathname();
-    const router = useRouter()
+    const router = useRouter();
 
-    const { user, isConnected, login, logout } = useAuth();
-    console.log("Auth status", user)
+    const { user, isLoading: verifyingSession, isConnected, login, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     // const [isConnected, setIsConnected] = useState(user ? true : false);
     const [isLoading, setIsLoading] = useState(false);
@@ -33,24 +35,24 @@ const Header: React.FC = () => {
     // console.log(isConnected);
     const navigation: NavLink[] = [
         // { href: '/games', label: 'Games' },
-        { href: '/dapps', label: 'Dapps' },
-        { href: '/airdrops', label: 'Airdrops' },
-        { href: '/about', label: 'About' },
+        { href: "/dapps", label: "Dapps" },
+        { href: "/airdrops", label: "Airdrops" },
+        { href: "/about", label: "About" },
         // { href: '/decentralized', label: 'Decentralized' },
         // { href: '/dao', label: 'DAO Verified' },
     ];
-
 
     const handleConnectWallet = async () => {
         setIsLoading(true);
         try {
             // Replace with actual wallet connection logic
             await login();
+            // setIsConnected(true);
 
-            toast.success('Wallet connected successfully');
+            toast.success("Wallet connected successfully");
         } catch (error) {
-            toast.error('Wallet connection failed');
-            console.error('Connection error:', error);
+            toast.error("Wallet connection failed");
+            console.error("Connection error:", error);
         } finally {
             setIsLoading(false);
         }
@@ -60,16 +62,16 @@ const Header: React.FC = () => {
         setIsDisconnecting(true);
         try {
             logout();
+            // setIsConnected(false);
 
-            toast.success('Wallet disconnected successfully');
+            toast.success("Wallet disconnected successfully");
         } catch (error) {
-            toast.error('Error disconnecting wallet');
-            console.error('Disconnection error:', error);
+            toast.error("Error disconnecting wallet");
+            console.error("Disconnection error:", error);
         } finally {
             setIsDisconnecting(false);
         }
     };
-
 
     return (
         <header className="border-b sticky top-0 bg-white dark:bg-gray-800 shadow-sm z-50">
@@ -77,8 +79,10 @@ const Header: React.FC = () => {
                 <div className="flex justify-between h-16 items-center">
                     {/* Left Section - Logo and Navigation */}
                     <div className="flex items-center space-x-10">
-                        <AnimatedButton onClick={() => router.push("/")}
-                            className="flex-shrink-0">
+                        <AnimatedButton
+                            onClick={() => router.push("/")}
+                            className="flex-shrink-0"
+                        >
                             <Image
                                 className="dark:invert"
                                 src="/AO.svg"
@@ -96,8 +100,11 @@ const Header: React.FC = () => {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={clsx("px-2 py-1 rounded-md transition-colors duration-200 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400",
-                                        pathname.includes(link.href) ? "text-indigo-600 dark:text-indigo-400" : "text-gray-700",
+                                    className={clsx(
+                                        "px-2 py-1 rounded-md transition-colors duration-200 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400",
+                                        pathname.includes(link.href)
+                                            ? "text-indigo-600 dark:text-indigo-400"
+                                            : "text-gray-700"
                                     )}
                                 >
                                     {link.label}
@@ -108,47 +115,31 @@ const Header: React.FC = () => {
 
                     {/* Right Section - Wallet and Connect */}
                     <div className="flex items-center space-x-4">
-                        {user ? (
-                            <ProfileDropdown
-                                address={user!.walletAddress}
-                                onDisconnect={handleDisconnect}
-                                isDisconnecting={isDisconnecting}
-                            />
-                        ) : (
-                            <AnimatedButton
-                                onClick={handleConnectWallet}
-                                disabled={isLoading}
-                                className="hidden md:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <svg
-                                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                            ></circle>
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                            ></path>
-                                        </svg>
-                                        Signing in...
-                                    </>
+                        {
+                            verifyingSession ?
+                                <ProfileIconSkeleton />
+                                : user ? (
+                                    <ProfileDropdown
+                                        address={user!.walletAddress}
+                                        onDisconnect={handleDisconnect}
+                                        isDisconnecting={isDisconnecting}
+                                    />
                                 ) : (
-                                    'Sign in'
+                                    <AnimatedButton
+                                        onClick={handleConnectWallet}
+                                        disabled={isLoading}
+                                        className="hidden md:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
+                                    >
+                                        {isLoading ? (
+                                            <>
+                                                <Loader />
+                                                Signing in...
+                                            </>
+                                        ) : (
+                                            "Sign in"
+                                        )}
+                                    </AnimatedButton>
                                 )}
-                            </AnimatedButton>
-                        )}
 
                         {/* Mobile Menu Button */}
                         <AnimatedButton
@@ -179,24 +170,27 @@ const Header: React.FC = () => {
                             ))}
 
                             <button
-                                onClick={isConnected ? handleDisconnect : handleConnectWallet}
+                                onClick={
+                                    isConnected
+                                        ? handleDisconnect
+                                        : handleConnectWallet
+                                }
                                 disabled={isLoading || isDisconnecting}
                                 className="w-full mt-4 px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                             >
                                 {isConnected
                                     ? isDisconnecting
-                                        ? 'Signing out...'
-                                        : 'Sign out'
+                                        ? "Signing out..."
+                                        : "Sign out"
                                     : isLoading
-                                        ? 'Signing in...'
-                                        : 'Sign in'}
+                                        ? "Signing in..."
+                                        : "Sign in"}
                             </button>
                         </div>
                     </div>
                 )}
             </nav>
         </header>
-
     );
-}
+};
 export default Header;

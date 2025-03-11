@@ -1,5 +1,5 @@
 
-import { DEFAULT_PAGE_SIZE } from '@/config'
+import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import { generateTestData } from "@/utils/dataGenerators";
 import { Tip } from "@/types/tip";
 import { NextResponse } from "next/server";

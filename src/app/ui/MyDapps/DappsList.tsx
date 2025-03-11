@@ -7,7 +7,7 @@ import { DAppCard } from './DappCard'
 import PaginationControls from '../PaginationControls'
 import { AddDAppModal } from './AddAppModal'
 
-import { DEFAULT_PAGE_SIZE } from '@/config'
+import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import DappCardsSkeleton from './skeletons/DappsCardsSkeleton'
 
 export function DAppsList({ initialDApps, totalItems }: { initialDApps: AppData[], totalItems: number }) {

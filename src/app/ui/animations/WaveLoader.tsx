@@ -16,7 +16,7 @@ const Wave = ({ delay = 0 }: WaveProps) => {
         opacity: [1, 0.5, 0],
       }}
       transition={{
-        duration: 2,
+        duration: 3,
         repeat: Infinity,
         ease: 'easeOut',
         delay,
@@ -31,7 +31,7 @@ export const WaveLoader = () => {
       <div className="relative flex items-center justify-center h-screen w-full bg-white dark:bg-gray-800">
         {/* Waves animations */}
         {[...Array(5)].map((_, i) => (
-          <Wave key={i} delay={i * 0.1} />
+          <Wave key={i} delay={i * 0.2} />
         ))}
 
         {/* Centered pulsing text */}

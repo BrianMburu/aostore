@@ -1,7 +1,7 @@
 import { AppAirdropData } from "@/types/airDrop";
 import { AirdropCard } from "./AirdropCard";
 import InfinityScrollControls from "../InfinityScrollControls";
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 
 export function AirdropsList({ airdrops, totalItems }: { airdrops: AppAirdropData[], totalItems: number }) {
 

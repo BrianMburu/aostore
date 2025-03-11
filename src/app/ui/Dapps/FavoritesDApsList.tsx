@@ -6,7 +6,7 @@ import { DAppService, DAppsFilterParams } from '@/services/ao/dappService'
 // import { useAuth } from '@/context/AuthContext';
 import { AppData } from '@/types/dapp';
 import PaginationControls from '../PaginationControls';
-import { DEFAULT_PAGE_SIZE } from '@/config'
+import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import DappCardsSkeleton from './Skeletons/DappCardsSkeleton';
 import { useSafeUser } from '@/hooks/useSafeUser';
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams } from "next/navigation";
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { ForumPostItem } from "./ForumPostItem";
 import { ForumPost } from "@/types/forum";
 import InfinityScrollControls from "../InfinityScrollControls";

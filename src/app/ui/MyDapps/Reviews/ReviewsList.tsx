@@ -9,7 +9,7 @@ import StarIcon from '@heroicons/react/24/outline/StarIcon';
 
 import { ReviewReplyForm } from './ReviewReplyForm'
 import { Review, Reply } from '@/types/review'
-import { DEFAULT_PAGE_SIZE } from '@/config'
+import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import InfinityScrollControls from '../../InfinityScrollControls'
 import { AnimatedList } from '../../animations/AnimatedList'
 import { AnimatedListItem } from '../../animations/AnimatedListItem'

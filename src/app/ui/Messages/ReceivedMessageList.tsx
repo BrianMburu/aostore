@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { aoMessageService, MessageFilterParams } from "@/services/ao/messageService";
 import { Message } from "@/types/message";
 import InfinityScrollControls from "../InfinityScrollControls";
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { MessageCard } from "./MessageCard";
 
 export function ReceivedMessageList() {

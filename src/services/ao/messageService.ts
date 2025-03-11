@@ -3,7 +3,7 @@
 // import { initializeOthent } from "@/services/auth/othent";
 // import { ARS_PROCESS } from "@/utils/ao_processes";
 import { Message } from "@/types/message";
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { generateTestMessages } from "@/utils/dataGenerators";
 import { DAppService } from "./dappService";
 

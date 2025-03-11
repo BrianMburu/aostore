@@ -1,6 +1,6 @@
 'use client'
 
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { AnimatedList } from "../../animations/AnimatedList";
 import { AnimatedListItem } from "../../animations/AnimatedListItem";
 import InfinityScrollControls from "../../InfinityScrollControls";

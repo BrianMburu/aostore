@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_SIZE } from '@/config';
+import { DEFAULT_PAGE_SIZE } from '@/config/page';
 import { AppAirdropData } from '@/types/airDrop';
 import { DAPPIDS } from '@/utils/dataGenerators';
 import { DAppService } from './dappService';

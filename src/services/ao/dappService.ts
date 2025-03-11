@@ -1,6 +1,6 @@
 
 import { AppData } from "@/types/dapp";
-import { DEFAULT_PAGE_SIZE } from '@/config'
+import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import { DAPPIDS, generateDAppTestData } from "@/utils/dataGenerators";
 import { Tip } from "@/types/tip";
 

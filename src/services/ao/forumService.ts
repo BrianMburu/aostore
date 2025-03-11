@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_SIZE } from '@/config';
+import { DEFAULT_PAGE_SIZE } from '@/config/page';
 import { ForumPost, ForumReply, updateOptions } from '@/types/forum';
 import { Tip } from '@/types/tip';
 import { DAPPIDS } from '@/utils/dataGenerators';

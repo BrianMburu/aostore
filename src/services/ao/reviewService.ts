@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { Reply, Review } from "@/types/review";
 import { Tip } from "@/types/tip";
 import { ReviewDataGenerator } from "@/utils/dataGenerators";

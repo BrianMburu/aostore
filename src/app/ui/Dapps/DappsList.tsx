@@ -1,6 +1,6 @@
 
 import DAppCard from './DappCard'
-import { DEFAULT_PAGE_SIZE } from '@/config'
+import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import InfinityScrollControls from '../InfinityScrollControls'
 import { DAppService, DAppsFilterParams } from '@/services/ao/dappService'
 

@@ -1,158 +1,148 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { User } from '@/types/user';
+import { createContext, useContext, useEffect, useState, useCallback, useTransition, useMemo } from 'react';
 import { Message } from '@/types/message';
-import { AppInfo, Othent, UserDetails } from '@othent/kms';
+import { Othent, OthentOptions, UserDetails } from '@othent/kms';
 import { createDataItemSigner } from '@permaweb/aoconnect';
 import { WaveLoader } from '@/app/ui/animations/WaveLoader';
-
+import { appInfo, TokenExpiry } from '@/config/auth';
 
 type userValueTypes = string | Message | object | null;
 
-const appInfo: AppInfo = {
-    name: "aostore",
-    version: "1.0.0",
-    env: "production",
-};
-
 // Define our context type, including a function to get the data item signer.
 interface AuthContextType {
-    user: User | null;
+    user: UserDetails | null;
     login: () => Promise<void>;
     logout: () => Promise<void>;
     updateUserData: (key: string, value: userValueTypes) => void;
     isConnected: boolean;
     isLoading: boolean;
     signTransaction: (transaction: any) => Promise<any>;
-    getDataItemSigner: () => ReturnType<typeof createDataItemSigner>;
+    getDataItemSigner: () => Promise<ReturnType<typeof createDataItemSigner>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [othent, setOthent] = useState<Othent | null>(null);
+    const [user, setUser] = useState<UserDetails | null>(null);
+    // const [othent, setOthent] = useState<Othent | null>(null)
     const [isConnected, setIsConnected] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoading, startTransition] = useTransition();
 
     // This callback handles Othent auth events.
-    // Note: We only store minimal non-sensitive info in state.
     const handleAuthEvent = useCallback((userDetails: UserDetails | null, isAuthenticated: boolean) => {
         // console.log("Auth event:", userDetails, isAuthenticated);
         if (userDetails && isAuthenticated) {
-            const userData: User = {
-                username: userDetails.name,
-                walletAddress: userDetails.walletAddress,
-                avatar: userDetails.picture,
-            };
-            setUser(userData);
+            setUser(userDetails);
             setIsConnected(true);
         } else {
             setUser(null);
             setIsConnected(false);
         }
-        setIsLoading(false);
     }, []);
+
+    // This Function Validates if an othent session is valid / expired.
+    const validateOthentSession = async (sessionUser: UserDetails, instance: Othent) => {
+        // Validate session with Othent
+        try {
+            await instance.requireAuth();
+            const currentUser = await instance.getSyncUserDetails();
+
+            if (JSON.stringify(currentUser) === JSON.stringify(sessionUser)) {
+                handleAuthEvent(currentUser, true);
+            } else {
+                console.log("Invalid session found!!");
+                await logout()
+            }
+        } catch (error) {
+            console.log("No active session found", error);
+            handleAuthEvent(null, false);
+        }
+    }
+
+    // Initialize Othent without using built-in cookie persistence
+    const options: OthentOptions = {
+        appInfo,
+        persistLocalStorage: true,
+        throwErrors: false,
+        auth0RefreshTokenExpirationMs: TokenExpiry
+    }
+
+    const othent = useMemo(() => {
+        return new Othent(options);
+    }, [options]);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        const initializeAuth = async () => {
+        startTransition(async () => {
+            // Listen for errors from Othent
+            othent.addEventListener("error", (err) => {
+                console.error("Othent error:", err);
+            });
+
             try {
-                const instance = new Othent({
-                    appInfo,
-                    persistLocalStorage: true
-                });
+                const res = await fetch("/api/session");
 
-                // Add event listener first
-                instance.addEventListener("auth", handleAuthEvent);
-
-                // Validate session with Othent
-                try {
-                    await instance.requireAuth();
-                    const currentUser = await instance.getSyncUserDetails();
-                    if (currentUser) {
-                        handleAuthEvent(currentUser, true);
-                    }
-                } catch (error) {
-                    console.log("No active session found", error);
+                if (res.ok) {
+                    const data = await res.json(); // API returns { user: UserDetails }
+                    handleAuthEvent(data.user, true);
+                    await validateOthentSession(data.user, othent);
+                }
+                else {
                     handleAuthEvent(null, false);
+                    await logout()
                 }
 
-                // Start tab synchronization
-                const cleanupFn = instance.startTabSynching();
-
-                setOthent(instance);
-                return () => {
-                    cleanupFn();
-                    instance.removeEventListener("auth", handleAuthEvent);
-                };
             } catch (error) {
-                console.error("Auth initialization error:", error);
-                setIsLoading(false);
+                console.error("Session fetch failed:", error);
+                setUser(null);
             }
-        };
+        });
 
-        initializeAuth();
+        // Start tab synchronization
+        const cleanupFn = othent.startTabSynching();
+
+        return () => {
+            cleanupFn();
+        };
     }, [handleAuthEvent]);
 
-    // useEffect(() => {
-    //     // Run only on client.
-    //     if (typeof window === "undefined") return;
-
-    //     // Initialize Othent with persistence enabled.
-    //     // (Note: Avoid storing sensitive data in localStorage; consider using secure cookies for tokens.)
-    //     const instance = new Othent({ appInfo, persistLocalStorage: true });
-    //     instance.addEventListener("auth", (userDetails: UserDetails | null, isAuthenticated: boolean) => {
-    //         handleAuthEvent(userDetails, isAuthenticated);
-    //     });
-
-    //     // Start tab synchronization so that session state is maintained across refreshes.
-    //     const cleanupFn = instance.startTabSynching();
-
-
-    //     // Rehydrate the session using requireAuth.
-    //     instance.requireAuth()
-    //         .then(async () => {
-    //             console.log(instance?.isAuthenticated);
-    //             console.log("Session rehydrated.");
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error rehydrating session:", error);
-    //         })
-    //         .finally(() => {
-    //             setIsLoading(false);
-    //         });
-
-    //     setOthent(instance);
-    //     return () => {
-    //         cleanupFn();
-    //     };
-    // }, [handleAuthEvent]);
-
-    // Login method: triggers Othent's connect flow.
     const login = async () => {
-        if (!othent) return;
         try {
-            const res = await othent.connect();
-            if (!res) throw new Error("Othent login failed!");
-            // The auth event listener will update state.
+            await othent.connect();
+            const userDetails = othent.getSyncUserDetails();
+            setUser(userDetails);
+            setIsConnected(true)
+
+            // Call our login endpoint to create the session cookie
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user: userDetails }),
+            });
+            if (!res.ok) {
+                throw new Error("Failed to create session on server");
+            }
         } catch (error) {
-            console.error("Error during login:", error);
-            throw error;
+            console.error("Login failed:", error);
         }
     };
 
-    // Logout method: disconnects the session.
     const logout = async () => {
-        if (!othent) return;
         try {
             await othent.disconnect();
             setUser(null);
-            setIsConnected(false);
+            setIsConnected(false)
+            // Call our logout endpoint to delete the session cookie
+            const res = await fetch("/api/logout", {
+                method: "POST",
+            });
+            if (!res.ok) {
+                throw new Error("Failed to delete session on server");
+            }
         } catch (error) {
-            console.error("Error during logout:", error);
+            console.error("Logout failed:", error);
         }
     };
 
@@ -161,14 +151,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!user) return;
         const updatedUser = { ...user, [key]: value };
         setUser(updatedUser);
-        // Optionally, update details on your server.
     };
 
     // Function to sign a transaction using Othent.
     const signTransaction = async (transaction: any) => {
-        if (!othent) throw new Error("Othent is not initialized");
         try {
-            const signedTransaction = await othent.sign(transaction);
+            if (!othent.isAuthenticated) {
+                await othent.connect();
+            }
+            const signedTransaction = await othent!.sign(transaction);
+
             return signedTransaction;
         } catch (error) {
             console.error("Error signing transaction:", error);
@@ -178,15 +170,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Function to create a data item signer using @permaweb/aoconnect.
     // This signer will be used to sign transactions (data items) for the blockchain.
-    const getDataItemSigner = () => {
-        if (!othent) throw new Error("Othent instance is not available");
+    const getDataItemSigner = async () => {
+        // Manually make sure the user is authenticated, or prompt them to authenticate:
+        if (!othent.isAuthenticated) {
+            await othent!.connect();
+        }
         return createDataItemSigner(othent);
     };
 
-    if (isLoading) {
-        // Optionally show a loading indicator while rehydrating the session.
-        return <WaveLoader />;
-    }
+    // if (isLoading) {
+    //     // Optionally show a loading indicator while rehydrating the session.
+    //     return <WaveLoader />;
+    // }
 
     return (
         <AuthContext.Provider

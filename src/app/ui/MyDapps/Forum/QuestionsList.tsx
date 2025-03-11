@@ -5,7 +5,7 @@ import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 
 import { ForumPost } from "@/types/forum"
-import { DEFAULT_PAGE_SIZE } from "@/config"
+import { DEFAULT_PAGE_SIZE } from "@/config/page"
 import InfinityScrollControls from '../../InfinityScrollControls'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'

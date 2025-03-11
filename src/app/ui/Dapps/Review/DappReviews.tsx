@@ -2,7 +2,7 @@
 
 import ReviewItem, { UserReviewItem } from './ReviewItem';
 import InfinityScrollControls from '../../InfinityScrollControls';
-import { DEFAULT_PAGE_SIZE } from '@/config';
+import { DEFAULT_PAGE_SIZE } from '@/config/page';
 import { ReviewService, ReviewSortParams } from "@/services/ao/reviewService";
 // import { notFound } from "next/navigation";
 import { useAuth } from '@/context/AuthContext';

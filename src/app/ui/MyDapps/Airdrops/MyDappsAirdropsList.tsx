@@ -1,5 +1,5 @@
 import { AppAirdropData } from "@/types/airDrop";
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { MyDappsAirDropCard } from "./MyDappsAirdropsCard";
 import InfinityScrollControls from "../../InfinityScrollControls";
 

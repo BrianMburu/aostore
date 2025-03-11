@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from 'next/navigation'
 import { aoMessageService, MessageFilterParams } from "@/services/ao/messageService";
 import InfinityScrollControls from "../../InfinityScrollControls";
-import { DEFAULT_PAGE_SIZE } from "@/config";
+import { DEFAULT_PAGE_SIZE } from "@/config/page";
 
 export function MessagesList() {
     const params = useParams();
