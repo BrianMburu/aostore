@@ -70,29 +70,48 @@ Handlers.add(
         
         print("Here is the caller Process ID"..caller)
         
-        -- Check if PROCESS_ID called this handler
         if ARS ~= caller then
-            ao.send({ Target = m.From, Data = "Only the main processID can call this handler" })
+            local response = {}
+            response.code = 404
+            response.message = "failed"
+            response.data = "Only the main processID can call this handler"
+            ao.send({ Target = m.From, Data = tableToJson(response) })
             return
         end
 
         if user == nil then
-            ao.send({ Target = m.From, Data = "user is missing or empty." })
+            local response = {}
+            response.code = 404
+            response.message = "failed"
+            response.data = "user is missing or empty."
+            ao.send({ Target = m.From, Data = tableToJson(response) })
             return
         end
         
         if AppId == nil then
-            ao.send({ Target = m.From, Data = "appId is missing or empty." })
+             local response = {}
+            response.code = 404
+            response.message = "failed"
+            response.data = "appId is missing or empty."
+            ao.send({ Target = m.From, Data = tableToJson(response) })
             return
         end
         
         if profileUrl == nil then
-            ao.send({ Target = m.From, Data = "profileUrl is missing or empty." })
+             local response = {}
+            response.code = 404
+            response.message = "failed"
+            response.data = "profileUrl is missing or empty."
+            ao.send({ Target = m.From, Data = tableToJson(response) })
             return
         end
         
         if username == nil then
-            ao.send({ Target = m.From, Data = "username is missing or empty." })
+             local response = {}
+            response.code = 404
+            response.message = "failed"
+            response.data = "username is missing or empty."
+            ao.send({ Target = m.From, Data = tableToJson(response) })
             return
         end
         -- Ensure global tables are initialized
@@ -251,6 +270,60 @@ Handlers.add(
 
 
 Handlers.add(
+    "GetUserStatistics",
+    Handlers.utils.hasMatchingTag("Action", "GetUserStatistics"),
+    function(m)
+        local userId = m.From
+
+        if not userId then
+            ao.send({ Target = m.From, Data = "UserId is required." })
+            return
+        end
+
+        -- Check if transactions table exists
+        if not transactions then
+            ao.send({ Target = m.From, Data = "Error: Transactions table not found." })
+            return
+        end
+
+        -- Initialize user statistics
+        local userStatistics = {
+            totalEarnings = 0,
+            transactions = {}
+        }
+
+        -- Flag to track if user has transactions
+        local hasTransactions = false
+
+        -- Loop through the transactions table to gather user's data
+        for _, transaction in pairs(transactions) do
+            if transaction.user == userId then
+                hasTransactions = true
+                -- Add transaction details to the statistics
+                table.insert(userStatistics.transactions, {
+                    amount = transaction.amount,
+                    time = transaction.timestamp
+                })
+                -- Increment total earnings
+                userStatistics.totalEarnings = userStatistics.totalEarnings + transaction.amount
+            end
+        end
+
+        -- If no transactions found, return early
+        if not hasTransactions then
+            ao.send({ Target = m.From, Data = "You have no earnings." })
+            return
+        end
+
+        -- Send the user statistics back to the requester
+        ao.send({
+            Target = m.From,
+            Data = tableToJson(userStatistics)
+        })
+    end
+)
+
+Handlers.add(
     "AddReviewAppN",
     Handlers.utils.hasMatchingTag("Action", "AddReviewAppN"),
     function(m)
@@ -386,6 +459,174 @@ Handlers.add(
     end
 )
 
+
+Handlers.add(
+    "AddReviewAppN",
+    Handlers.utils.hasMatchingTag("Action", "AddReviewAppN"),
+    function(m)
+
+        -- Check if all required m.Tags are present
+        local requiredTags = { "username", "profileUrl", "AppId", "comment", "rating" }
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
+        local appId = m.Tags.AppId
+        local comment = m.Tags.comment
+        local user = m.From
+        local username = m.Tags.username
+        local profileUrl = m.Tags.profileUrl
+        local rating = tonumber(m.Tags.rating)
+        local currentTime = getCurrentTime(m)
+
+        -- Validate rating
+        if not rating or rating < 1 or rating > 5 then
+            ao.send({ Target = m.From, Data = "Invalid rating. Please provide a rating between 1 and 5." })
+            return
+        end
+
+        -- Initialize reviewsTable[appId] if not exists
+        reviewsTable[appId] = reviewsTable[appId] or {
+            count = 0,
+            users = {},
+            countHistory = {},
+            reviews = {}
+        }
+
+        -- Initialize ratingsTable[appId] if not exists
+        ratingsTable[appId] = ratingsTable[appId] or {
+            count = 0,
+            Totalratings = 0,
+            users = {},
+            countHistory = {}
+        }
+
+        local reviews = reviewsTable[appId]
+        local ratings = ratingsTable[appId]
+
+        -- Prevent duplicate ratings
+        if reviews.users[user] then
+            local points = -30
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
+            local transactionId = generateTransactionId()
+            table.insert(transactions, {
+                user = user,
+                transactionid = transactionId,
+                type = "Already Reviewed Project.",
+                amount = 0,
+                points = currentPoints,
+                timestamp = currentTime
+            })
+            ao.send({ Target = m.From, Data = "You have already reviewed this Project." })
+            return
+        end
+
+        -- Add review and update review table
+        reviews.users[user] = { time = currentTime }
+        reviews.count = reviews.count + 1
+        table.insert(reviews.countHistory, { time = currentTime, count = reviews.count })
+
+        -- Generate unique ID for the review
+        local reviewId = generateReviewId()
+        table.insert(reviews.reviews, {
+            reviewId = reviewId,
+            user = user,
+            username = username,
+            comment = comment,
+            rating = rating,
+            timestamp = currentTime,
+            profileUrl = profileUrl,
+            voters = {
+                upvoted = {
+                    count = 1,
+                    countHistory = { { time = currentTime, count = 1 } },
+                    users = { [user] = { time = currentTime } }
+                },
+                downvoted = {
+                    count = 0,
+                    countHistory = { { time = currentTime, count = 0 } },
+                    users = {}
+                },
+                foundHelpful = {
+                    count = 1,
+                    countHistory = { { time = currentTime, count = 1 } },
+                    users = { [user] = { time = currentTime } }
+                },
+                foundUnhelpful = {
+                    count = 0,
+                    countHistory = { { time = currentTime, count = 0 } },
+                    users = {}
+                }
+            },
+            replies = {}
+        })
+
+        -- Update points for the user and the app owner
+        local points = 100
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+
+        local AppOwner = Apps[appId].Owner
+        local AppPoints = 50
+        arsPoints[AppOwner] = arsPoints[AppOwner] or { user = AppOwner, points = 0 }
+        arsPoints[AppOwner].points = arsPoints[AppOwner].points + AppPoints
+
+        -- Update ratings table
+        ratings.users[user] = { time = currentTime }
+        ratings.count = ratings.count + 1
+        ratings.Totalratings = ratings.Totalratings + rating
+        table.insert(ratings.countHistory, { time = currentTime, count = ratings.count, rating = rating })
+
+        local points = 200
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 20 * 1000000000000
+        ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        local transactionId = generateTransactionId()
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Reviewed Project.",
+            amount = amount,
+            timestamp = currentTime
+        })
+        ao.send({ Target = m.From, Data = "Review added successfully." })
+    end
+)
+
+
+Handlers.add(
+    "GetAppReviewCount",
+    Handlers.utils.hasMatchingTag("Action", "GetAppReviewCount"),
+    function(m)
+        local AppId = m.Tags.AppId
+        if not AppId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
+            return
+        end
+
+        if not reviewsTable[AppId] then
+            ao.send({ Target = m.From, Data = "No reviews found for AppId: " .. AppId })
+            return
+        end
+
+        local count = reviewsTable[AppId].count or 0
+        local response = { AppId = AppId, reviewCount = count }
+        ao.send({ Target = m.From, Data = tableToJson(response) })
+    end
+)
 
 -- Handler to view all transactions
 Handlers.add(
@@ -717,7 +958,7 @@ Handlers.add(
         end
 
         -- Check if the user making the request is the current owner
-        if Apps[appId].Owner ~= currentOwner then
+        if reviewsTable[appId].Owner ~= currentOwner then
             ao.send({ Target = m.From, Data = "You are not the owner of this app." })
             return
         end
@@ -739,6 +980,44 @@ Handlers.add(
             points = userPointsData.points,
             timestamp = currentTime
         }
+    end
+)
+
+
+Handlers.add(
+    "DeleteApp",
+    Handlers.utils.hasMatchingTag("Action", "DeleteApp"),
+    function(m)
+
+        local appId = m.Tags.AppId
+        local Owner = m.Tags.Owner
+        local caller = m.From
+
+         -- Check if PROCESS_ID called this handler
+        if ARS ~= caller then
+            ao.send({ Target = m.From, Data = "Only the main processID can call this handler" })
+            return
+        end
+
+        -- Check if the user making the request is the current owner
+        if reviewsTable[appId].Owner ~= Owner then
+            ao.send({ Target = m.From, Data = "You are not the owner of this app." })
+            return
+        end
+
+        if appId == nil then
+            ao.send({ Target = m.From, Data = "appId is missing or empty." })
+            return
+        end
+
+        if Owner == nil then
+            ao.send({ Target = m.From, Data = "Owner is missing or empty." })
+            return
+        end
+
+        reviewsTable[appId] = nil
+        print("Sucessfully Deleted App" )
+
     end
 )
 

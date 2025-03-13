@@ -75,6 +75,7 @@ Handlers.add(
         
         flagTable[AppId] = {
             appId = AppId,
+            Owner = user, 
             status = false,
             count = 0,
             countHistory = { { time = currentTime, count = 0 } },
@@ -117,6 +118,103 @@ Handlers.add(
     end
 )
 
+Handlers.add(
+    "DeleteApp",
+    Handlers.utils.hasMatchingTag("Action", "DeleteApp"),
+    function(m)
+
+        local appId = m.Tags.AppId
+        local Owner = m.Tags.Owner
+        local caller = m.From
+
+         -- Check if PROCESS_ID called this handler
+        if ARS ~= caller then
+            ao.send({ Target = m.From, Data = "Only the main processID can call this handler" })
+            return
+        end
+
+        -- Check if the user making the request is the current owner
+        if flagTable[appId].Owner ~= Owner then
+            ao.send({ Target = m.From, Data = "You are not the owner of this app." })
+            return
+        end
+
+        if appId == nil then
+            ao.send({ Target = m.From, Data = "appId is missing or empty." })
+            return
+        end
+
+        if Owner == nil then
+            ao.send({ Target = m.From, Data = "Owner is missing or empty." })
+            return
+        end
+
+        flagTable[appId] = nil
+        print("Sucessfully Deleted App" )
+
+    end
+)
+
+Handlers.add(
+    "FlagApp",
+    Handlers.utils.hasMatchingTag("Action", "FlagApp"),
+    function(m)
+        -- Validate required tag
+        if not m.Tags.AppId then
+            ao.send({ Target = m.From, Data = "AppId is missing or empty." })
+            return
+        end
+
+        local AppId = m.Tags.AppId
+        local user = m.From
+        local currentTime = getCurrentTime(m)
+
+        -- Ensure flagTable is initialized
+        flagTable = flagTable or {}
+
+
+        -- Check if the user has already flagged the App
+        if flagTable[AppId].users[user] and flagTable[AppId].users[user].flagged then
+            ao.send({ Target = m.From, Data = "You have already flagged this App." })
+            return
+        end
+
+        -- Mark the user as flagged in the table
+        flagTable[AppId].users[user] = { flagged = true, time = currentTime }
+
+        -- Increment the flag count and record the new count in countHistory
+        flagTable[AppId].count = flagTable[AppId].count + 1
+        table.insert(flagTable[AppId].countHistory, { time = currentTime, count = flagTable[AppId].count })
+
+        -- Optionally, you can perform additional actions such as updating points
+
+        -- Send a confirmation message back to the user
+        ao.send({ Target = m.From, Data = "App flagged successfully." })
+    end
+)
+
+
+Handlers.add(
+    "GetFlagCount",
+    Handlers.utils.hasMatchingTag("Action", "GetFlagCount"),
+    function(m)
+        local AppId = m.Tags.AppId
+        if not AppId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
+            return
+        end
+
+        if not flagTable[AppId] then
+            ao.send({ Target = m.From, Data = "No reviews found for AppId: " .. AppId })
+            return
+        end
+
+        local count = flagTable[AppId].count or 0
+        local response = { AppId = AppId, reviewCount = count }
+        ao.send({ Target = m.From, Data = tableToJson(response) })
+    end
+)
+
 
 
 -- Handler to view all transactions
@@ -149,3 +247,4 @@ Handlers.add(
         flagTable = {}
     end
 )
+

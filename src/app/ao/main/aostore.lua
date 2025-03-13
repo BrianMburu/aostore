@@ -37,23 +37,22 @@ PROCESS_NAME_FLAG_TABLE = "aos Flag_Table"
 PROCESS_ID_FLAG_TABLE = "BpGlNnMA09jM-Sfh6Jldswhp5AnGTCST4MxG2Dk-ABo"
 
 
---Unhelpful Table process
-PROCESS_NAME_UNHELPFUL_TABLE = "aos UnHelpful_Table"
-PROCESS_ID_UNHELPFUL_TABLE = "f4alCYxrBPDMOmTIBfHB43m1snkZSKdPqpr0Tr93t-U"
-
 
 -- Airdrop process details
-PROCESS_NAME_AIRDROP_TABLE = "aos Airdrop_Table"
-PROCESS_ID_AIRDROP_TABLE  = "ow_4lNzwLheZht2vC0k53MlIi9Tfw57_871KvTKOOpY"
+PROCESS_NAME_FAVORITES_TABLE = "aos Favorites_Table"
+PROCESS_ID_FAVORITES_TABLE  = "2aXLWDFCbnxxBb2OyLmLlQHwPnrpN8dDZtB9Y9aEdOE"
 
 
 -- tables 
 Apps = Apps or {}
-transactions  = transactions or {}
-favoritesTable = favoritesTable or {}
-aosPoints = aosPoints or {}
+Transactions  = Transactions or {}
+FavoritesTable = FavoritesTable or {}
+
+AosPoints = AosPoints or {}
 -- Counters variables 
 AppCounter  = AppCounter or 0
+TransactionCounter = TransactionCounter or 0
+MessageCounter  = MessageCounter or 0
 
 -- Status Variables
 ReviewStatus = ReviewStatus or false
@@ -62,161 +61,408 @@ BugStatus = BugStatus or false
 DevForumStatus = DevForumStatus or false
 
 -- Callback Variables
-fetchreviewsCallback = nil
-fetchhelpfulCallback = nil
-fetchbugreportsCallback = nil
-fetchdevforumCallback  = nil
-fetchfeaturetableCallback = nil
-fetchflagtableCallback  = nil
-fetchunhelpfullCallback = nil
-fetchairdropCallback = nil
+FetchreviewsCallback = nil
+FetchhelpfulCallback = nil
+FetchbugreportsCallback = nil
+FetchdevforumCallback  = nil
+FetchfeaturetableCallback = nil
+FetchflagtableCallback  = nil
+FetchunhelpfullCallback = nil
+FetchfavoritesCallback = nil
 
 
-function AddReviewTable(AppId, user,username,profileUrl,callback)
+function TableToJson(tbl)
+    local result = {}
+    for key, value in pairs(tbl) do
+        local valueType = type(value)
+        if valueType == "table" then
+            value = TableToJson(value)
+            table.insert(result, string.format('"%s":%s', key, value))
+        elseif valueType == "string" then
+            table.insert(result, string.format('"%s":"%s"', key, value))
+        elseif valueType == "number" then
+            table.insert(result, string.format('"%s":%d', key, value))
+        elseif valueType == "function" then
+            table.insert(result, string.format('"%s":"%s"', key, tostring(value)))
+        end
+    end
+
+    local json = "{" .. table.concat(result, ",") .. "}"
+    return json
+end
+
+-- Function to get the current time in milliseconds
+function GetCurrentTime(msg)
+    return msg.Timestamp -- returns time in milliseconds
+end
+
+
+-- Function to generate a unique App ID
+function GenerateAppId()
+    AppCounter = AppCounter + 1
+    return "TX" .. tostring(AppCounter)
+end
+
+-- Function to generate a unique App ID
+function GenerateMessageId()
+    MessageCounter = MessageCounter + 1
+    return "TX" .. tostring(MessageCounter)
+end
+
+
+-- Function to generate a unique transaction ID
+function GenerateTransactionId()
+    TransactionCounter = TransactionCounter + 1
+    return "TX" .. tostring(TransactionCounter)
+end
+
+
+-- Response helper functions
+function SendSuccess(target, message)
+    ao.send({
+        Target = target,
+        Data = TableToJson({
+            code = 200,
+            message = "success",
+            data = message
+        })
+    })
+end
+
+function SendFailure(target, message)
+    ao.send({
+        Target = target,
+        Data = TableToJson({
+            code = 404,
+            message = "failed",
+            data = message
+        })
+    })
+end
+
+
+function ValidateField(value, fieldName, target)
+    if not value then
+        SendFailure(target, fieldName .. " is missing or empty")
+        return false
+    end
+    return true
+end
+
+-- Helper function to log transactions
+function LogTransaction(user, appId, transactionType, amount, currentTime)
+    local transactionId = GenerateTransactionId()
+    local points = 5 
+    AosPoints[appId].users[user] = AosPoints[appId].users[user].points + points
+    local currentPoints = AosPoints[appId].users[user] or 0 -- Add error handling if needed
+    Transactions[#Transactions + 1] = {
+            user = user,
+            transactionid = transactionId,
+            transactionType = transactionType,
+            amount = amount,
+            points = currentPoints,
+            timestamp = currentTime
+        }
+end
+
+function AddReviewTable(appId, user, username, profileUrl, callback)
     ao.send({
         Target = PROCESS_ID_REVIEW_TABLE,
         Tags = {
-            { name = "Action", value = "AddReviewTableX" },
-            { name = "appId",  value = tostring(AppId) },
-            { name = "user",   value = tostring(user) },
+            { name = "Action",     value = "AddReviewTableX" },
+            { name = "appId",   value = tostring(appId) },
+            { name = "user",  value = tostring(user) },
             { name = "username", value = tostring(username) },
-            { name = "profileUrl",   value = tostring(profileUrl) }
+            { name = "profileUrl", value = tostring(profileUrl) }
         }
     })
     -- Save the callback to be called later
-    fetchreviewsCallback = callback
+    FetchreviewsCallback = callback
 end
 
-function ChangeOwnerReviewTable(AppId, newOwner,currentOwner, callback)
+function DeleteAppReviews(appId,owner, callback)
     ao.send({
         Target = PROCESS_ID_REVIEW_TABLE,
         Tags = {
-            { name = "Action", value = "ChangeAppOwnership" },
-            { name = "appId",  value = tostring(AppId) },
-            { name = "NewOwner",   value = tostring(newOwner) },
-              { name = "currentOwner",   value = tostring(currentOwner) },
+            { name = "Action", value = "DeleteApp" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "owner",   value = tostring(owner) },
+           }
+    })
+    -- Save the callback to be called later
+    FetchreviewsCallback = callback
+end
+
+function ChangeownerReviewTable(appId, newowner,currentowner, callback)
+    ao.send({
+        Target = PROCESS_ID_REVIEW_TABLE,
+        Tags = {
+            { name = "Action", value = "ChangeAppownership" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "newowner",   value = tostring(newowner) },
+              { name = "currentowner",   value = tostring(currentowner) },
         }
     })
     -- Save the callback to be called later
-    fetchreviewsCallback = callback
+    FetchreviewsCallback = callback
 end
 
 
-
-function AddHelpfulTable(AppId , user,callback)
+function AddHelpfulTable(appId , user,callback)
     ao.send({
         Target = PROCESS_ID_HELPFUL_TABLE,
         Tags = {
             { name = "Action", value = "AddHelpfulTableX" },
-            { name = "appId",  value = tostring(AppId) },
+            { name = "appId",  value = tostring(appId) },
             { name = "user", value = tostring(user) },
         }
     })
      -- Save the callback to be called later
-    fetchhelpfulCallback = callback
+    FetchhelpfulCallback = callback
+end
+
+function ChangeownerHelpful(appId, newowner,currentowner, callback)
+    ao.send({
+        Target = PROCESS_ID_HELPFUL_TABLE,
+        Tags = {
+            { name = "Action", value = "ChangeAppownership" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "newowner",   value = tostring(newowner) },
+            { name = "currentowner",   value = tostring(currentowner) },
+       
+        }
+    })
+    -- Save the callback to be called later
+    FetchbugreportsCallback = callback
+end
+
+function DeleteAppHelpful(appId,owner, callback)
+    ao.send({
+        Target = PROCESS_ID_HELPFUL_TABLE,
+        Tags = {
+            { name = "Action", value = "DeleteApp" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "owner",   value = tostring(owner) },
+           }
+    })
+    -- Save the callback to be called later
+    FetchhelpfulCallback = callback
 end
 
 
-function AddBugReportTable(AppId, user,profileUrl,username,callback)
+function AddBugReportTable(appId, user, profileUrl, username, callback)
     ao.send({
         Target = PROCESS_ID_BUG_REPORT_TABLE,
         Tags = {
-            { name = "Action", value = "AddBugReportTable" },
-            { name = "appId",  value = tostring(AppId) },
-            { name = "user", value = tostring(user) },
-            { name = "username", value = tostring(username) },
+            { name = "Action",   value = "AddBugReportTable" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "user",    value = tostring(user) },
+            { name = "username",  value = tostring(username) },
             { name = "profileUrl", value = tostring(profileUrl) },
         }
     })
     -- Save the callback to be called later
-    fetchbugreportsCallback = callback
+    FetchbugreportsCallback = callback
+end
+
+function DeleteAppBugReport(appId,owner, callback)
+    ao.send({
+        Target = PROCESS_ID_BUG_REPORT_TABLE,
+        Tags = {
+            { name = "Action", value = "DeleteApp" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "owner",   value = tostring(owner) },
+           }
+    })
+    -- Save the callback to be called later
+    FetchhelpfulCallback = callback
 end
 
 
-function AddDevForumTable(AppId, user, profileUrl, username, callback)
+function ChangeownerBugReport(appId, newowner,currentowner, callback)
+    ao.send({
+        Target = PROCESS_ID_BUG_REPORT_TABLE,
+        Tags = {
+            { name = "Action", value = "ChangeAppownership" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "newowner",   value = tostring(newowner) },
+            { name = "currentowner",   value = tostring(currentowner) },
+       
+        }
+    })
+    -- Save the callback to be called later
+    FetchbugreportsCallback = callback
+end
+
+
+function AddDevForumTable(appId, user, profileUrl, username, callback)
     ao.send({
         Target = PROCESS_ID_DEV_FORUM_TABLE,
         Tags = {
             { name = "Action",     value = "AddDevForumTable" },
-            { name = "appId",      value = tostring(AppId) },
+            { name = "appId",      value = tostring(appId) },
             { name = "user",       value = tostring(user) },
             { name = "username",   value = tostring(username) },
             { name = "profileUrl", value = tostring(profileUrl) }
         }
     })
     -- Save the callback to be called later
-    fetchdevforumCallback = callback
+    FetchdevforumCallback = callback
 end
 
-function AddFeatureRequestTable(AppId, user, profileUrl, username, callback)
+function DeleteAppDevForum(appId,owner, callback)
     ao.send({
-        Target = PROCESS_ID_FEATURE_REQUEST_TABLE,
+        Target = PROCESS_ID_DEV_FORUM_TABLE,
         Tags = {
-            { name = "Action",value = "AddfeatureRequestsTable" },
-            { name = "appId",value = tostring(AppId) },
-            { name = "user",value = tostring(user) },
-            { name = "username",value = tostring(username) },
-            { name = "profileUrl", value = tostring(profileUrl) }
+            { name = "Action", value = "DeleteApp" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "owner",   value = tostring(owner) },
+           }
+    })
+    -- Save the callback to be called later
+    FetchhelpfulCallback = callback
+end
+
+function ChangeownerDevForum(appId, newowner,currentowner, callback)
+    ao.send({
+        Target = PROCESS_ID_DEV_FORUM_TABLE,
+        Tags = {
+            { name = "Action", value = "ChangeAppownership" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "newowner",   value = tostring(newowner) },
+            { name = "currentowner",   value = tostring(currentowner) },
         }
     })
     -- Save the callback to be called later
-    fetchfeaturetableCallback = callback
+    FetchdevforumCallback = callback
 end
 
-function AddFlagTable(AppId , user,callback)
+function AddFeatureRequestTable(appId, user, profileUrl, username, callback)
+    ao.send({
+        Target = PROCESS_ID_FEATURE_REQUEST_TABLE,
+        Tags = {
+            { name = "Action", value = "AddfeatureRequestsTable" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "user",  value = tostring(user) },
+            { name = "username", value = tostring(username) },
+            { name = "profileUrl",value = tostring(profileUrl) }
+        }
+    })
+    -- Save the callback to be called later
+    FetchfeaturetableCallback = callback
+end
+
+function DeleteAppFeatureRequest(appId,owner, callback)
+    ao.send({
+        Target = PROCESS_ID_FEATURE_REQUEST_TABLE,
+        Tags = {
+            { name = "Action", value = "DeleteApp" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "owner",   value = tostring(owner) },
+           }
+    })
+    -- Save the callback to be called later
+    FetchfeaturetableCallback = callback
+end
+
+function ChangeownerFeatureRequest(appId, newowner, currentowner, callback)
+    ao.send({
+        Target = PROCESS_ID_FEATURE_REQUEST_TABLE,
+        Tags = {
+            { name = "Action",  value = "ChangeAppownership" },
+            { name = "appId",   value = tostring(appId) },
+            { name = "newowner",value = tostring(newowner) },
+            { name = "currentowner", value = tostring(currentowner) },
+        }
+    })
+    -- Save the callback to be called later
+    FetchfeaturetableCallback = callback
+end
+
+
+function AddFlagTable(appId, user, callback)
     ao.send({
         Target = PROCESS_ID_FLAG_TABLE,
         Tags = {
             { name = "Action", value = "AddFlagTableX" },
-            { name = "appId",  value = tostring(AppId) },
-            { name = "user", value = tostring(user) },
-        }
-    })
-     -- Save the callback to be called later
-    fetchflagtableCallback = callback
-end
-
-function AddUnHelpfulTable(AppId, user, callback)
-    ao.send({
-        Target = PROCESS_ID_UNHELPFUL_TABLE,
-        Tags = {
-            { name = "Action", value = "AddUnhelpfulTable" },
-            { name = "appId",  value = tostring(AppId) },
+            { name = "appId",  value = tostring(appId) },
             { name = "user",   value = tostring(user) },
         }
     })
     -- Save the callback to be called later
-    fetchunhelpfullCallback = callback
+    FetchflagtableCallback = callback
 end
 
-function AddAirdropTable(AppId , user,AppName, callback)
+function DeleteAppFlag(appId,owner, callback)
     ao.send({
-        Target = PROCESS_ID_AIRDROP_TABLE,
+        Target = PROCESS_ID_FLAG_TABLE,
         Tags = {
-            { name = "Action", value = "AddAirdropTable" },
-            { name = "appId",  value = tostring(AppId) },
-            { name = "user",   value = tostring(user) },
-             { name = "AppName", value = tostring(AppName) },
+            { name = "Action", value = "DeleteApp" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "owner",   value = tostring(owner) },
+           }
+    })
+    -- Save the callback to be called later
+    FetchflagtableCallback = callback
+end
+
+
+function AddFavoriteTable(appId, user, appName,companyName,protocol,projectType,appIconUrl,websiteUrl, callback)
+    ao.send({
+        Target = PROCESS_ID_FAVORITES_TABLE,
+        Tags = {
+            { name = "Action",  value = "AddFavoritesTableX" },
+            { name = "appId",   value = tostring(appId) },
+            { name = "user",    value = tostring(user) },
+            { name = "appName", value = tostring(appName) },
+            { name = "companyName", value = tostring(companyName) },
+            { name = "protocol", value = tostring(protocol) },
+            { name = "projectType", value = tostring(projectType) },
+            { name = "appIconUrl",  value = tostring(appIconUrl) },
+            { name = "websiteUrl", value = tostring(websiteUrl) },
         }
     })
-     -- Save the callback to be called later
-    fetchairdropCallback = callback
+    -- Save the callback to be called later
+    FetchfavoritesCallback = callback
+end
+
+function DeleteAppFavorite(appId, owner, callback)
+    ao.send({
+        Target = PROCESS_ID_FAVORITES_TABLE,
+        Tags = {
+            { name = "Action", value = "DeleteApp" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "owner",  value = tostring(owner) },
+        }
+    })
+    -- Save the callback to be called later
+    FetchfavoritesCallback = callback
+end
+
+function ChangeownerFavorites(appId, newowner, currentowner, callback)
+    ao.send({
+        Target = PROCESS_ID_FAVORITES_TABLE,
+        Tags = {
+            { name = "Action", value = "ChangeAppownership" },
+            { name = "appId",  value = tostring(appId) },
+            { name = "newowner", value = tostring(newowner) },
+            { name = "currentowner",value = tostring(currentowner) },
+        }
+    })
+    -- Save the callback to be called later
+    FetchfavoritesCallback = callback
 end
 
 
-
-function finalizeProject(user, AppId, appName, description, currentTime, username, profileUrl, Protocol,
-                WebsiteUrl,
-                TwitterUrl,
-                DiscordUrl,
-                CoverUrl,
-                BannerUrl1,
-                BannerUrl2,
-                BannerUrl3,
-                BannerUrl4,
-                CompanyName,
-                AppIconUrl,
-                ProjectType)
+function FinalizeProject(user, appId, appName, description, currentTime, username, profileUrl, protocol,
+                websiteUrl,
+                twitterUrl,
+                discordUrl,
+                coverUrl,
+                bannerUrls,
+                companyName,
+                appIconUrl,
+                projectType)
     
 
     
@@ -228,79 +474,56 @@ function finalizeProject(user, AppId, appName, description, currentTime, usernam
     end
 
     -- Ensure global tables are initialized
-    favoritesTable = favoritesTable or {}
-    aosPoints = aosPoints or {}
-    transactions = transactions or {}
-    
-    favoritesTable[AppId] = {
-            status = false,
-            count = 1,
-            countHistory = { { time = currentTime, count = 1 } },
-            users = {
-                [user] = { time = currentTime }
-            }
-        }
+    AosPoints = AosPoints or {}
+    Transactions = Transactions or {}
 
         -- Create the aosPoints table for this AppId
-        aosPoints[AppId] = {
-            appId = AppId,
+    AosPoints[appId] = {
+            appId = appId,
             status = false,
-            TotalpointsApp = 5,
+            totalPointsApp = 5,
             count = 1,
             countHistory = { { time = currentTime, count = 1 } },
             users = {
                 [user] = { time = currentTime , points = 5 }
             }
-        }
+    }
 
   
 
-    Apps.apps[AppId] = {
-      appId = AppId,
-      Owner = user,
-      AppName = appName,
-      username = username,
-      Description = description,
-      CreatedTime = currentTime,
-      Protocol = Protocol,
-      WebsiteUrl = WebsiteUrl,
-      TwitterUrl = TwitterUrl,
-      DiscordUrl = DiscordUrl,
-      CoverUrl = CoverUrl,
-      profileUrl = profileUrl,
-      BannerUrl1 = BannerUrl1,
-      BannerUrl2 = BannerUrl2,
-      BannerUrl3 = BannerUrl3,
-      BannerUrl4 = BannerUrl4,
-      CompanyName = CompanyName,
-      AppIconUrl = AppIconUrl,
-      ProjectType = ProjectType,
-      Favorites = favoritesTable[AppId],
-      aosPoints = aosPoints[AppId]}
-
-    favoritesTable[AppId].status = true
-    aosPoints[AppId].status = true
+    Apps.apps[appId] = {
+    appId = appId,
+    owner = user,
+    appName = appName,
+    username = username,
+    description = description,
+    createdTime = currentTime,
+    protocol = protocol,
+    websiteUrl = websiteUrl,
+    twitterUrl = twitterUrl,
+    discordUrl = discordUrl,
+    coverUrl = coverUrl,
+    profileUrl = profileUrl,
+    bannerUrls = bannerUrls,
+    companyName = companyName,
+    appIconUrl = appIconUrl,
+    projectType = projectType,
+    AosPoints = AosPoints[appId]}
+    AosPoints[appId].status = true
   -- Reset statuses and DataCount
     ReviewStatus = false
     DataCount = 0
 
-    local transactionId = generateTransactionId()
-    local currentPoints = aosPoints[AppId].users[user].points
-    
-    transactions[#transactions + 1] = {
-            user = user,
-            transactionid = transactionId,
-            type = "Project Creation",
-            points = currentPoints,
-            timestamp = currentTime
-        }
+    Apps.count = Apps.count + 1
+    table.insert(Apps.countHistory, { time = currentTime, count = Apps.count })
 
-  print("Apps table after update: " .. tableToJson(Apps))
+    local transactionType = "Project Creation."
+    local amount = 0
+    LogTransaction(user, appId, transactionType, amount, currentTime)
+
+  print("Apps table after update: " .. TableToJson(Apps))
 
 end
-
-
-
 
 -- In ReviewsResponse handler:
 Handlers.add(
@@ -463,48 +686,22 @@ Handlers.add(
   end
 )
 
--- In Unhelpful handler:
-Handlers.add(
-  "UnHelpfulRespons",
-  Handlers.utils.hasMatchingTag("Action", "UnHelpfulRespons"),
-  function(m)
-
-    if m.From == PROCESS_ID_UNHELPFUL_TABLE then
-        local xData = m.Data
-        if not xData then
-          print("No data received in unhelpful   Table response.")
-          return
-        end
-      if xData == "true" then
-          DevForumStatus = true
-          DataCount = DataCount + 1
-          print("Updated unhelpful  Table  Response:", xData)
-          -- Check if we have reached the required count
-          if DataCount >= 8 and globalFinalizeProjectCallback then
-              globalFinalizeProjectCallback()
-          end
-      end
-    else
-        ao.send({ Target = m.From, Data = "Wrong ProcessID" })
-    end
-  end
-)
 
 -- In Airdrop handler:
 Handlers.add(
-  "AirdopRespons",
-  Handlers.utils.hasMatchingTag("Action", "AirdopRespons"),
+  "FavoriteRespons",
+  Handlers.utils.hasMatchingTag("Action", "FavoriteRespons"),
   function(m)
 
-    if m.From == PROCESS_ID_AIRDROP_TABLE then
+    if m.From == PROCESS_ID_FAVORITES_TABLE then
         local xData = m.Data
         if not xData then
-          print("No data received in Airdrop Table response.")
+          print("No data received in Favorites Table response.")
           return
         end
       if xData == "true" then
           DataCount = DataCount + 1
-          print("Updated Airdrop Table  Response:", xData)
+          print("Updated Favorites Table  Response:", xData)
           -- Check if we have reached the required count
           if DataCount >= 8 and globalFinalizeProjectCallback then
               globalFinalizeProjectCallback()
@@ -519,207 +716,113 @@ Handlers.add(
 
 
 Handlers.add(
-    "AddProject",
-    Handlers.utils.hasMatchingTag("Action", "AddProject"),
+    "AddProjectZ",
+    Handlers.utils.hasMatchingTag("Action", "AddProjectZ"),
     function(m)
-      local AppId = generateAppId()
+      local appId = GenerateAppId()
       local currentTime = getCurrentTime(m)
       local user = m.From
       local appName = m.Tags.appName
       local description = m.Tags.description
       local username = m.Tags.username
       local profileUrl = m.Tags.profileUrl
-      local Protocol = m.Tags.Protocol
-      local WebsiteUrl = m.Tags.WebsiteUrl
-      local TwitterUrl = m.Tags.TwitterUrl
-      local DiscordUrl = m.Tags.DiscordUrl
-      local CoverUrl = m.Tags.CoverUrl
-      local BannerUrl1 = m.Tags.BannerUrl1
-      local BannerUrl2 = m.Tags.BannerUrl2 
-      local BannerUrl3 = m.Tags.BannerUrl3
-      local BannerUrl4 = m.Tags.BannerUrl4 
-      local CompanyName = m.Tags.CompanyName
-      local AppIconUrl = m.Tags.AppIconUrl
-      local ProjectType = m.Tags.ProjectType
-      
-      if user == nil then
-            ao.send({ Target = m.From, Data = "user is missing or empty." })
-            return
-      end
+      local protocol = m.Tags.protocol
+      local websiteUrl = m.Tags.websiteUrl
+      local twitterUrl = m.Tags.twitterUrl
+      local discordUrl = m.Tags.discordUrl
+      local coverUrl = m.Tags.coverUrl
+      local bannerUrls = json.decode(m.Tags.bannerUrls)
+      local companyName = m.Tags.companyName
+      local appIconUrl = m.Tags.appIconUrl
+      local projectType = m.Tags.projectType
         
-      if AppId == nil then
-            ao.send({ Target = m.From, Data = "appId is missing or empty." })
-            return
-      end
-        
-      if profileUrl == nil then
-            ao.send({ Target = m.From, Data = "profileUrl is missing or empty." })
-            return
-      end
-        
-      if username == nil then
-            ao.send({ Target = m.From, Data = "username is missing or empty." })
-            return
-      end
-      if Protocol == nil then
-            ao.send({ Target = m.From, Data = "Protocol is missing or empty." })
-            return
-      end
       
-      if WebsiteUrl == nil then
-            ao.send({ Target = m.From, Data = "WebsiteUrl is missing or empty." })
-            return
-      end
-      
+    if not ValidateField(profileUrl, "profileUrl", m.From) then return end
 
-      if TwitterUrl == nil then
-            ao.send({ Target = m.From, Data = "TwitterUrl is missing or empty." })
-            return
-      end
-      
-      if DiscordUrl == nil then
-            ao.send({ Target = m.From, Data = "DiscordUrl is missing or empty." })
-        return
-      end
-      
-      if CoverUrl == nil then
-          ao.send({ Target = m.From, Data = "CoverUrl is missing or empty." })
-        return
-      end
-      if BannerUrl1 == nil then
-          ao.send({ Target = m.From, Data = "BannerUrl1 is missing or empty." })
-        return
-      end
-      if BannerUrl2 == nil then
-            ao.send({ Target = m.From, Data = "BannerUrl2 is missing or empty." })
-          return
-      end
-      if BannerUrl3 == nil then
-            ao.send({ Target = m.From, Data = "BannerUrl3 is missing or empty." })
-            return
-      end
-      if BannerUrl4 == nil then
-            ao.send({ Target = m.From, Data = "BannerUrl4 is missing or empty." })
-            return
-      end
-      if CompanyName == nil then
-            ao.send({ Target = m.From, Data = "CompanyName is missing or empty." })
-            return
-      end
-      
-      if AppIconUrl == nil then
-            ao.send({ Target = m.From, Data = "AppIconUrl is missing or empty." })
-            return
-      end
-        if ProjectType == nil then
-            ao.send({ Target = m.From, Data = "ProjectType is missing or empty." })
-            return
-        end
-  
-        
-        DataCount = 0
-  
-        AddReviewTable(AppId, user, username, profileUrl,nil)
-        AddHelpfulTable(AppId, user, nil)
-        AddBugReportTable(AppId, user,profileUrl,username,nil)
-      
+    if not ValidateField(projectType, "projectType", m.From) then return end
 
-        AddDevForumTable(AppId, user, profileUrl, username, nil)
-        AddFeatureRequestTable(AppId, user, profileUrl, username, nil)
-        AddFlagTable(AppId , user,nil) 
-        AddUnHelpfulTable(AppId, user, nil)
-        AddAirdropTable(AppId, user, appName, nil)
-        
+    if not ValidateField(appIconUrl, "appIconUrl", m.From) then return end
 
-        -- Set the finalize callback to be called when DataCount reaches 2
-        globalFinalizeProjectCallback = function()
-            finalizeProject(user, AppId, appName, description, currentTime, username, profileUrl, Protocol,
-                WebsiteUrl,
-                TwitterUrl,
-                DiscordUrl,
-                CoverUrl,
-                BannerUrl1,
-                BannerUrl2,
-                BannerUrl3,
-                BannerUrl4,
-                CompanyName,
-                AppIconUrl,
-                ProjectType)
-            -- Clear the callback so it's only called once
-            globalFinalizeProjectCallback = nil
-        end
-       
-        ao.send({ Target = user, Data = "Successfully Created The Project." })
-        
+    if not ValidateField(companyName, "companyName", m.From) then return end
+
+    if not ValidateField(coverUrl, "coverUrl", m.From) then return end
+
+    if not ValidateField(discordUrl, "discordUrl", m.From) then return end
+
+    if not ValidateField(twitterUrl, "twitterUrl", m.From) then return end
+
+    if not ValidateField(websiteUrl, "websiteUrl", m.From) then return end
+
+    if not ValidateField(protocol, "protocol", m.From) then return end
+
+    if not ValidateField(appId, "appId", m.From) then return end
+
+    if not ValidateField(username, "username", m.From) then return end
+
+    if not ValidateField(user, "user", m.From) then return end
+
+       -- Check if at least one banner is provided
+    if #bannerUrls == 0 then
+        local response = { code = 404, message = "failed", data = "At least one BannerUrl is required." }
+        ao.send({ Target = m.From, Data = tableToJson(response) })
+        return
     end
+
+    DataCount = 0
+  
+    AddReviewTable(appId, user, username, profileUrl,nil)
+    AddHelpfulTable(appId, user, nil)
+    AddBugReportTable(appId, user,profileUrl,username,nil)
+    AddDevForumTable(appId, user, profileUrl, username, nil)
+    AddFeatureRequestTable(appId, user, profileUrl, username, nil)
+    AddFlagTable(appId , user,nil) 
+    AddFavoriteTable(appId, user, appName,companyName,protocol,projectType,appIconUrl,websiteUrl,nil)
+    
+    FinalizeProject(user, appId, appName, description, currentTime, username, profileUrl, protocol,
+                websiteUrl,
+                twitterUrl,
+                discordUrl,
+                coverUrl,
+                bannerUrls,
+                companyName,
+                appIconUrl,
+                projectType)
+    SendSuccess(user, "Project Added Succesfully.")
+      end
 )
 
-Handlers.add(
-    "getFavoriteApps",
-    Handlers.utils.hasMatchingTag("Action", "getFavoriteApps"),
-    function(m)
-        local filteredFavorites = {}
-
-        -- Loop through the favoritesTable to find the user's favorites
-        for AppId, favorite in pairs(favoritesTable) do
-            -- Check if the user exists in the `users` table for the current AppId
-            if favorite.users[m.From] then
-                -- Retrieve the app details from the Apps table
-                local appDetails = Apps.apps[AppId]
-                if appDetails then
-                    -- Format the app details to include only the required fields
-                    filteredFavorites[AppId] = {
-                        AppIconUrl = appDetails.AppIconUrl,
-                        AppId = AppId,
-                        AppName = appDetails.AppName,
-                        CompanyName = appDetails.CompanyName,
-                        ProjectType = appDetails.ProjectType,
-                        WebsiteUrl = appDetails.WebsiteUrl
-                    }
-                end
-            end
-        end
-
-        -- Send the filtered favorites back to the user
-        ao.send({ Target = m.From, Data = tableToJson(filteredFavorites) })
-    end
-)
 
 Handlers.add(
     "FetchAllApps",
     Handlers.utils.hasMatchingTag("Action", "FetchAllApps"),
     function(m)
 
-      if not Apps or not Apps.apps or next(Apps.apps) == nil then
-      local response = {}
-      response.code = 404
-      response.message = "failed"
-      response.data = "null"
-    ao.send({ Target = m.From, Data = tableToJson(response) })
-    return
+    if not Apps or not Apps.apps or next(Apps.apps) == nil then
+        SendFailure(m.From, "Apps are nil")
     end
 
         local filteredApps = {}
         for appId, app in pairs(Apps.apps) do
             filteredApps[appId] = {
-                AppId = app.AppId,
-                AppName = app.AppName,
-                Description = app.Description,
-                CompanyName = app.CompanyName,
-                ProjectType = app.ProjectType,
-                WebsiteUrl = app.WebsiteUrl,
-                AppIconUrl = app.AppIconUrl,
-                CreatedTime = app.CreatedTime
+                appId = app.appId,
+                appName = app.appName,
+                description = app.description,
+                companyName = app.companyName,
+                projectType = app.projectType,
+                websiteUrl = app.websiteUrl,
+                appIconUrl = app.appIconUrl,
+                createdTime = app.createdTime
             }
         end
 
-        local response = {}
-        response.code = 200
-        response.message = "success"
-        response.data = filteredApps
+        -- Check if at least one App exists is provided
+        if #filteredApps == 0 then
+           SendFailure(m.From, "Apps fetching failed!.")
+        end
 
-        ao.send({ Target = m.From, Data = tableToJson(response) })
-    end
+        local AllApps = TableToJson(filteredApps)
+        SendSuccess(m.From, AllApps)
+        end
 )
 
 Handlers.add(
@@ -728,88 +831,76 @@ Handlers.add(
     function(m)
         local owner = m.From
 
-        -- Check if the Apps table is empty
         if not Apps or not Apps.apps or next(Apps.apps) == nil then
-          local response = {}
-          response.code = 404
-          response.message = "failed"
-          response.data = "null"
-          ao.send({ Target = m.From, Data = tableToJson(response) })
-          return
+        SendFailure(m.From, "Apps are nil")
         end
 
         -- Filter apps owned by the user from the nested 'apps' table
         local filteredApps = {}
         for AppId, App in pairs(Apps.apps) do
-            if App.Owner == owner then
+            if App.owner == owner then
                 filteredApps[AppId] = {
-                    AppId = App.AppId,
-                    AppName = App.AppName,
-                    Description = App.Description,
-                    CompanyName = App.CompanyName,
-                    ProjectType = App.ProjectType,
-                    WebsiteUrl = App.WebsiteUrl,
-                    AppIconUrl = App.AppIconUrl,
-                    CreatedTime = App.CreatedTime
+                appId = app.appId,
+                appName = app.appName,
+                description = app.description,
+                companyName = app.companyName,
+                projectType = app.projectType,
+                websiteUrl = app.websiteUrl,
+                appIconUrl = app.appIconUrl,
+                createdTime = app.createdTime
                 }
             end
         end
+        -- Check if at least one App exists is provided
+        if #filteredApps == 0 then
+           SendFailure(m.From, "Apps fetching failed!.")
+        end
 
-        local response = {}
-        response.code = 200
-        response.message = "success"
-        response.data = filteredApps
-
-        ao.send({ Target = m.From, Data = tableToJson(response) })
-    end
+        local AllApps = TableToJson(filteredApps)
+        SendSuccess(m.From, AllApps)
+        end
 )
 
 
 
 Handlers.add(
-    "TransferAppOwnership",
-    Handlers.utils.hasMatchingTag("Action", "TransferAppOwnership"),
+    "TransferAppownership",
+    Handlers.utils.hasMatchingTag("Action", "TransferAppownership"),
     function(m)
         local appId = m.Tags.AppId
-        local newOwner = m.Tags.NewOwner
-        local currentOwner = m.From
-        local currentTime = getCurrentTime()
+        local newowner = m.Tags.Newowner
+        local currentowner = m.From
+        local currentTime = GetCurrentTime()
 
-        -- Validate input
-        if not appId or not newOwner then
-            ao.send({ Target = m.From, Data = "AppId or NewOwner is missing." })
-            return
-        end
 
-        -- Check if the app exists
-        if not Apps[appId] then
-            ao.send({ Target = m.From, Data = "App not found." })
-            return
-        end
+        if not ValidateField(appId, "appId", m.From) then return end
 
+        if not ValidateField(newowner, "newowner", m.From) then return end
+
+        
         -- Check if the user making the request is the current owner
-        if Apps[appId].Owner ~= currentOwner then
-            ao.send({ Target = m.From, Data = "You are not the owner of this app." })
+        if Apps.app[appId].owner ~= currentowner then
+            SendFailure(m.From , "You are not the App owner.")
             return
         end
+
+        ChangeownerReviewTable(appId, newowner,currentowner, nil)
+        ChangeownerFeatureRequest(appId, newowner,currentowner, nil)
+        ChangeownerDevForum(appId, newowner, currentowner, nil)
+        ChangeownerBugReport(appId, newowner, currentowner, nil)
+        ChangeownerFavorites(appId, newowner,currentowner, nil)
+        ChangeownerHelpful(appId, newowner,currentowner, nil)
 
         -- Transfer ownership
-        Apps[appId].Owner = newOwner
+        Apps.app[appId].owner = newowner
+        local transactionType = "Changed App OwnwerShip."
+        local amount = 0
+        LogTransaction(currentowner, appId, transactionType, amount, currentTime)
 
-         local points = 35
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local transactionId = generateTransactionId()
-         
-        transactions[#transactions + 1] =  {
-            user = newOwner,
-            transactionid = transactionId,
-            type = "Transfered Ownership.",
-            amount = 0,
-            points = userPointsData.points,
-            timestamp = currentTime
-        }
-        ao.send({ Target = m.From, Data = "Ownership transferred to " .. newOwner })
+        local transactionType = "Received App ownership."
+        local amount = 0
+        LogTransaction(newowner, appId, transactionType, amount, currentTime)
+        SendSuccess(m.From, "Project Ownership changed Succesfully.")
     end
 )
 
@@ -818,38 +909,35 @@ Handlers.add(
     "DeleteApp",
     Handlers.utils.hasMatchingTag("Action", "DeleteApp"),
     function(m)
-        -- Check if the required AppId tag is present
-        if not m.Tags.AppId or m.Tags.AppId == "" then
-            print("Error: AppId is nil or empty.")
-            ao.send({ Target = m.From, Data = "AppId is missing or empty." })
+        
+        local appId = m.Tags.AppId
+        local owner = m.From
+        local currentTime = GetCurrentTime()
+        -- Check if the user making the request is the current owner
+        if Apps.app[appId].owner ~= owner then
+           SendFailure(m.From , "You aint the owner of the project")
             return
         end
 
-         local appId = m.Tags.AppId
+         if not ValidateField(appId, "appId", m.From) then return end
 
+        if not ValidateField(owner, "owner", m.From) then return end
 
-        -- Check if the app exists
-        if not Apps[appId] then
-            print("Error: App with AppId " .. appId .. " not found.")
-            ao.send({ Target = m.From, Data = "App not found." })
-            return
+        --DeleteAppAirdrop(appId, owner, nil)
+        DeleteAppBugReport(appId, owner, nil)
+        DeleteAppDevForum(appId, owner, nil)
+        DeleteAppFeatureRequest(appId, owner, nil)
+        DeleteAppFlag(appId, owner, nil)
+        DeleteAppHelpful(appId, owner, nil)
+        DeleteAppReviews(appId, owner, nil)
+
+        Apps.app[appId] = nil
+
+        local transactionType = "Received App ownership."
+        local amount = 0
+        LogTransaction(owner, appId, transactionType, amount, currentTime)
+        SendSuccess(m.From, "Project Deleted  Succesfully.")
         end
-
-             -- Get the app owner
-        local appOwner = Apps[appId].Owner
-
-        -- Check if the caller is the app owner or the process admin
-        if m.From == appOwner then
-            -- Delete the app from the Apps table
-            Apps.app[appId] = nil
-            -- Send success message
-            ao.send({ Target = m.From, Data = "Successfully deleted the app, all associated data, and airdrops." })
-        else
-            -- If the caller is not the owner or admin, send an error message
-            print("Unauthorized delete attempt by " .. m.From)
-            ao.send({ Target = m.From, Data = "You are not the app owner or admin." })
-        end
-    end
 )
 
 
@@ -857,44 +945,33 @@ Handlers.add(
     "UpdateAppDetails",
     Handlers.utils.hasMatchingTag("Action", "UpdateAppDetails"),
     function(m)
-
-        -- Check if all required m.Tags are present
-        local requiredTags = { "NewValue", "AppId", "UpdateOption" }
-
-        for _, tag in ipairs(requiredTags) do
-            if m.Tags[tag] == nil then
-                print("Error: " .. tag .. " is nil.")
-                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
-                return
-            end
-        end
-
         local appId = m.Tags.AppId
-        local updateOption = m.Tags.UpdateOption
+        local updateOption = m.Tags.updateOption
         local newValue = m.Tags.NewValue
-        local currentOwner = m.From
+        local currentowner = m.From
+        local currentTime = GetCurrentTime()
 
-        -- Validate input
-        if not appId or not updateOption or not newValue then
-            ao.send({ Target = m.From, Data = "AppId, UpdateOption, or NewValue is missing." })
-            return
-        end
+        if not ValidateField(appId, "appId", m.From) then return end
+
+        if not ValidateField(updateOption, "updateOption", m.From) then return end
+
+        if not ValidateField(newValue, "newValue", m.From) then return end
 
         -- Check if the app exists
-        if not Apps[appId] then
-            ao.send({ Target = m.From, Data = "App not found." })
+        if not Apps.app[appId] then
+            SendFailure(m.From , "App not Found")
             return
         end
 
         -- Check if the user making the request is the current owner
-        if Apps[appId].Owner ~= currentOwner then
-            ao.send({ Target = m.From, Data = "You are not the owner of this app." })
+        if Apps[appId].owner ~= currentowner then
+            SendFailure(m.From , "You are not the Owner of this App")
             return
         end
 
         -- List of valid fields that can be updated
         local validUpdateOptions = {
-            OwnerUserName = true,
+            ownerUserName = true,
             AppName = true,
             Description = true,
             Protocol = true,
@@ -905,50 +982,25 @@ Handlers.add(
             profileUrl = true,
             CompanyName = true,
             AppIconUrl = true,
-            BannerUrl1 = true,
-            BannerUrl2 = true,
-            BannerUrl3 = true,
-            BannerUrl4 = true,
         }
 
         if not validUpdateOptions[updateOption] then
-            ao.send({ Target = m.From, Data = "Invalid UpdateOption." })
+            SendFailure(m.From , "Invalid Update Option.")
             return
         end
 
         -- **Initialize missing field if necessary**
-        if Apps[appId][updateOption] == nil then
-            Apps[appId][updateOption] = ""
+        if Apps.app[appId][updateOption] == nil then
+            Apps.app[appId][updateOption] = ""
         end
 
         -- Perform the update
         Apps[appId][updateOption] = newValue
-
-        -- Reward logic
-        local points = 40
-        local userPointsData = getOrInitializeUserPoints(currentOwner)
-        userPointsData.points = userPointsData.points + points
-        local amount = 1 * 1000000000000
-        local transactionId = generateTransactionId()
-
-        ao.send({
-            Target = ARS,
-            Action = "Transfer",
-            Quantity = tostring(amount),
-            Recipient = tostring(currentOwner)
-        })
-
-        table.insert(transactions, {
-            user = currentOwner,
-            transactionid = transactionId,
-            type = "Updated Project.",
-            amount = amount,
-            points = userPointsData.points,
-            timestamp = currentTime
-        })
-
-        ao.send({ Target = m.From, Data = updateOption .. " updated successfully." })
-    end
+        local transactionType = "Updated.".. updateOption
+        local amount = 0
+        LogTransaction(m.From, appId, transactionType, amount, currentTime)
+        SendSuccess(m.From, " Update Succesful.")
+        end
 )
 
 
@@ -962,116 +1014,25 @@ Handlers.add(
         local user_transactions = {}
         
         -- Filter transactions for the specific user
-        for _, transaction in ipairs(transactions) do
+        for _, transaction in ipairs(Transactions) do
             -- Skip nil transactions
             if transaction ~= nil and transaction.user == user then
-                table.insert(user_transactions, transaction)
+                user_transactions[#user_transactions + 1] = transaction
             end
         end
-        
-        -- Send the filtered transactions back to the user
-        ao.send({ Target = user, Data = tableToJson(user_transactions) })
-    end
+
+        -- Check if at least one banner is provided
+        if #user_transactions == 0 then
+            SendFailure(m.From, "You do not have any transactions")
+          return
+        end
+        SendSuccess(m.From , user_transactions)
+        end
 )
 
 
-Handlers.add(
-    "SendNotificationToInbox",
-    Handlers.utils.hasMatchingTag("Action", "SendNotificationToInbox"),
-    function(m)
-        local appId = m.Tags.AppId
-        local message = m.Tags.Message
-        local Header = m.Tags.Header
-        local LinkInfo = m.Tags.LinkInfo
-        local sender = m.From
-        local currentTime = getCurrentTime(m) -- Ensure you have a function to get the current timestamp
-        
-
-        -- Check for required parameters
-        if not appId or not message then
-            ao.send({ Target = m.From, Data = "AppId and Message are required." })
-            return
-        end
-
-        -- Verify that the app exists
-        local appDetails = Apps[appId]
-        if not appDetails then
-            ao.send({ Target = m.From, Data = "App not found." })
-            return
-        end
-
-        -- Verify that the sender is the owner of the app
-        if appDetails.Owner ~= sender then
-            ao.send({ Target = m.From, Data = "You are not authorized to send messages for this app." })
-            return
-        end
-
-        -- Check if the app has any favorites
-        local favorites = favoritesTable[appId]
-        if not favorites or not favorites.users then
-            ao.send({ Target = m.From, Data = "No users have favorited this app." })
-            return
-        end
-
-        -- Send the message to each user's inbox
-        for userId, _ in pairs(favorites.users) do
-            -- Function to initialize a user's inbox if it doesn't exist
-            local function initializeUserInbox(userId)
-                inboxTable[userId] = inboxTable[userId] or {}
-            end
-
-            initializeUserInbox(userId)
-
-            table.insert(inboxTable[userId], {
-                AppId = appId,
-                AppName = appDetails.AppName,
-                AppIconUrl = appDetails.AppIconUrl,
-                Message = message,
-                Header = Header,
-                LinkInfo = LinkInfo,
-                currentTime = currentTime
-            })
-        end
-
-         local points = 50
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local amount = 5 * 1000000000000
-        local transactionId = generateTransactionId()
-         ao.send({
-            Target = ARS,
-            Action = "Transfer",
-            Quantity = tostring(amount),
-            Recipient = tostring(user)
-        })
-        table.insert(transactions, {
-            user = user,
-            transactionid = transactionId,
-            type = "Sent Messages to users.",
-            amount = amount,
-            points = userPointsData.points,
-            timestamp = currentTime
-        })
-
-        -- Confirm the notifications were sent
-        ao.send({ Target = m.From, Data = "Message successfully added to the inbox of all users who favorited your app." })
-    end
-)
 
 
-Handlers.add(
-    "GetUserInbox",
-    Handlers.utils.hasMatchingTag("Action", "GetUserInbox"),
-    function(m)
-        local userId = m.From
-
-        -- Check if the user has any messages in their inbox
-        local userInbox = inboxTable[userId] or {}
-
-        -- Return the user's inbox as a JSON object
-        ao.send({ Target = userId, Data = tableToJson(userInbox) })
-    end
-)
 
 
 
@@ -1090,3 +1051,4 @@ Handlers.add(
       DataCount = 0
     end
 )
+
