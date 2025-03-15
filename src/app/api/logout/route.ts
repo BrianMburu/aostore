@@ -17,6 +17,7 @@ export async function POST(request: Request) {
   try {
     await rateLimiter.consume(ip);
   } catch (rlRejected) {
+    console.log("Rate limit Error => ", rlRejected);
     return NextResponse.json(
       { message: "Too many requests, please try again later." },
       { status: 429 }

@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { transactionSchema } from '@/lib/WalletAction'
 
 export default function TransactionForm({ type }: { type: 'deposit' | 'withdraw' | 'transfer' }) {
-    const { register, handleSubmit, formState } = useForm({
+    const { register, handleSubmit } = useForm({
         resolver: zodResolver(transactionSchema)
     })
 

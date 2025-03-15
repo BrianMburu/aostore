@@ -36,7 +36,7 @@ export default function ForumPostPage() {
         };
 
         loadPost();
-    }, [postId]);
+    }, [appId, postId]);
 
     if (loading) return <ForumPostSkeleton />;
 

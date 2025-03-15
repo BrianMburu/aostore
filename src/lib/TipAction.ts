@@ -1,6 +1,6 @@
 import { DAppService } from "@/services/ao/dappService";
 import { Tip } from "@/types/tip";
-import { User } from "@/types/user";
+import { UserDetails } from "@othent/kms";
 import { z } from "zod";
 
 export type TipState = {
@@ -15,7 +15,7 @@ export const tipSchema = z.object({
     amount: z.number().gt(0, 'Tip amount must be greater than 0'),
 });
 
-export async function sendTip(tokenId: string | null, recipientWallet: string, user: User | null, prevState: TipState, formData: FormData) {
+export async function sendTip(tokenId: string | null, recipientWallet: string, user: UserDetails | null, prevState: TipState, formData: FormData) {
     const validatedFields = tipSchema.safeParse({
         amount: Number(formData.get('amount')),
     });

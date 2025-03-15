@@ -107,7 +107,7 @@ export const AnalyticsService = {
     },
     fetchDappRatingsTotals: async (appId: string): Promise<{ dataSpec: Record<string, number | string>[]; categories: string[] }> => {
         await new Promise(resolve => setTimeout(resolve, 800));
-
+        console.log("fetchDappRatingsTotals", appId)
         const { dataSpec, categories } = await generateRatingsDataSpec("Total Reviews") as { dataSpec: Record<string, number | string>[]; categories: string[] };
 
         return { dataSpec, categories };
@@ -121,7 +121,7 @@ export const AnalyticsService = {
     },
     fetchFeatureBugTotals: async (appId: string): Promise<{ dataSpec: Record<string, number | string>[]; categories: string[] }> => {
         await new Promise(resolve => setTimeout(resolve, 800));
-
+        console.log("fetchFeatureBugTotals", appId)
         const { dataSpec, categories } = await generateFeatureBugDataSpec("value") as { dataSpec: Record<string, number | string>[]; categories: string[] };
 
         return { dataSpec, categories };

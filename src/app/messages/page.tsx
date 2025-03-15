@@ -1,3 +1,4 @@
+'use client'
 // app/messages/page.tsx
 import { Suspense } from 'react';
 

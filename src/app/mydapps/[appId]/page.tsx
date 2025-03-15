@@ -5,11 +5,12 @@ import { VerificationSection, VerificationStatus } from '@/app/ui/MyDapps/Verifi
 import { DAppService } from '@/services/ao/dappService';
 import DeleteDAppButton from '@/app/ui/MyDapps/DeleteDAppButton';
 
-export default async function DAppManagementPage({ params, }: {
-    params: { appId: string }
-}) {
+interface Props {
+    params: Promise<{ appId: string }>;
+}
+export default async function DAppManagementPage(props: Props) {
 
-    const currParams = await params;
+    const currParams = await props.params;
     const appId = currParams.appId;
     const dapp = await DAppService.getDApp(appId);
 

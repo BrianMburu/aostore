@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
-// import { UserProvider } from '@/context/UserContext';
 import Header from "./ui/Header/Header";
 import Footer from "./ui/Footer/Footer";
 import AppToaster from "./ui/Toaster";
+import { SessionRefreshOverlay } from './ui/SessionRefreshOverlay';
 
 import "./globals.css";
 
@@ -41,6 +41,7 @@ export default function RootLayout({
                         <div className="flex-1">{children}</div>
                         <Footer />
                         <AppToaster />
+                        <SessionRefreshOverlay />
                     </AuthProvider>
                 </ThemeProvider>
             </body>

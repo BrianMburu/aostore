@@ -1,14 +1,17 @@
 // app/mydapps/page.tsx
 import { MyDappsAirdropsList } from '@/app/ui/MyDapps/Airdrops/MyDappsAirdropsList';
 import { MyDappsAirDropFilter } from '@/app/ui/MyDapps/Airdrops/MyDappsAirDropsFilter';
-import { AirdropService } from '@/services/ao/airdropService';
+import { AidropsFilterParams, AirdropService } from '@/services/ao/airdropService';
 import { Suspense } from 'react';
 import { AirdropsSkeleton } from '@/app/ui/AirDrops/skeletons/AirdropsSkeleton';
 import { AddAirDropForm } from '@/app/ui/MyDapps/Airdrops/AddAirdropForm';
 
-export default async function MyDAppsPage({ searchParams }: { searchParams: Record<string, string> }) {
+interface Props {
+    searchParams: Promise<AidropsFilterParams>;
+}
+export default async function MyDAppsPage(props: Props) {
 
-    const filters = await searchParams;
+    const filters = await props.searchParams;
 
     const { data: initialAirdrops, total } = await AirdropService.fetchAirdrops(filters, true);
 

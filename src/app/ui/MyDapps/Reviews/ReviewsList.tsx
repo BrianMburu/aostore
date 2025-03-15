@@ -20,7 +20,7 @@ import { TipForm } from '../../Dapps/TipButton'
 import { DetailedHelpfulButton } from '../DetailedHelpfulButton'
 import { DappReplyEditForm } from './ReviewReplyEditForm'
 import { useAuth } from '@/context/AuthContext'
-import { User } from '@/types/user'
+import { UserDetails } from '@othent/kms'
 
 // ReviewsList component
 export function ReviewsList({ reviews, totalItems }: { reviews: Review[]; totalItems: number }) {
@@ -73,7 +73,7 @@ function RepliesList({ replies }: { replies: Reply[] }) {
   )
 }
 
-export function ReplyItem({ reply, user }: { reply: Reply, user: User | null }) {
+export function ReplyItem({ reply, user }: { reply: Reply, user: UserDetails | null }) {
   return (
     <div className="text-sm">
       <div className="flex items-center gap-2">

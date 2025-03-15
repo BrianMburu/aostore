@@ -6,8 +6,11 @@ import { DappRatingsChart } from '@/app/ui/MyDapps/Analytics/DappRatingsChart';
 import { TotalCard } from '@/app/ui/Analytics/TotalCard';
 import { TotalCardSkeleton } from '@/app/ui/Analytics/skeletons/TotalCardSkeleton';
 
-export default async function AnalyticsPage({ params }: { params: { appId: string } }) {
-    const currParams = await params;
+interface Props {
+    params: Promise<{ appId: string }>;
+}
+export default async function AnalyticsPage(props: Props) {
+    const currParams = await props.params;
     const appId = currParams.appId
     const stats = [
         { title: 'Total Reviews Posted', metric: 'reviews', icon: '📝' },

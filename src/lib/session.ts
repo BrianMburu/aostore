@@ -3,7 +3,6 @@ import "server-only";
 import { cookies } from "next/headers";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { UserDetails } from "@othent/kms";
-import { redirect } from "next/navigation";
 import { TokenExpiry } from "@/config/auth";
 
 const secretKey = process.env.SESSION_SECRET;

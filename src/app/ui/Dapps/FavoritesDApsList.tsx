@@ -9,66 +9,51 @@ import PaginationControls from '../PaginationControls';
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import DappCardsSkeleton from './Skeletons/DappCardsSkeleton';
 import { useSafeUser } from '@/hooks/useSafeUser';
+// import { useAuth } from '@/context/AuthContext';
+import { EmptyState } from '../EmptyState';
 
 
-export function FavoriteDAppsList({ params }: { params: DAppsFilterParams }) {
+export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterParams }) {
     const [favoriteDapps, setFavoriteDapps] = useState<AppData[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
-    const { user, isAuthenticated, isLoading: isAuthLoading } = useSafeUser();
-    // const { isAuthenticated } = useSafeUser();
+    const [isFetching, StartTransition] = useTransition();
 
-    const [fetching, StartTransition] = useTransition();
+    // const { getDataItemSigner } = useAuth();
+    const { user } = useSafeUser()
 
     useEffect(() => {
-        // Only fetch if user is authenticated and wallet address exists
-        if (!isAuthLoading && isAuthenticated && user?.walletAddress) {
-            const abortController = new AbortController();
 
-            StartTransition(async () => {
-                try {
-                    const { data: dapps, total: totalItems } = await DAppService.getFavoriteDApps(
-                        user.walletAddress,
-                        params,
-                        false
-                    );
-                    setFavoriteDapps(dapps);
+        StartTransition(async () => {
+            try {
+                const { data, total: totalItems } = await DAppService.getFavoriteDApps(
+                    user.walletAddress, filterParams, false);
+
+                if (data) {
+                    setFavoriteDapps(data);
                     setTotalItems(totalItems);
-                } catch (error) {
-                    console.error("Failed to fetch favorite dApps:", error);
                 }
-            });
 
-            return () => abortController.abort();
-        }
+            } catch (error) {
+                console.error("Failed to fetch favorite dApps:", error);
+            }
+        });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.walletAddress, params.fv_page, params.protocol, params.category, isAuthLoading, isAuthenticated]);
+    }, [filterParams.fv_page]);
 
-    // useEffect(() => {
-    //     StartTransition(
-    //         async () => {
-    //             const { data: dapps, total: totalItems } = await DAppService.getFavoriteDApps(user!.walletAddress || '', params);
-    //             setFavoriteDapps(dapps)
-    //             setTotalItems(totalItems)
-    //         }
-    //     );
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [user, params.fv_page, params.protocol, params.category])
 
     // Show combined loading states
-    if (isAuthLoading || fetching) {
+    if (isFetching) {
         return <DappCardsSkeleton n={4} />;
     }
 
     // Show empty state if no favorites
-    if (!favoriteDapps.length && !isAuthLoading) {
+    if (favoriteDapps.length === 0) {
         return (
-            <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                    {isAuthenticated
-                        ? "No favorite dApps found"
-                        : "Please login to view your favorites"}
-                </p>
-            </div>
+            <EmptyState
+                title="No Favorite DApps Found"
+                description="Bookmark a Dapp to add it to your favorites."
+                interactive
+            />
         );
     }
 

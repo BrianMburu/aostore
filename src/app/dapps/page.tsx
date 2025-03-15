@@ -4,14 +4,15 @@ import { Suspense } from "react";
 import DappCardsSkeleton from "../ui/Dapps/Skeletons/DappCardsSkeleton";
 import { FavoriteDAppsList } from "../ui/Dapps/FavoritesDApsList";
 import { DAppFilter } from "../ui/Dapps/DappFilter";
+import { DAppsFilterParams } from "@/services/ao/dappService";
 
-export default async function DAppsPage({
-  searchParams,
-}: {
-  searchParams: Record<string, string>;
-}) {
+interface Props {
+  params: Promise<{ appId: string }>;
+  searchParams: Promise<DAppsFilterParams>;
+}
 
-  const params = await searchParams;
+export default async function DAppsPage(props: Props) {
+  const filterParams = await props.searchParams;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -25,8 +26,8 @@ export default async function DAppsPage({
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
             Your Favorites
           </h2>
-          <Suspense fallback={<DappCardsSkeleton n={3} />}>
-            <FavoriteDAppsList params={params} />
+          <Suspense fallback={<DappCardsSkeleton n={4} />}>
+            <FavoriteDAppsList filterParams={filterParams} />
           </Suspense>
         </section>
 
@@ -36,7 +37,7 @@ export default async function DAppsPage({
             Top DApps
           </h2>
           <Suspense fallback={<DappCardsSkeleton n={8} />}>
-            <DAppsList params={params} />
+            <DAppsList filterParams={filterParams} />
           </Suspense>
         </section>
       </main>

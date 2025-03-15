@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Project {
     projectName: string;
     companyName: string;
@@ -5,6 +6,17 @@ export interface Project {
     ratings: number;
     appId: string;
     appIconUrl: string;
+    websiteUrl: string;
+    protocol: Protocol;
+}
+
+export interface DappList {
+    appId: string;
+    appName: string;
+    appIconUrl: string
+    projectType: ProjectType;
+    description: string;
+    createdTime: number;
     websiteUrl: string;
     protocol: Protocol;
 }

@@ -3,13 +3,15 @@ import { ForumFilters } from "@/app/ui/MyDapps/Forum/ForumFilters";
 import { QuestionsList } from "@/app/ui/MyDapps/Forum/QuestionsList"
 import { ForumService } from "@/services/ao/forumService";
 
-export default async function ForumPage({ params, searchParams }: {
-    params: { appId: string }
-    searchParams: { topic?: string; search?: string }
-}) {
-    const currParams = await params;
+interface Props {
+    params: Promise<{ appId: string }>;
+    searchParams: Promise<{ topic?: string; search?: string }>;
+}
+export default async function ForumPage(props: Props) {
+    const currParams = await props.params;
     const appId = currParams.appId
-    const { posts, total } = await ForumService.fetchForumPosts(appId, await searchParams, true);
+    const searchParams = await props.searchParams
+    const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
 
     return (
         <div className="space-y-8">

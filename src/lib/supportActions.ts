@@ -1,6 +1,6 @@
 import { SupportService } from '@/services/ao/supportServices';
 import { BugReport, FeatureRequest } from '@/types/support';
-import { User } from '@/types/user';
+import { UserDetails } from '@othent/kms';
 import * as z from 'zod';
 
 const SupportFormSchema = z.object({
@@ -28,7 +28,7 @@ export type FeatureRequestState = {
     request?: FeatureRequest | BugReport | null
 }
 
-export async function sendSupportRequest(appId: string, user: User | null, prevState: FeatureRequestState, formData: FormData) {
+export async function sendSupportRequest(appId: string, user: UserDetails | null, prevState: FeatureRequestState, formData: FormData) {
     const validatedFields = SupportFormSchema.safeParse({
         type: formData.get('type'),
         title: formData.get('title'),

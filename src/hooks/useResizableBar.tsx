@@ -9,7 +9,7 @@ interface DimensionObject {
 
 export function useResizeObserver(ref: React.RefObject<HTMLElement>): DimensionObject | undefined {
   const [dimensions, setDimensions] = useState<DimensionObject>();
-  const resizeObserver = useRef<ResizeObserver>();
+  const resizeObserver = useRef<ResizeObserver>(null);
 
   useEffect(() => {
     // Create a new ResizeObserver if we don't have one yet
