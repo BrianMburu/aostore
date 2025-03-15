@@ -22,6 +22,7 @@ export interface Review {
     helpfulVotes: number;
     unhelpfulVotes: number;
     profileUrl: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     voters: Record<string, any>;
     replies: Reply[];
 }

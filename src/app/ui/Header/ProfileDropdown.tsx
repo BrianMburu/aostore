@@ -15,7 +15,6 @@ import { Wallet } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
-import { useOthent } from '@/context/OthentContext';
 
 interface ProfileDropdownProps {
     address: string;

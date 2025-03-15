@@ -6,11 +6,11 @@ import { ReplyItem } from './ReplyItem'
 import { Reply } from '@/types/review'
 import { TipForm } from '../TipButton'
 import { DappReviewEditForm } from './DappReviewEditForm'
-import { User } from '@/types/user'
 import { HelpfulButton } from '../HelpfulButton'
 import toast from 'react-hot-toast'
 import { useOptimistic, useTransition } from 'react'
 import { ReviewService } from '@/services/ao/reviewService'
+import { UserDetails } from '@othent/kms'
 
 export default function ReviewItem({ review }: { review: Review }) {
     const [isPending, startTransition] = useTransition();
@@ -111,7 +111,7 @@ export default function ReviewItem({ review }: { review: Review }) {
 }
 
 
-export function UserReviewItem({ user, review }: { user: User, review: Review }) {
+export function UserReviewItem({ user, review }: { user: UserDetails, review: Review }) {
     const [isPending, startTransition] = useTransition();
     const [optimisticState, setOptimisticState] = useOptimistic(
         review,

@@ -3,12 +3,14 @@ import { FeatureRequestList } from "@/app/ui/MyDapps/FeatureRequests/FeatureRequ
 import { FeatureRequestsListSkeleton } from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
 import { Suspense } from "react";
 
-export default async function DappFeatureRequestsPage({ params, searchParams }: {
-    params: { appId: string }
-    searchParams: { type?: string; search?: string }
-}) {
-    const currParams = await params;
+interface Props {
+    params: Promise<{ appId: string }>;
+    searchParams: Promise<{ type?: string; search?: string }>;
+}
+export default async function DappFeatureRequestsPage(props: Props) {
+    const currParams = await props.params;
     const appId = currParams.appId as string;
+    const searchParams = await props.searchParams;
 
     return (
         <div className="max-w-7xl mx-auto">

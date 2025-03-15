@@ -1,9 +1,10 @@
 
 import { AppData } from "@/types/dapp";
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
-import { DAPPIDS, generateDAppTestData } from "@/utils/dataGenerators";
+import { generateDAppTestData } from "@/utils/dataGenerators";
+import { createDataItemSigner, message, result } from "@permaweb/aoconnect";
 import { Tip } from "@/types/tip";
-
+import { PROCESS_ID } from "@/config/ao";
 // services/dapps.ts
 export interface DAppsFilterParams {
     companyName?: string;
@@ -17,21 +18,6 @@ export interface DAppsFilterParams {
 
 const dummyDApps: AppData[] = generateDAppTestData(20)
 
-// const dummyDApps: AppData[] = Array.from({ length: 12 }, (_, i) => ({
-//     appName: `DApp ${i + 1}`,
-//     appIconUrl: `https://picsum.photos/20${i}`,
-//     appId: `dapp-${i}`,
-//     verified: i % 2 === 0 ? 'verified' : 'unverified',
-//     protocol: i % 2 === 0 ? 'aocomputer' : 'arweave',
-//     projectType: projectTypes[i % projectTypes.length],
-//     createdTime: Date.now() - 86400000 * i,
-//     reviews: generator.generateReviews(20),
-//     // ... other required fields with dummy data
-// }));
-
-// Test FeatureRequests:
-// // Generate 20 items with 80% features, 20% bugs
-
 export const DAppService = {
     async getDApp(appId: string): Promise<AppData | undefined> {
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -39,9 +25,33 @@ export const DAppService = {
         return dapp;
     },
 
-    async getDApps(params: DAppsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
-        // Simulate delay for fetching data
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    async getDApps(params: DAppsFilterParams, signer: ReturnType<typeof createDataItemSigner>, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
+
+        // Fetch Data from AO
+        try {
+            const fetchDappsMessages = await message({
+                process: PROCESS_ID,
+                tags: [
+                    { name: "Action", value: "FetchAllApps" },
+                ],
+                signer,
+            });
+            const { Messages, Error } = await result({
+                message: fetchDappsMessages,
+                process: PROCESS_ID
+            })
+
+            if (Error) {
+                throw new Error(Error.message);
+            }
+
+            console.log("Message Response => ", Messages);
+        } catch (error) {
+            console.error(error);
+
+            return { data: [], total: 0 }
+        }
+
 
         // Filter the dummyDApps based on the parameters
         const filtered = dummyDApps.filter(dapp => {
@@ -139,8 +149,18 @@ export const DAppService = {
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         const newDApp: AppData = {
-            ...dappData,
             appId: `dapp-${Date.now()}`,
+            appName: dappData.appName || '',
+            companyName: dappData.companyName || '',
+            description: dappData.description || '',
+            protocol: dappData.protocol || 'aocomputer',
+            projectType: dappData.projectType || 'Infrastructure',
+            websiteUrl: dappData.websiteUrl || '',
+            discordUrl: dappData.discordUrl || '',
+            twitterUrl: dappData.twitterUrl || '',
+            appIconUrl: dappData.appIconUrl || '',  // Add this
+            coverUrl: dappData.coverUrl || '',      // Add this
+            company: dappData.company || '',        // Add this
             verified: 'unverified',
             createdTime: Date.now(),
             ratings: 0,
@@ -149,7 +169,6 @@ export const DAppService = {
             downvotes: {},
             reviews: {},
             bannerUrls: {}
-            // Default values for required fields
         };
 
         dummyDApps.unshift(newDApp);
@@ -175,6 +194,7 @@ export const DAppService = {
 
     async submitVerification(appId: string): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 1500));
+        console.log("Submitting verification for appId => ", appId);
         // Simulate verification process
     },
 

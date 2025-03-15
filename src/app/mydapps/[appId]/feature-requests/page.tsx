@@ -3,13 +3,15 @@ import { FeatureRequestList } from "@/app/ui/MyDapps/FeatureRequests/FeatureRequ
 import { FeatureRequestsListSkeleton } from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
 import { Suspense } from "react";
 
+interface Props {
+    params: Promise<{ appId: string }>;
+    searchParams: Promise<{ type?: string; search?: string }>;
+}
 // app/mydapps/[appId]/feature-requests/page.tsx
-export default async function FeatureRequestsPage({ params, searchParams }: {
-    params: { appId: string }
-    searchParams: { type?: string; search?: string }
-}) {
+export default async function FeatureRequestsPage(props: Props) {
+    const currParams = await props.params;
 
-    const currParams = await params;
+    const searchParams = await props.searchParams;
     const appId = currParams.appId as string;
 
     return (
@@ -20,7 +22,7 @@ export default async function FeatureRequestsPage({ params, searchParams }: {
             </div>
 
             <Suspense fallback={<FeatureRequestsListSkeleton />}>
-                <FeatureRequestList appId={appId} searchParams={await searchParams} />
+                <FeatureRequestList appId={appId} searchParams={searchParams} />
             </Suspense>
         </div>
     )

@@ -22,7 +22,7 @@ const dummyAirdrop: AppAirdropData = {
     title: "app_456 Airdrop",
     description: 'Join our ecosystem and receive exclusive tokens! This airdrop rewards early adopters of our revolutionary decentralized platform.',
     airdropsReceivers: Array.from({ length: 15 }, (_, i) => `0x1234abcd${i}efgh5678`),
-    appname: 'Quantum DEX',
+    appName: 'Quantum DEX',
     airdropId: 'airdrop_xyz',
     status: 'pending'
 };
@@ -79,7 +79,7 @@ export default function AirdropDetailsPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                {dummyAirdrop.appname}
+                                {dummyAirdrop.appName}
                             </h1>
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${dummyAirdrop.status === 'claimed'
                                 ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'

@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { Reply, Review } from '@/types/review';
-import { User } from '@/types/user';
 import { ReviewService } from '@/services/ao/reviewService';
+import { UserDetails } from '@othent/kms';
 
 export type ReviewState = {
     errors?: {
@@ -23,7 +23,7 @@ export type ReviewFormData = z.infer<typeof reviewSchema>;
 
 // Action function that uses the reviewSchema for validation,
 // simulates a delay, and returns the new review on success.
-export async function sendReview(appId: string, user: User | null, prevState: ReviewState, formData: FormData) {
+export async function sendReview(appId: string, user: UserDetails | null, prevState: ReviewState, formData: FormData) {
     const validatedFields = reviewSchema.safeParse({
         comment: formData.get('comment'),
         rating: Number(formData.get('rating')),
@@ -47,7 +47,7 @@ export async function sendReview(appId: string, user: User | null, prevState: Re
             ...validatedFields.data,
             userId: user.walletAddress,
             profileUrl: 'https://picsum.photos/40',
-            username: user.username
+            username: user.nickname
         };
 
         const newReview = await ReviewService.createReview(appId, reviewData);
@@ -102,7 +102,7 @@ export const replySchema = z.object({
     comment: z.string().min(10, 'Comment must be at least 10 characters').max(500, "Comment must have a max of 500 characters"),
 });
 
-export async function sendReply(reviewId: string, user: User, prevState: ReplyState, formData: FormData) {
+export async function sendReply(reviewId: string, user: UserDetails, prevState: ReplyState, formData: FormData) {
     const validatedFields = replySchema.safeParse({
         comment: formData.get('comment'),
     });
@@ -120,9 +120,9 @@ export async function sendReply(reviewId: string, user: User, prevState: ReplySt
 
         const replyData: Partial<Reply> = {
             ...validatedFields.data,
-            profileUrl: user.avatar,
+            profileUrl: user.picture,
             user: user.walletAddress,
-            username: user.username
+            username: user.nickname
         }
 
         const reply = await ReviewService.submitReply(reviewId, replyData);

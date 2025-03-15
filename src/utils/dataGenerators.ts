@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AppData, ProjectType, projectTypes } from '@/types/dapp'
 import { Review, Reply } from "@/types/review";
 import { Message, MessageType } from '@/types/message';
@@ -621,7 +622,8 @@ export function generateTestMessages(count: number, baseTime: number = Date.now(
     return Array.from({ length: count }, (_, index) => {
         const app: AppData = apps[index % apps.length];
         const type = ['update', 'feature', 'bug'][Math.floor(Math.random() * 3)] as MessageType;
-        const timeOffset = index * Math.floor(Math.random() * 24 * 60 * 60 * 1000); // Random offset within 24 hours
+        const timeOffset = index * Math.floor(Math.random() * 24 * 60 * 60 * 1000);
+        const currentTime = baseTime - timeOffset;
 
         return {
             id: `msg-${Date.now()}-${index}`,
@@ -631,9 +633,9 @@ export function generateTestMessages(count: number, baseTime: number = Date.now(
             title: `${type.charAt(0).toUpperCase() + type.slice(1)}: ${app.appName}`,
             content: generateMessageContent(type),
             linkInfo: app.websiteUrl,
-            currentTime: baseTime - timeOffset,
-            updateTime: Math.random() > baseTime - timeOffset + 3600000, // 50% chance of update, 1 hour later
-            read: Math.random() > 0.7, // 30% chance of being unread
+            currentTime,
+            updateTime: currentTime + 3600000, // Changed from boolean to timestamp
+            read: Math.random() > 0.7,
             type: type
         };
     });

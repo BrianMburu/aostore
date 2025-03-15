@@ -78,6 +78,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.2.0
+      '@next/eslint-plugin-next':
+        specifier: ^15.2.2
+        version: 15.2.2
       '@types/node':
         specifier: ^20
         version: 20.17.16
@@ -93,6 +96,9 @@ importers:
       eslint-config-next:
         specifier: 15.1.6
         version: 15.1.6(eslint@9.19.0(jiti@1.21.7))(typescript@5.7.3)
+      eslint-plugin-react-hooks:
+        specifier: ^5.2.0
+        version: 5.2.0(eslint@9.19.0(jiti@1.21.7))
       postcss:
         specifier: ^8
         version: 8.5.1
@@ -427,6 +433,9 @@ packages:
 
   '@next/eslint-plugin-next@15.1.6':
     resolution: {integrity: sha512-+slMxhTgILUntZDGNgsKEYHUvpn72WP1YTlkmEhS51vnVd7S9jEEy0n9YAMcI21vUG4akTw9voWH02lrClt/yw==}
+
+  '@next/eslint-plugin-next@15.2.2':
+    resolution: {integrity: sha512-1+BzokFuFQIfLaRxUKf2u5In4xhPV7tUgKcK53ywvFl6+LXHWHpFkcV7VNeKlyQKUotwiq4fy/aDNF9EiUp4RQ==}
 
   '@next/swc-darwin-arm64@15.1.6':
     resolution: {integrity: sha512-u7lg4Mpl9qWpKgy6NzEkz/w0/keEHtOybmIl0ykgItBxEM5mYotS5PmqTpo+Rhg8FiOiWgwr8USxmKQkqLBCrw==}
@@ -1720,8 +1729,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-react-hooks@5.1.0:
-    resolution: {integrity: sha512-mpJRtPgHN2tNAvZ35AMfqeB3Xqeo273QxrHJsbBEPWODRM4r0yB6jfoROqKEYrOn27UtRPpcpHc2UqyBSuUNTw==}
+  eslint-plugin-react-hooks@5.2.0:
+    resolution: {integrity: sha512-+f15FfK64YQwZdJNELETdn5ibXEUQmW1DZL6KXhNnc2heoy/sg9VJJeT7n8TlMWouzWqSWavFkIhHyIbIAEapg==}
     engines: {node: '>=10'}
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
@@ -4028,6 +4037,10 @@ snapshots:
     dependencies:
       fast-glob: 3.3.1
 
+  '@next/eslint-plugin-next@15.2.2':
+    dependencies:
+      fast-glob: 3.3.1
+
   '@next/swc-darwin-arm64@15.1.6':
     optional: true
 
@@ -5478,7 +5491,7 @@ snapshots:
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.22.0(eslint@9.19.0(jiti@1.21.7))(typescript@5.7.3))(eslint-import-resolver-typescript@3.7.0)(eslint@9.19.0(jiti@1.21.7))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.19.0(jiti@1.21.7))
       eslint-plugin-react: 7.37.4(eslint@9.19.0(jiti@1.21.7))
-      eslint-plugin-react-hooks: 5.1.0(eslint@9.19.0(jiti@1.21.7))
+      eslint-plugin-react-hooks: 5.2.0(eslint@9.19.0(jiti@1.21.7))
     optionalDependencies:
       typescript: 5.7.3
     transitivePeerDependencies:
@@ -5569,7 +5582,7 @@ snapshots:
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-react-hooks@5.1.0(eslint@9.19.0(jiti@1.21.7)):
+  eslint-plugin-react-hooks@5.2.0(eslint@9.19.0(jiti@1.21.7)):
     dependencies:
       eslint: 9.19.0(jiti@1.21.7)
 

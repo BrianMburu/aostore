@@ -11,7 +11,6 @@ import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 import Image from "next/image";
 import { AnimatedButton } from "../animations/AnimatedButton";
-import { useOthent } from "@/context/OthentContext";
 import Loader from "../Loader";
 import { ProfileIconSkeleton } from "./skeletons/ProfileIconSkeleton";
 
@@ -28,15 +27,13 @@ const Header: React.FC = () => {
 
     const { user, isLoading: verifyingSession, isConnected, login, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    // const [isConnected, setIsConnected] = useState(user ? true : false);
     const [isLoading, setIsLoading] = useState(false);
     const [isDisconnecting, setIsDisconnecting] = useState(false);
 
-    // console.log(isConnected);
     const navigation: NavLink[] = [
         // { href: '/games', label: 'Games' },
         { href: "/dapps", label: "Dapps" },
-        { href: "/airdrops", label: "Airdrops" },
+        // { href: "/airdrops", label: "Airdrops" },
         { href: "/about", label: "About" },
         // { href: '/decentralized', label: 'Decentralized' },
         // { href: '/dao', label: 'DAO Verified' },
@@ -47,7 +44,6 @@ const Header: React.FC = () => {
         try {
             // Replace with actual wallet connection logic
             await login();
-            // setIsConnected(true);
 
             toast.success("Wallet connected successfully");
         } catch (error) {
@@ -62,7 +58,6 @@ const Header: React.FC = () => {
         setIsDisconnecting(true);
         try {
             logout();
-            // setIsConnected(false);
 
             toast.success("Wallet disconnected successfully");
         } catch (error) {
@@ -169,7 +164,7 @@ const Header: React.FC = () => {
                                 </Link>
                             ))}
 
-                            <button
+                            <AnimatedButton
                                 onClick={
                                     isConnected
                                         ? handleDisconnect
@@ -185,7 +180,7 @@ const Header: React.FC = () => {
                                     : isLoading
                                         ? "Signing in..."
                                         : "Sign in"}
-                            </button>
+                            </AnimatedButton>
                         </div>
                     </div>
                 )}

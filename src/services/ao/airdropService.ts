@@ -8,6 +8,8 @@ const dummyAirdrops: AppAirdropData[] = Array.from({ length: 48 }, (_, i) => ({
     title: `Airdrop ${i % 6 + 1}${String.fromCharCode(65 + i % 3)}`,
     appId: DAPPIDS[i],
     tokenId: `token_${i}`,
+    description: `Description for Airdrop ${i}`,
+    airdropsReceivers: [`receiver1_${i}`, `receiver2_${i}`],
     amount: Math.floor(Math.random() * 1000),
     publishTime: Date.now() - Math.floor(Math.random() * 1000000000),
     expiryTime: Date.now() + Math.floor(Math.random() * 1000000000),

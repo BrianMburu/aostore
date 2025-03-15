@@ -3,11 +3,11 @@ import DappReviews from "@/app/ui/Dapps/Review/DappReviews"
 import ReviewsFilters from "@/app/ui/MyDapps/Reviews/ReviewFilters";
 
 
-export default async function ReviewsPage({ params }: {
-    params: { appId: string }
+export default async function ReviewsPage(props: {
+    params: Promise<{ appId: string }>
 }) {
 
-    const currParams = await params;
+    const currParams = await props.params;
     const appId = currParams.appId as string;
 
     return (

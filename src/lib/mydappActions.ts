@@ -126,8 +126,18 @@ export const createTemporaryDApp = (formData: FormData): AppData => {
         protocol: formData.get('protocol') as Protocol,
         projectType: formData.get('projectType') as ProjectType,
         companyName: formData.get('companyName') as string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bannerUrls: formData.get('bannerUrls')?.toString().split(',').map(url => url.trim()) as Record<string, any>,
     };
 
-    return data
+    return {
+        ...data,
+        company: data.companyName,
+        ratings: 0,
+        createdTime: Date.now(),
+        downvotes: {},
+        upvotes: {},
+        reviews: [],
+        totalRatings: 0
+    };
 };

@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { swapSchema } from '@/lib/WalletAction'
 
 export default function TokenSwapForm() {
-    const { register, handleSubmit, watch, formState } = useForm({
+    const { register, handleSubmit, watch } = useForm({
         resolver: zodResolver(swapSchema)
     })
 

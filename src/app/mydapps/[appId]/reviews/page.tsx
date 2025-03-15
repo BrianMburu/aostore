@@ -2,17 +2,16 @@ import { ReviewsList } from '@/app/ui/MyDapps/Reviews/ReviewsList'
 import ReviewsFilters from '@/app/ui/MyDapps/Reviews/ReviewFilters';
 import { ReviewService } from '@/services/ao/reviewService';
 
-export default async function ReviewsPage({
-    params,
-    searchParams,
-}: {
-    params: { appId: string }
-    searchParams: { sort?: string; filter?: string, page?: string }
-}) {
+interface Props {
+    params: Promise<{ appId: string }>;
+    searchParams: Promise<{ sort?: string; filter?: string, page?: string }>;
+}
+export default async function ReviewsPage(props: Props) {
 
-    const currParams = await params;
+    const currParams = await props.params;
     const appId = currParams.appId as string;
-    const { data, total } = await ReviewService.getReviews(appId, await searchParams, true);
+    const searchParams = await props.searchParams;
+    const { data, total } = await ReviewService.getReviews(appId, searchParams, true);
 
     return (
         <div className="space-y-8">
