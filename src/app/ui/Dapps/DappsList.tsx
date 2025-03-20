@@ -18,13 +18,11 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
     const { getDataItemSigner, isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
-
         startTransition(
             async () => {
                 try {
                     if (!isAuthLoading && isConnected) {
                         const signer = await getDataItemSigner();
-
                         const { data, total } = await DAppService.getDApps(filterParams, signer, true);
 
                         if (data) {
@@ -41,6 +39,7 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
                     console.log(error)
                 }
             })
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getDataItemSigner, filterParams.page, filterParams.protocol, filterParams.search, filterParams.category])
 
@@ -61,7 +60,7 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {dapps.map(dapp => (
                     <DAppCard key={dapp.appId} dapp={dapp} />
                 ))}

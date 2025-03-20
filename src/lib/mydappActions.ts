@@ -1,6 +1,6 @@
 import * as z from 'zod';
 import { DAppService } from '@/services/ao/dappService';
-import { AppData, ProjectType, projectTypes, Protocol } from '@/types/dapp';
+import { AppData, AppTokenData, ProjectType, projectTypes, Protocol } from '@/types/dapp';
 
 export type State = {
     message?: string | null;
@@ -141,3 +141,85 @@ export const createTemporaryDApp = (formData: FormData): AppData => {
         totalRatings: 0
     };
 };
+
+export type DappTokenState = {
+    message?: string | null;
+    errors?: { [key: string]: string[] },
+    dappToken?: AppTokenData
+};
+
+export const dappTokenSchema = z.object({
+    tokenId: z.string().max(50, 'Id must have a maximum of 50 characters'),
+    tokenName: z.string().min(3, 'Name must be at least 3 characters'),
+    tokenSymbol: z.string().min(3, 'Symbol must be at least 3 characters'),
+    tokenDenomination: z.number().min(1, 'Denomination must be at least 1'),
+    tokenLogoUrl: z.string().url('Invalid URL format for Token Logo URL'),
+})
+
+export async function addDappToken(appId: string, prevState: DappTokenState, formData: FormData) {
+    const data = {
+        tokenId: formData.get('tokenId') as string,
+        tokenName: formData.get('tokenName') as string,
+        tokenSymbol: formData.get('tokenSymbol') as string,
+        tokenDenomination: Number(formData.get('tokenDenomination')) as number,
+        tokenLogoUrl: formData.get('tokenLogoUrl') as string,
+    }
+
+    const validatedFields = dappTokenSchema.safeParse(data);
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has errors. Failed to add DApp Token.',
+        };
+    }
+    try {
+        // Simulate a network delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // const dapp = await DAppService.addDappToken(appId, validatedFields.data);
+
+        return { message: 'success', dappToken: validatedFields.data };
+
+    } catch {
+        return { message: 'AO Error: failed to add DApp Token.' };
+    }
+
+}
+
+export type DappChangeOwnerState = {
+    message?: string | null;
+    errors?: { [key: string]: string[] },
+    newOwnerId?: string
+};
+
+export const dappChangeOwnerSchema = z.object({
+    newOwnerId: z.string().max(50, 'Id must have a maximum of 50 characters')
+})
+
+export async function changeDappOwner(appId: string, prevState: DappChangeOwnerState, formData: FormData) {
+    const data = {
+        newOwnerId: formData.get('newOwnerId') as string,
+    }
+
+    const validatedFields = dappChangeOwnerSchema.safeParse(data);
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has errors. Failed to change DApp Owner.',
+        };
+    }
+    try {
+        // Simulate a network delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // const dapp = await DAppService.addDappToken(appId, validatedFields.data);
+
+        return { message: 'success', newOwnerId: validatedFields.data.newOwnerId };
+
+    } catch {
+        return { message: 'AO Error: failed to add DApp Token.' };
+    }
+
+}
