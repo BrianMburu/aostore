@@ -3,6 +3,7 @@
 import { AppData } from '@/types/dapp';
 import Image from 'next/image';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 export const DAppCard = ({ dapp, isOptimistic }: { dapp: AppData, isOptimistic: boolean }) => {
     const timeFormatter = new Intl.DateTimeFormat('en-US', {
@@ -58,13 +59,13 @@ export const DAppCard = ({ dapp, isOptimistic }: { dapp: AppData, isOptimistic: 
                 {/* <Chip variant={dapp.verified ? 'success' : 'warning'}>
                     {dapp.verified ? 'Verified' : 'Pending Verification'}
                 </Chip> */}
-                <a
+                <Link
                     href={`/mydapps/${dapp.appId}`}
                     className="text-indigo-600 dark:text-indigo-400 hover:underline"
-                    rel="noopener noreferrer"
+                // rel="noopener noreferrer"
                 >
                     Visit Dashboard
-                </a>
+                </Link>
             </div>
             {/* Existing DApp item content */}
             {isOptimistic && (

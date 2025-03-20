@@ -1,1 +1,0 @@
-export const ARS_PROCESS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18"

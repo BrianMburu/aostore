@@ -1,21 +1,20 @@
 // -- This process details.
-export const PROCESS_ID = "8vRoa-BDMWaVzNS-aJPHLk_Noss0-x97j88Q3D4REnE"
+export const PROCESS_ID_DAPPS = "8vRoa-BDMWaVzNS-aJPHLk_Noss0-x97j88Q3D4REnE"
+
+// -- Favorite Dapps process
+export const PROCESS_ID_FAVORITE_DAPPS = "2aXLWDFCbnxxBb2OyLmLlQHwPnrpN8dDZtB9Y9aEdOE"
 
 // -- Reviews Table process
 export const PROCESS_ID_REVIEW_TABLE = "-E8bZaG3KJMNqwCCcIqFKTVzqNZgXxqX9Q32I_M3-Wo"
 
-
 // -- Bug Reports Table process
 export const PROCESS_ID_BUG_REPORT_TABLE = "x_CruGONBzwAOJoiTJ5jSddG65vMpRw9uMj9UiCWT5g"
-
 
 // -- Helpful Table process
 export const PROCESS_ID_HELPFUL_TABLE = "bQVmkwCFW7K2hIcVslihAt4YjY1RIkEkg5tXpZDGbbw"
 
-
 // -- DevForum Table process
 export const PROCESS_ID_DEV_FORUM_TABLE = "V7KLJ9Fc48sb6VstzR3JPSymVhrF7dlP-Vt4W25-7bo"
-
 
 // -- Feature Requests details
 export const PROCESS_ID_FEATURE_REQUEST_TABLE = "YGoIdaqLZauaH3aNLKyWdoFHTg0Voa5O3NhCMWKHRtY"
@@ -23,10 +22,14 @@ export const PROCESS_ID_FEATURE_REQUEST_TABLE = "YGoIdaqLZauaH3aNLKyWdoFHTg0Voa5
 // -- This flag Table details
 export const PROCESS_ID_FLAG_TABLE = "BpGlNnMA09jM-Sfh6Jldswhp5AnGTCST4MxG2Dk-ABo"
 
-
 // --Unhelpful Table process
 export const PROCESS_ID_UNHELPFUL_TABLE = "f4alCYxrBPDMOmTIBfHB43m1snkZSKdPqpr0Tr93t-U"
 
-
 // -- Airdrop process details
 export const PROCESS_ID_AIRDROP_TABLE = "ow_4lNzwLheZht2vC0k53MlIi9Tfw57_871KvTKOOpY"
+
+// -- Users Table process
+export const PROCESS_ID_USER_TABLE = "1gXCLjiClxoVn42xPvVtEG-veXSWUbQzIlzjoGMSAvw"
+
+// -- Tips Table process
+export const PROCESS_ID_TIP_TABLE = "LkCdB2PkYRl4zTChv1DiTtiLqr5Qpu0cJ6V6mvHUnOo"

@@ -1,10 +1,11 @@
 
-import { AppData } from "@/types/dapp";
+import { AppData, DappList } from "@/types/dapp";
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import { generateDAppTestData } from "@/utils/dataGenerators";
-import { createDataItemSigner, message, result } from "@permaweb/aoconnect";
+import { createDataItemSigner } from "@permaweb/aoconnect";
 import { Tip } from "@/types/tip";
-import { PROCESS_ID } from "@/config/ao";
+import { PROCESS_ID_DAPPS, PROCESS_ID_FAVORITE_DAPPS } from "@/config/ao";
+import { fetchAOmessages } from "@/utils/ao";
 // services/dapps.ts
 export interface DAppsFilterParams {
     companyName?: string;
@@ -26,32 +27,99 @@ export const DAppService = {
     },
 
     async getDApps(params: DAppsFilterParams, signer: ReturnType<typeof createDataItemSigner>, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
+        let dapps: DappList[] = [];
 
         // Fetch Data from AO
         try {
-            const fetchDappsMessages = await message({
-                process: PROCESS_ID,
-                tags: [
-                    { name: "Action", value: "FetchAllApps" },
-                ],
-                signer,
-            });
-            const { Messages, Error } = await result({
-                message: fetchDappsMessages,
-                process: PROCESS_ID
-            })
+            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }],
+                PROCESS_ID_DAPPS, signer
+            );
 
-            if (Error) {
-                throw new Error(Error.message);
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
             }
 
-            console.log("Message Response => ", Messages);
+            console.log("Messages => ", messages);
+
+            // Fetch the last message
+            const firstMessage = messages[0];
+            // console.log("First Messages Data => ", firstMessage.Data);
+
+            // Parse the Messages
+            const messageData = JSON.parse(firstMessage.Data);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                dapps = Object.values(messageData.data);
+            }
+
         } catch (error) {
             console.error(error);
-
-            return { data: [], total: 0 }
         }
 
+        console.log("Dapps => ", dapps);
+
+        // Filter the dummyDApps based on the parameters
+        const filtered = dummyDApps.filter(dapp => {
+            const matchesProtocol = !params.protocol || params.protocol === 'all' || dapp.protocol === params.protocol;
+            const matchesCategory = !params.category || params.category === 'all' || dapp.projectType === params.category;
+            const matchesSearch = !params.search || dapp.appName.toLowerCase().includes(params.search.toLowerCase());
+            const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
+
+            return matchesProtocol && matchesCategory && matchesSearch && matchesVerification;
+        });
+
+        // Pagination
+        const page = Number(params.page) || 1;
+        const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
+
+        // Sort the filtered data
+        const sortedData = filtered.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
+
+        // Slice the data for the current page
+        const data = useInfiniteScroll
+            ? sortedData.slice(0, page * itemsPerPage)
+            : sortedData.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+        // Return the filtered data and the total count
+        return {
+            data,
+            total: filtered.length
+        };
+    },
+
+    async getMyDApps(params: DAppsFilterParams, signer: ReturnType<typeof createDataItemSigner>, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
+        let dapps: DappList[] = [];
+
+        // Fetch Data from AO
+        try {
+            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }],
+                PROCESS_ID_DAPPS, signer
+            );
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // console.log("Messages => ", messages);
+
+            // Fetch the last message
+            const firstMessage = messages[0];
+            // console.log("First Messages Data => ", firstMessage.Data);
+
+            // Parse the Messages
+            const messageData = JSON.parse(firstMessage.Data);
+
+            if (messageData && messageData.code == 200) {
+                dapps = Object.values(messageData.data);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+
+        console.log("MyDapps => ", dapps);
 
         // Filter the dummyDApps based on the parameters
         const filtered = dummyDApps.filter(dapp => {
@@ -111,9 +179,35 @@ export const DAppService = {
         };
     },
 
-    async getFavoriteDApps(userId: string, params: DAppsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
-        // Simulate delay for fetching data
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    async getFavoriteDApps(params: DAppsFilterParams, signer: ReturnType<typeof createDataItemSigner>, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
+        let favoriteDapps: DappList[] = [];
+
+        // Fetch Data from AO
+        try {
+            const messages = await fetchAOmessages([{ name: "Action", value: "GetFavoriteApps" }],
+                PROCESS_ID_FAVORITE_DAPPS, signer
+            );
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const firstMessage = messages[0];
+            console.log("Favorite Dapps Messages Data => ", firstMessage.Data);
+
+            // Parse the Messages
+            const messageData = JSON.parse(firstMessage.Data);
+
+            if (messageData && messageData.code == 200) {
+                favoriteDapps = Object.values(messageData.data);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+
+        console.log("Favorite Dapps => ", favoriteDapps);
 
         // Filter the dummyDApps based on the parameters
         const filtered = dummyDApps
