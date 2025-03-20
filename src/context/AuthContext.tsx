@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useTransition } from 'react';
 import { Message } from '@/types/message';
-import { Othent, OthentOptions, UrlString, UserDetails } from '@othent/kms';
+import { Othent, OthentOptions, UserDetails } from '@othent/kms';
 import { createDataItemSigner } from '@permaweb/aoconnect';
 import { appInfo, TokenExpiry } from '@/config/auth';
 
@@ -10,6 +10,7 @@ type userValueTypes = string | Message | object | null;
 
 interface AuthContextType {
     user: UserDetails | null;
+    othent: Othent | null;
     login: () => Promise<void>;
     logout: () => Promise<void>;
     updateUserData: (key: string, value: userValueTypes) => void;
@@ -65,8 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             autoConnect: "lazy",
             persistLocalStorage: true,
             throwErrors: false,
-            auth0RedirectURI: window.location.origin as UrlString,
-            auth0ReturnToURI: window.location.origin as UrlString,
+            // auth0RedirectURI: window.location.origin as UrlString,
+            // auth0ReturnToURI: window.location.origin as UrlString,
             auth0RefreshTokenExpirationMs: TokenExpiry
         };
 
@@ -239,6 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         <AuthContext.Provider
             value={{
                 user,
+                othent,
                 login,
                 logout,
                 updateUserData,

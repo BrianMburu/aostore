@@ -3,13 +3,11 @@
 import { useEffect, useState, useTransition } from 'react'
 import DAppCard from './DappCard'
 import { DAppService, DAppsFilterParams } from '@/services/ao/dappService'
-// import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { AppData } from '@/types/dapp';
 import PaginationControls from '../PaginationControls';
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import DappCardsSkeleton from './Skeletons/DappCardsSkeleton';
-import { useSafeUser } from '@/hooks/useSafeUser';
-// import { useAuth } from '@/context/AuthContext';
 import { EmptyState } from '../EmptyState';
 
 
@@ -18,19 +16,23 @@ export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterP
     const [totalItems, setTotalItems] = useState<number>(0);
     const [isFetching, StartTransition] = useTransition();
 
-    // const { getDataItemSigner } = useAuth();
-    const { user } = useSafeUser()
+    const { isLoading: isAuthLoading, isConnected, getDataItemSigner } = useAuth();
 
     useEffect(() => {
-
         StartTransition(async () => {
             try {
-                const { data, total: totalItems } = await DAppService.getFavoriteDApps(
-                    user.walletAddress, filterParams, false);
+                if (!isAuthLoading && isConnected) {
+                    const signer = await getDataItemSigner();
+                    const { data, total: totalItems } = await DAppService.getFavoriteDApps(
+                        filterParams, signer, false);
 
-                if (data) {
-                    setFavoriteDapps(data);
-                    setTotalItems(totalItems);
+                    if (data) {
+                        setFavoriteDapps(data);
+                        setTotalItems(totalItems);
+                    }
+                } else {
+                    setFavoriteDapps([]);
+                    setTotalItems(0)
                 }
 
             } catch (error) {
@@ -38,7 +40,7 @@ export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterP
             }
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filterParams.fv_page]);
+    }, [getDataItemSigner, filterParams.fv_page]);
 
 
     // Show combined loading states
@@ -59,7 +61,7 @@ export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterP
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {favoriteDapps.map(dapp => (
                     <DAppCard key={dapp.appId} dapp={dapp} />
                 ))}

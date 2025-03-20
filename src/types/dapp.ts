@@ -69,3 +69,11 @@ export interface AppDataMini {
     protocol: string;
     totalRatings: number;
 }
+
+export interface AppTokenData {
+    tokenId: string;
+    tokenName: string;
+    tokenSymbol: string;
+    tokenDenomination: number;
+    tokenLogoUrl: string;
+}
