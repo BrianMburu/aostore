@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { StarIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { AppData } from '@/types/dapp';
+import { DappList } from '@/types/dapp';
 
-export default function DAppCard({ dapp }: { dapp: AppData }) {
+export default function DAppCard({ dapp }: { dapp: DappList }) {
     return (
         <motion.div
             whileHover={{ y: -4 }}
@@ -28,17 +27,6 @@ export default function DAppCard({ dapp }: { dapp: AppData }) {
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {dapp.companyName}
                         </p>
-                        <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, i) => (
-                                <StarIcon
-                                    key={i}
-                                    className={`h-4 w-4 ${i < dapp.ratings
-                                        ? 'text-yellow-400'
-                                        : 'text-gray-300 dark:text-gray-600'
-                                        }`}
-                                />
-                            ))}
-                        </div>
                         <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-sm dark:text-gray-300 rounded-full">
                             {dapp.projectType}
                         </span>

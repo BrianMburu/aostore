@@ -20,6 +20,7 @@ export function SessionRefreshOverlay() {
 
     const handleVerifySession = async () => {
         setIsVerifying(true);
+
         try {
             await requireAuth();
             // Instead of full reload, trigger auth state update

@@ -1,33 +1,54 @@
+import { PROCESS_ID_REVIEW_TABLE } from "@/config/ao";
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
-import { Reply, Review } from "@/types/review";
+import { Rank } from "@/types/rank";
+import { Reply } from "@/types/reply";
+import { Review } from "@/types/review";
 import { Tip } from "@/types/tip";
-import { ReviewDataGenerator } from "@/utils/dataGenerators";
-import { NextResponse } from "next/server";
-
-export interface ReviewSortParams {
+import { User } from "@/types/user";
+import { HelpfulData } from "@/types/voter";
+import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
+export interface ReviewFilterParams {
     sort?: string,
     rating?: string,
     search?: string,
     page?: string,
 }
 
-// Generate test data
-const generator = new ReviewDataGenerator();
-
-// For testing a list of reviews
-const testReviews = generator.generateReviews(20);
-// For testing specific scenarios
-// const negativeReview = generator.generateReviewWithRating(1);
-// const neutralReview = generator.generateReviewWithRating(3);
-// const positiveReview = generator.generateReviewWithRating(5);
-
 export const ReviewService = {
-    async getReviews(appId: string, params: ReviewSortParams, useInfiniteScroll: boolean = false): Promise<{ data: Review[], total: number }> {
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+    async getReviews(appId: string, params: ReviewFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: Review[], total: number }> {
+        let reviews: Review[] = [];
 
-        // Find the DApp by appId
-        const reviews = testReviews;//.filter(review => review.appId === appId);
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FetchAppReviews" },
+                { name: "appId", value: appId }
+
+            ], PROCESS_ID_REVIEW_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            // console.log("Review Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                reviews = Object.values(messageData.data);
+                console.log("Reviews: => ", reviews)
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get App Reviews, ${error}`)
+        }
 
         // Filter the reviews based on rating
         const filteredReviews = reviews.filter(review => {
@@ -43,10 +64,10 @@ export const ReviewService = {
         // Sort the filtered reviews
         const sortedReviews = filteredReviews.sort((a, b) => {
             if (!params.sort || params.sort === 'latest') {
-                return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+                return new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime();
             }
             if (params.sort === 'mostHelpful') {
-                return b.helpfulVotes - a.helpfulVotes;
+                return b.voters.foundHelpful.count - a.voters.foundHelpful.count;
             }
             return 0; // Default case if no sorting criteria matches
         });
@@ -63,128 +84,228 @@ export const ReviewService = {
 
     },
 
-    async createReview(appId: string, reviewData: Partial<Review>): Promise<Review> {
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+    async createReview(appId: string, user: User, rank: Rank, reviewData: { rating: number, description: string }): Promise<Review> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "AddReviewAppX" },
+                { name: "appId", value: appId },
+                { name: "username", value: user.username },
+                { name: "profileUrl", value: user.avatar || "" },
+                { name: "rank", value: rank.rank },
+                { name: "description", value: reviewData.description },
+                { name: "rating", value: reviewData.rating.toString() },
 
-        const newReview = {
-            ...reviewData,
-            profileUrl: 'https://picsum.photos/40',
-            reviewId: `rev-${Date.now()}`,
-            timestamp: Date.now(),
-            upvotes: 0,
-            downvotes: 0,
-            helpfulVotes: 0,
-            unhelpfulVotes: 0,
-            voters: [],
-            replies: [],
-        } as Review;
+            ], PROCESS_ID_REVIEW_TABLE);
 
-        testReviews.unshift(newReview);
-        // Return the updated review array
-        return newReview;
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("Review Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const featureRequest: Review = messageData.data;
+                return featureRequest;
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to send Review Data, ${error}`)
+        }
     },
 
-    async updateReview(reviewId: string, reviewData: Partial<Review>): Promise<Review> {
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+    async updateReview(appId: string, reviewId: string, reviewData: { rating: number, description: string }): Promise<Review> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "EditAppReview" },
+                { name: "appId", value: appId },
+                { name: "reviewId", value: reviewId },
+                { name: "description", value: reviewData.description },
+                { name: "rating", value: reviewData.rating.toString() },
 
-        // Simulate update in dummy data
-        const postIndex = testReviews.findIndex(p => p.reviewId === reviewId);
+            ], PROCESS_ID_REVIEW_TABLE);
 
-        testReviews[postIndex] = {
-            ...testReviews[postIndex],
-            ...reviewData
-        };
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
 
-        // Return the updated review array
-        return testReviews[postIndex];
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("Review Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const featureRequest: Review = messageData.data;
+                return featureRequest;
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to edit Review Data, ${error}`)
+        }
     },
 
-    async submitReply(reviewId: string, replyData: Partial<Reply>): Promise<Reply> {
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+    async submitReply(appId: string, reviewId: string, user: User, rank: Rank, replyData: { description: string }): Promise<Reply> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "AddReviewReply" },
+                { name: "appId", value: appId },
+                { name: "reviewId", value: reviewId },
+                { name: "username", value: user.username },
+                { name: "profileUrl", value: user.avatar || "" },
+                { name: "description", value: replyData.description },
+                { name: "rank", value: rank.rank },
 
-        // Find the review by reviewId
-        const review = testReviews.find((review: Review) => review.reviewId === reviewId);
-        if (!review) {
-            throw new Error('Review not found');
+            ], PROCESS_ID_REVIEW_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("Review reply Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const replyData: Reply = messageData.data;
+                return replyData;
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to add review reply, ${error}`)
         }
-
-        // Ensure replies array exists
-        if (!review.replies) {
-            review.replies = [];
-        }
-        const newReply = {
-            ...replyData,
-            replyId: crypto.randomUUID(),
-            timestamp: Date.now(),
-            upvotes: 0,
-            downvotes: 0,
-        } as Reply;
-
-        // Add the reply to the beginning of the replies array
-        review.replies.unshift(newReply);
-
-        // Return the updated replies array
-        return newReply;
     },
 
-    async updateReply(replyId: string, replyData: Partial<Reply>): Promise<Reply> {
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+    async updateReply(appId: string, reviewId: string, replyId: string, replyData: { description: string }): Promise<Reply> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "AddReviewReply" },
+                { name: "appId", value: appId },
+                { name: "reviewId", value: reviewId },
+                { name: "replyId", value: replyId },
+                { name: "description", value: replyData.description },
 
-        // Test Review
-        const testReviewId = "review-5"
+            ], PROCESS_ID_REVIEW_TABLE);
 
-        // Find the review by reviewId
-        const review = testReviews.find((review: Review) => review.reviewId === testReviewId);
-        if (!review) {
-            throw new Error('Review not found');
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("Review reply Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const replyData: Reply = messageData.data;
+                return replyData;
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to add review reply, ${error}`)
         }
-
-        // Ensure replies array exists
-        if (!review.replies) {
-            review.replies = [];
-        }
-        // Simulate update in dummy data
-        const replyIndex = testReviews.findIndex(p => p.reviewId === replyData.replyId);
-
-
-        // Add the reply to the beginning of the replies array
-        review.replies[replyIndex] = replyData as Reply;
-
-        // Return the updated replies array
-        return review.replies[replyIndex];
     },
 
-    async helpfulVote(reviewId: string) {
-        await new Promise(resolve => setTimeout(resolve, 300));
+    async helpfulVote(appId: string, reviewId: string) {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "MarkReviewHelpful" },
+                { name: "appId", value: appId },
+                { name: "reviewId", value: reviewId },
 
-        // Simulate update in dummy data
-        const postIndex = testReviews.findIndex(p => p.reviewId === reviewId);
+            ], PROCESS_ID_REVIEW_TABLE);
 
-        if (postIndex === -1) {
-            NextResponse.json({ error: 'Post not found' }, { status: 404 });
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("Review helpful Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const helpfulData: HelpfulData = messageData.data;
+                return helpfulData;
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to vote review as helpful, ${error}`)
         }
-        testReviews[postIndex].helpfulVotes++;
-
-        return NextResponse.json({ success: true });
     },
 
-    async unhelpfulVote(reviewId: string) {
-        await new Promise(resolve => setTimeout(resolve, 300));
+    async unhelpfulVote(appId: string, reviewId: string) {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "MarkReviewUnHelpful" },
+                { name: "appId", value: appId },
+                { name: "reviewId", value: reviewId },
 
-        // Simulate update in dummy data
-        const postIndex = testReviews.findIndex(p => p.reviewId === reviewId);
-        if (postIndex === -1) {
-            NextResponse.json({ error: 'Post not found' }, { status: 404 });
+            ], PROCESS_ID_REVIEW_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("Review helpful Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const helpfulData: HelpfulData = messageData.data;
+                return helpfulData;
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to vote review as helpful, ${error}`)
         }
-
-        testReviews[postIndex].unhelpfulVotes++;
-
-        return NextResponse.json({ success: true });
     },
+
     async tip(tipData: Tip) {
         await new Promise(resolve => setTimeout(resolve, 1500));
         // Add Ao handler

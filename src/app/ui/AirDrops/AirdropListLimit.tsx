@@ -5,38 +5,65 @@ import { useEffect, useState, useTransition } from "react";
 import { AidropsFilterParams, AirdropService } from "@/services/ao/airdropService";
 import { AirdropsSkeletonVertical } from "./skeletons/AirdropsSkeleton";
 import { motion } from "framer-motion";
-import GiftIcon from "@heroicons/react/24/outline/GiftIcon";
+import { GiftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import ChevronRightIcon from "@heroicons/react/24/outline/ChevronRightIcon";
+import { EmptyState } from "../EmptyState";
+import { useAuth } from "@/context/AuthContext";
 
 export function AirdropsListLimit({ params }: { params: AidropsFilterParams }) {
     const [airdrops, setAirdrops] = useState<AppAirdropData[]>([]);
 
     const [fetching, StartTransition] = useTransition();
+    const { isConnected, isLoading } = useAuth();
 
     useEffect(() => {
         StartTransition(
             async () => {
-                const { data: airdrops, } = await AirdropService.fetchAirdropsLimit(params, 4)
-                setAirdrops(airdrops)
+                try {
+                    if (!isLoading && isConnected) {
+                        const { data, } = await AirdropService.fetchAirdropsLimit(params, 4)
+
+                        if (data) {
+                            setAirdrops(data);
+                        }
+                    } else {
+                        setAirdrops([]);
+                    }
+                } catch (error) {
+                    setAirdrops([]);
+                    console.log(error)
+                }
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [params.appId])
-    return (
-        <>
-            {fetching ? <AirdropsSkeletonVertical n={4} /> :
-                <div className="grid grid-cols-1 gap-6 mb-8">
-                    {airdrops.map(airdrop => (
-                        <AirdropCardCustom
-                            key={airdrop.airdropId}
-                            airdrop={airdrop}
-                        />
-                    ))}
-                </div>
-            }
-        </>
+    }, [isConnected, params.appId]);
 
+    if (fetching) {
+        return <AirdropsSkeletonVertical n={8} />
+    }
+
+    if (!fetching && airdrops.length == 0) {
+        return (
+            <EmptyState
+                title="No Airdrops Found"
+                description="No new Airdrops have been launched by this Project."
+                icon={GiftIcon}
+                interactive
+                className="my-8"
+            />
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-1 gap-6 mb-8">
+            {airdrops.map(airdrop => (
+                <AirdropCardCustom
+                    key={airdrop.airdropId}
+                    airdrop={airdrop}
+                />
+            ))}
+        </div>
     )
 }
 

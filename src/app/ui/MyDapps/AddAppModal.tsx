@@ -9,22 +9,22 @@ import { projectTypes } from '@/types/dapp';
 
 import Loader from '../Loader';
 import toast from 'react-hot-toast';
-import { State, createDapp, createTemporaryDApp, dappSchema } from '@/lib/mydappActions';
-import { AppData } from '@/types/dapp';
+import { DappState, createDapp } from '@/lib/mydappActions';
 import { AddDappFloatingButton } from './AddAppFloatingButton';
+import { useAuth } from '@/context/AuthContext';
+import { AnimatedButton } from '../animations/AnimatedButton';
+import { MultiItemInput } from './MultiItemInput';
 
-interface AddDAppModalProps {
-    addOptimisticDApp: (data: AppData) => void;
-    setDapps: React.Dispatch<React.SetStateAction<AppData[]>>
-}
-
-export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps) => {
-    const searchParams = useSearchParams()
-    const pathname = usePathname()
-    const { replace } = useRouter()
+export const AddDAppModal = () => {
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const { replace } = useRouter();
+    const [bannerUrls, setBannerUrls] = useState<string[]>([]);
+    const router = useRouter();
 
     const [isOpen, setIsOpen] = useState(false);
-    const initialState: State = { message: null, errors: {} };
+    const initialState: DappState = { message: null, errors: {} };
+    const { user } = useAuth();
 
     const clearFilters = (filterNames: string[]) => {
         filterNames.map(
@@ -39,55 +39,34 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
     }
 
     const [state, formAction, isSubmitting] = useActionState(
-        async (prevState: State, _formData: FormData) => {
+        async (_prevState: DappState, _formData: FormData) => {
+            _formData.append('bannerUrls', bannerUrls.join(","));
+
             try {
-                const tempApp = createTemporaryDApp(_formData);
-
-                const validatedFields = dappSchema.safeParse(tempApp);
-
-                if (!validatedFields.success) {
-                    return {
-                        errors: validatedFields.error.flatten().fieldErrors,
-                        message: 'Form has errors. Failed to save DApp.',
-                    };
-                }
-
-                addOptimisticDApp(tempApp)
-
                 // Call createDapp to submit the data to the server
-                const newState = await createDapp(prevState, _formData);
+                const newState = await createDapp(user!, _prevState, _formData);
 
-                if (newState.message === 'success' && newState.dapp) {
+                if (newState.message === 'success') {
                     // Close modal and show success message
                     setIsOpen(false);
-
-                    // Update with actual server data
-                    setDapps(prev => newState.dapp ? [newState.dapp, ...prev] : prev);
 
                     // clear page filters
                     clearFilters(['page'])
 
                     toast.success("DApp submitted successfully! It will be visible after verification.");
+
+                    //Revalidate Mydapps Page.
+                    router.refresh();
                 }
                 return newState;
 
             } catch {
                 // Handle error and rollback
                 toast.error("Failed to submit DApp. Please try again.");
-                return prevState
+                return _prevState
             }
 
-
-        }, initialState)
-
-    // useEffect(() => {
-    //     if (state.message === 'success' && state.dapp) {
-    //         // setDapps(prev => state.dapp ? [state.dapp, ...prev] : prev);;
-    //         setIsOpen(false);
-    //         toast.success('DApp created successfully! It will be visible after verification.');
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [state.message, state.dapp]);
+        }, initialState);
 
     return (
         <div>
@@ -120,6 +99,12 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                             name="appIconUrl"
                         />
+                        {state?.errors?.appIconUrl &&
+                            state.errors.appIconUrl.map((error: string) => (
+                                <p className="mt-2 text-sm text-red-500" key={error}>
+                                    {error}
+                                </p>
+                            ))}
                     </div>
 
                     <div>
@@ -157,6 +142,12 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                             name="twitterUrl"
                         />
+                        {state?.errors?.twitterUrl &&
+                            state.errors.twitterUrl.map((error: string) => (
+                                <p className="mt-2 text-sm text-red-500" key={error}>
+                                    {error}
+                                </p>
+                            ))}
                     </div>
 
                     <div>
@@ -165,6 +156,12 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                             name="discordUrl"
                         />
+                        {state?.errors?.discordUrl &&
+                            state.errors.discordUrl.map((error: string) => (
+                                <p className="mt-2 text-sm text-red-500" key={error}>
+                                    {error}
+                                </p>
+                            ))}
                     </div>
 
                     <div>
@@ -173,6 +170,12 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                             name="coverUrl"
                         />
+                        {state?.errors?.websiteUrl &&
+                            state.errors.websiteUrl.map((error: string) => (
+                                <p className="mt-2 text-sm text-red-500" key={error}>
+                                    {error}
+                                </p>
+                            ))}
                     </div>
 
                     <div className="flex space-x-2">
@@ -229,11 +232,14 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
                                 </p>
                             ))}
                     </div>
-                    <div>
+
+                    <div >
                         <label className="text-gray-900 dark:text-white">Banner URLs</label>
-                        <input
-                            className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="bannerUrls"
+                        <MultiItemInput
+                            items={bannerUrls}
+                            onChange={setBannerUrls}
+                            placeholder="Enter banner urls separated by commas..."
+                            inputClassName='focus:ring-0'
                         />
                         {state?.errors?.bannerUrls &&
                             state.errors.bannerUrls.map((error: string) => (
@@ -252,14 +258,14 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
                         }
                     </div>
                     <div className="flex justify-end gap-4">
-                        <button
+                        <AnimatedButton
                             type="button"
                             className="px-4 py-2 text-gray-100 bg-gray-200 dark:bg-gray-500 rounded"
                             onClick={() => setIsOpen(false)}
                         >
                             Cancel
-                        </button>
-                        <button
+                        </AnimatedButton>
+                        <AnimatedButton
                             type="submit"
                             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                             disabled={isSubmitting}
@@ -267,12 +273,12 @@ export const AddDAppModal = ({ addOptimisticDApp, setDapps }: AddDAppModalProps)
                             {isSubmitting ? (
                                 <div className="flex items-center justify-center">
                                     <Loader />
-                                    Submitting ...
+                                    adding ...
                                 </div>
                             ) : (
-                                'Submit for Verification'
+                                'Add New Dapp'
                             )}
-                        </button>
+                        </AnimatedButton>
                     </div>
                 </form>
             </ModalDialog>

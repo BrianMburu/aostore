@@ -2,8 +2,8 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
-import { UserDetails } from "@othent/kms";
 import { TokenExpiry } from "@/config/auth";
+import { User } from "@/types/user";
 
 const secretKey = process.env.SESSION_SECRET;
 if (!secretKey) {
@@ -40,9 +40,9 @@ export async function decrypt(session: string | undefined = ""): Promise<JWTPayl
  * Creates a session cookie storing the full Othent user details.
  * @param user - The user details from Othent.
  */
-export async function createSession(user: UserDetails): Promise<void> {
+export async function createSession(user: User): Promise<void> {
   const expiresAt = new Date(Date.now() + TokenExpiry);
-  // Prepare payload with Othent user details.
+  // Prepare payload with user details.
   const payload: JWTPayload = {
     user, // store the user details in the payload
     expiresAt: expiresAt.toISOString(),

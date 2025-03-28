@@ -2,12 +2,13 @@
 
 // components/DappSupportForm.tsx
 import React, { useActionState } from 'react';
-import { sendSupportRequest, FeatureRequestState } from '@/lib/supportActions';
+import { FeatureRequestState, sendBugReport, sendFeatureRequest } from '@/lib/supportActions';
 import toast from 'react-hot-toast';
 import Loader from '../../Loader';
 import { useAuth } from '@/context/AuthContext';
 import { useParams } from 'next/navigation';
 import { AnimatedButton } from '../../animations/AnimatedButton';
+import { useRank } from '@/context/RankContext';
 
 interface DappSupportFormProps {
     requestType: string;
@@ -29,16 +30,26 @@ function DappSupportForm({
     const params = useParams();
     const appId = params.appId as string;
     const { user } = useAuth();
+    const { rank } = useRank();
+
     const [state, formAction, isSubmitting] = useActionState(
-
         async (prevState: FeatureRequestState, _formData: FormData) => {
-            const newState = await sendSupportRequest(appId, user, prevState, _formData);
-            if (newState.message === 'success' && newState.request) {
+            let newState: FeatureRequestState;
+            try {
+                if (requestType === "feature") {
+                    newState = await sendFeatureRequest(appId, user, rank, prevState, _formData);
+                } else {
+                    newState = await sendBugReport(appId, user, rank, prevState, _formData);
+                }
 
-                toast.success('Support request submitted successfully!');
+                toast.success(`${requestType == "feature" ? "Support request" : "Bug report"} submitted successfully!`);
+                return newState;
+
+            } catch (error) {
+                console.error(error);
+                toast.success(`${requestType == "feature" ? "Support request" : "Bug report"} submitted successfully!`);
+                return initialState
             }
-            return newState
-
         }, initialState);
 
     return (

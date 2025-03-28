@@ -2,9 +2,9 @@
 'use client';
 import { CheckBadgeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import { toast } from 'react-hot-toast';
-import { AppData } from '@/types/dapp';
+import { Dapp } from '@/types/dapp';
 
-export function VerificationStatus({ dapp }: { dapp: AppData }) {
+export function VerificationStatus({ dapp }: { dapp: Dapp }) {
     return (
         <div className="py-4 md:pl-4 rounded-lg">
             <div className="flex items-center gap-3">

@@ -2,18 +2,22 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useTransition } from 'react';
 import { Message } from '@/types/message';
-import { Othent, OthentOptions, UserDetails } from '@othent/kms';
 import { createDataItemSigner } from '@permaweb/aoconnect';
-import { appInfo, TokenExpiry } from '@/config/auth';
+import { AnimatePresence } from 'framer-motion';
+import { User } from '@/types/user';
+import DownloadModal from '@/app/ui/wander/DownloadModal';
+import { UserService } from '@/services/ao/UserService';
+import { AddUserForm } from '@/app/ui/AddUserForm';
+import { useRouter } from 'next/navigation';
 
 type userValueTypes = string | Message | object | null;
 
 interface AuthContextType {
-    user: UserDetails | null;
-    othent: Othent | null;
+    user: User | null; // Now stores just the wallet address
     login: () => Promise<void>;
     logout: () => Promise<void>;
     updateUserData: (key: string, value: userValueTypes) => void;
+    setUserData: (userData: User) => void;
     isConnected: boolean;
     isLoading: boolean;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,164 +29,136 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<UserDetails | null>(null);
-    const [othent, setOthent] = useState<Othent | null>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
     const [isConnected, setIsConnected] = useState<boolean>(false);
-    const [sessionChecked, setSessionChecked] = useState<boolean>(false);
     const [isLoading, startTransition] = useTransition();
+    const [showArConnectPopup, setShowArConnectPopup] = useState(false);
+    const router = useRouter();
 
-    const handleAuthEvent = useCallback((userDetails: UserDetails | null, isAuthenticated: boolean) => {
-        setUser(userDetails);
-        setIsConnected(isAuthenticated);
+    // Check for ArConnect installation
+    const checkArConnectInstalled = useCallback(() => {
+        return typeof window !== 'undefined' && !!window.arweaveWallet;
     }, []);
 
-    const handleError = useCallback((error: Error) => {
-        console.error("onError =", error);
-    }, []);
-
-    const validateOthentSession = async (sessionUser: UserDetails, instance: Othent) => {
-        try {
-            const isAuthenticated = await instance.isAuthenticated;
-            const currentUser = await instance.getSyncUserDetails();
-
-            if (JSON.stringify(currentUser) === JSON.stringify(sessionUser)) {
-                handleAuthEvent(currentUser, isAuthenticated);
-            } else {
-                console.log("Invalid session found!!");
-                await logout();
-            }
-        } catch (error) {
-            console.log("No active session found", error);
-            handleAuthEvent(null, false);
+    const handleAuthState = useCallback(async () => {
+        if (!checkArConnectInstalled()) {
+            setShowArConnectPopup(true);
+            return;
         }
-    };
-
-    // Initialize Othent and store it in state.
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-
-        const options: OthentOptions = {
-            appInfo,
-            autoConnect: "lazy",
-            persistLocalStorage: true,
-            throwErrors: false,
-            // auth0RedirectURI: window.location.origin as UrlString,
-            // auth0ReturnToURI: window.location.origin as UrlString,
-            auth0RefreshTokenExpirationMs: TokenExpiry
-        };
 
         try {
-            const instance = new Othent(options);
-            setOthent(instance);
-        } catch (error) {
-            console.error("Failed to initialize Othent:", error);
-        }
-    }, []);
+            const address = await window.arweaveWallet.getActiveAddress();
 
-    useEffect(() => {
-        if (typeof window === "undefined" || !othent || sessionChecked) return;
-
-        let isMounted = true;
-
-        othent.addEventListener("error", handleError);
-        othent.addEventListener("auth", handleAuthEvent);
-        const cleanupFn = othent.startTabSynching();
-
-        startTransition(async () => {
-            try {
-                const res = await fetch("/api/session");
-                if (res.ok) {
-                    const data = await res.json(); // expected format: { user: UserDetails }
-                    if (data?.user) {
-                        await validateOthentSession(data.user, othent);
-                    } else {
-                        // Only call logout if the user isn’t already null.
-                        if (user) {
-                            await logout();
-                        }
-                    }
+            if (address) {
+                const userdetails = await getUserDetails();
+                if (userdetails) {
+                    setUser(userdetails);
+                    setIsConnected(true);
                 } else {
-                    if (user) {
-                        await logout();
-                    }
-                }
-            } catch (error) {
-                console.error("Session fetch failed:", error);
-                if (isMounted) {
                     setUser(null);
                     setIsConnected(false);
                 }
-            } finally {
-                setSessionChecked(true);
-            }
-        });
-
-        return () => {
-            isMounted = false;
-            othent.removeEventListener("auth", handleAuthEvent);
-            othent.removeEventListener("error", handleError);
-            cleanupFn();
-        };
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [othent, sessionChecked, handleAuthEvent, handleError]);
-
-    const login = useCallback(async () => {
-        if (!othent) {
-            console.error("Othent instance not initialized");
-            return;
-        }
-        try {
-            // Prevent re-login if already authenticated.
-            if (othent.isAuthenticated) return;
-
-            await othent.connect();
-            const userDetails = othent.getSyncUserDetails();
-            if (!userDetails) {
-                console.error("User details are null after connection");
-                return;
-            }
-            setUser(userDetails);
-            setIsConnected(true);
-
-            // Create the session on the server.
-            const res = await fetch("/api/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user: userDetails }),
-            });
-            if (!res.ok) {
-                throw new Error("Failed to create session on server");
             }
         } catch (error) {
-            console.error("Login failed:", error);
-        }
-
-    }, [othent]);
-
-    const logout = useCallback(async () => {
-        if (!othent) {
-            console.error("Othent instance not initialized");
-            return;
-        }
-        // Avoid circular refresh if already logged out.
-        if (!user) return;
-        try {
-            await othent.disconnect();
+            console.error('Error checking ArConnect connection:', error);
             setUser(null);
             setIsConnected(false);
-
-            // Delete the session cookie on the server.
-            const res = await fetch("/api/logout", {
-                method: "POST",
-            });
-            if (!res.ok) {
-                throw new Error("Failed to delete session on server");
-            }
-        } catch (error) {
-            console.error("Logout failed:", error);
         }
-    }, [othent, user]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [checkArConnectInstalled]);
+
+    const getUserDetails = useCallback(async () => {
+        const res = await fetch("/api/session");
+        if (res.ok) {
+            const data = await res.json(); // expected format: { user: UserDetails }
+            if (data?.user) {
+                return data.user;
+            } else {
+                // Only call logout if the user isn’t already null.
+                if (user) {
+                    await logout();
+                }
+            }
+        } else {
+            if (user) {
+                await logout();
+            }
+        }
+        return null;
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
+
+    useEffect(() => {
+        startTransition(() => {
+            handleAuthState();
+        });
+    }, [handleAuthState]);
+
+    const login = useCallback(async () => {
+        if (!checkArConnectInstalled()) {
+            setShowArConnectPopup(true);
+            return;
+        }
+
+        try {
+            await window.arweaveWallet.connect(['ACCESS_ADDRESS', 'SIGN_TRANSACTION'], {
+                name: "AoStore",
+                logo: "OVJ2EyD3dKFctzANd0KX_PCgg8IQvk0zYqkWIj-aeaU",
+            });
+            const address = await window.arweaveWallet.getActiveAddress();
+
+            const userDetails = await UserService.fetchUser();
+
+            if (userDetails) {
+                setUser({
+                    walletAddress: address,
+                    username: userDetails.username,
+                    avatar: userDetails.avatar,
+                });
+                setIsFirstTimeUser(false);
+                setIsConnected(true);
+
+                // Update your server session if needed
+                await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user: userDetails }),
+                });
+
+            } else {
+                setUser({
+                    walletAddress: address,
+                    username: "Guest",
+                });
+                setIsFirstTimeUser(true);
+            }
+
+        } catch (error) {
+            console.error('Login failed:', error);
+            await logout();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [checkArConnectInstalled]);
+
+    const logout = useCallback(async () => {
+        // redirect to home page
+        if (checkArConnectInstalled()) {
+            try {
+                await window.arweaveWallet.disconnect();
+                await fetch('/api/logout', { method: 'POST' });
+
+                setUser(null);
+                setIsConnected(false);
+                router.push('/');
+            } catch (error) {
+                console.error('Error disconnecting:', error);
+                router.push('/');
+            }
+        }
+
+    }, [checkArConnectInstalled, router]);
 
     const updateUserData = (key: string, value: userValueTypes) => {
         if (!user) return;
@@ -190,60 +166,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(updatedUser);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const signTransaction = async (transaction: any) => {
-        if (!othent) {
-            console.error("Othent instance not initialized");
-            throw new Error("Othent instance not initialized");
-        }
-        try {
-            if (!othent.isAuthenticated) {
-                await othent.connect();
-            }
-            const signedTransaction = await othent.sign(transaction);
-            return signedTransaction;
-        } catch (error) {
-            console.error("Error signing transaction:", error);
-            throw error;
-        }
+    const setUserData = (userData: User) => {
+        if (!userData) return;
+        setUser(userData);
     };
 
-    const getDataItemSigner = async () => {
-        if (!othent) {
-            console.error("Othent instance not initialized");
-            throw new Error("Othent instance not initialized");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const signTransaction = useCallback(async (transaction: any) => {
+        if (!checkArConnectInstalled()) {
+            setShowArConnectPopup(true);
+            throw new Error('ArConnect not installed');
         }
-        if (!othent.isAuthenticated) {
-            await othent.connect();
+
+        try {
+            return await window.arweaveWallet.sign(transaction);
+        } catch (error) {
+            console.error('Signing failed:', error);
+            throw error;
         }
-        return createDataItemSigner(othent);
-    };
+    }, [checkArConnectInstalled]);
+
+    const getDataItemSigner = useCallback(async () => {
+        if (!checkArConnectInstalled()) {
+            setShowArConnectPopup(true);
+            throw new Error('ArConnect not installed');
+        }
+
+        return createDataItemSigner(window.arweaveWallet);
+    }, [checkArConnectInstalled]);
 
     const requireAuth = useCallback(async () => {
-        if (!othent) {
-            console.error("Othent instance not initialized");
-            return;
+        if (!isConnected) {
+            await login();
         }
-        try {
-            if (!othent.isAuthenticated) {
-                await login();
-            }
-            setIsConnected(true);
-        } catch (error) {
-            console.error("Authentication failed:", error);
-            await logout();
-            throw error;
-        }
-    }, [othent, login, logout]);
+    }, [isConnected, login]);
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                othent,
                 login,
                 logout,
                 updateUserData,
+                setUserData,
                 isConnected,
                 isLoading,
                 signTransaction,
@@ -252,6 +217,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }}
         >
             {children}
+
+            <AnimatePresence>
+                {
+                    showArConnectPopup && (
+                        <DownloadModal onClose={() => setShowArConnectPopup(false)} />
+                    )}
+                {
+                    isFirstTimeUser && (
+                        <AddUserForm isFirstTimeUser={isFirstTimeUser} />
+                    )
+                }
+            </AnimatePresence>
         </AuthContext.Provider>
     );
 }

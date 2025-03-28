@@ -1,46 +1,68 @@
-// app/wallet/TransactionHistory.tsx
 'use client'
 
-import { Transaction } from '@/types/wallet'
-import { Table } from '@tremor/react'
+import { Table, Badge } from '@tremor/react'
 
-const dummyTransactions: Transaction[] = [
-    // Sample transactions
+const transactions = [
+    {
+        id: '1',
+        type: 'deposit',
+        amount: '0.500 ETH',
+        date: '2024-03-15 14:32',
+        status: 'completed'
+    },
+    {
+        id: '2',
+        type: 'swap',
+        amount: '500 AOS',
+        date: '2024-03-14 09:15',
+        status: 'pending'
+    }
 ]
 
 export default function TransactionHistory() {
-    return (
-        <div className="border dark:border-gray-700 rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-4 dark:text-white">
-                Transaction History
-            </h3>
+    if (transactions.length === 0) {
+        return <EmptyState />
+    }
 
-            <Table className="mt-4">
-                <thead>
-                    <tr>
-                        <th className="text-left">Type</th>
-                        <th className="text-left">Amount</th>
-                        <th className="text-left">Token</th>
-                        <th className="text-left">Date</th>
-                        <th className="text-left">Status</th>
+    return (
+        <Table className="mt-4">
+            <thead>
+                <tr>
+                    <th className="text-left">Type</th>
+                    <th className="text-left">Amount</th>
+                    <th className="text-left">Date</th>
+                    <th className="text-left">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {transactions.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="capitalize">{tx.type}</td>
+                        <td>{tx.amount}</td>
+                        <td>{tx.date}</td>
+                        <td>
+                            <Badge
+                                color={tx.status === 'completed' ? 'emerald' : 'amber'}
+                                className="w-fit"
+                            >
+                                {tx.status}
+                            </Badge>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {dummyTransactions.map((tx) => (
-                        <tr key={tx.id}>
-                            <td className="capitalize">{tx.type}</td>
-                            <td>{tx.amount}</td>
-                            <td>{tx.token}</td>
-                            <td>{new Date(tx.date).toLocaleDateString()}</td>
-                            <td>
-                                <span className={`badge ${tx.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                    {tx.status}
-                                </span>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+                ))}
+            </tbody>
+        </Table>
+    )
+}
+
+function EmptyState() {
+    return (
+        <div className="text-center py-12">
+            <div className="mb-4 text-6xl">📭</div>
+            <h3 className="text-lg font-medium">No transactions yet</h3>
+            <p className="text-gray-500 mt-2">
+                Your transaction history will appear here once you start using your wallet
+            </p>
         </div>
     )
 }

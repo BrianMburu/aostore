@@ -1,11 +1,10 @@
 
-import { AppData, DappList } from "@/types/dapp";
+import { AppTokenData, CreateDapp, Dapp, DappList } from "@/types/dapp";
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
-import { generateDAppTestData } from "@/utils/dataGenerators";
-import { createDataItemSigner } from "@permaweb/aoconnect";
+// import { generateDAppTestData } from "@/utils/dataGenerators";
 import { Tip } from "@/types/tip";
-import { PROCESS_ID_DAPPS, PROCESS_ID_FAVORITE_DAPPS } from "@/config/ao";
-import { fetchAOmessages } from "@/utils/ao";
+import { PROCESS_ID_DAPPS, PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FLAG_TABLE, PROCESS_ID_REVIEW_TABLE, PROCESS_ID_TIP_TABLE } from "@/config/ao";
+import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
 // services/dapps.ts
 export interface DAppsFilterParams {
     companyName?: string;
@@ -17,57 +16,88 @@ export interface DAppsFilterParams {
     fv_page?: string
 }
 
-const dummyDApps: AppData[] = generateDAppTestData(20)
+// const dummyDApps: AppData[] = generateDAppTestData(20)
 
 export const DAppService = {
-    async getDApp(appId: string): Promise<AppData | undefined> {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const dapp = dummyDApps.find(dapp => dapp.appId === appId);
-        return dapp;
-    },
-
-    async getDApps(params: DAppsFilterParams, signer: ReturnType<typeof createDataItemSigner>, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
-        let dapps: DappList[] = [];
-
-        // Fetch Data from AO
+    async getDApp(appId: string): Promise<Dapp> {
         try {
-            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }],
-                PROCESS_ID_DAPPS, signer
-            );
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FetchAppDetails" },
+                { name: "appId", value: appId }
+            ], PROCESS_ID_DAPPS);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
 
-            console.log("Messages => ", messages);
-
             // Fetch the last message
-            const firstMessage = messages[0];
-            // console.log("First Messages Data => ", firstMessage.Data);
+            const lastMessage = messages[messages.length - 1];
+            // console.log("Last Messages Data => ", lastMessage.Data);
 
             // Parse the Messages
-            const messageData = JSON.parse(firstMessage.Data);
+            const cleanedData = cleanAoJson(lastMessage.Data)
 
-            console.log("Dapps Messages Data => ", messageData);
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Details Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
-                dapps = Object.values(messageData.data);
+                const dapp: Dapp = messageData.data;
+
+                return dapp
+            } else {
+                throw new Error(messageData.message)
             }
 
         } catch (error) {
             console.error(error);
+            throw new Error(`Failed to fetch Data, ${error}`)
+        }
+    },
+
+    async getDApps(params: DAppsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: DappList[], total: number }> {
+        let dapps: DappList[] = [];
+
+        // Fetch Data from AO
+        try {
+            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+            // console.log("Last Messages Data => ", lastMessage.Data);
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            const messageData = JSON.parse(cleanedData);
+
+            // console.log("Dapps Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                dapps = Object.values(messageData.data);
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to fetch Data, ${error}`)
         }
 
         console.log("Dapps => ", dapps);
 
         // Filter the dummyDApps based on the parameters
-        const filtered = dummyDApps.filter(dapp => {
+        const filtered = dapps.filter(dapp => {
             const matchesProtocol = !params.protocol || params.protocol === 'all' || dapp.protocol === params.protocol;
             const matchesCategory = !params.category || params.category === 'all' || dapp.projectType === params.category;
             const matchesSearch = !params.search || dapp.appName.toLowerCase().includes(params.search.toLowerCase());
-            const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
+            // const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
 
-            return matchesProtocol && matchesCategory && matchesSearch && matchesVerification;
+            return matchesProtocol && matchesCategory && matchesSearch;
         });
 
         // Pagination
@@ -89,27 +119,25 @@ export const DAppService = {
         };
     },
 
-    async getMyDApps(params: DAppsFilterParams, signer: ReturnType<typeof createDataItemSigner>, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
+    async getMyDApps(params: DAppsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: DappList[], total: number }> {
         let dapps: DappList[] = [];
 
         // Fetch Data from AO
         try {
-            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }],
-                PROCESS_ID_DAPPS, signer
-            );
+            const messages = await fetchAOmessages([{ name: "Action", value: "GetMyApps" }], PROCESS_ID_DAPPS);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
 
-            // console.log("Messages => ", messages);
-
             // Fetch the last message
-            const firstMessage = messages[0];
-            // console.log("First Messages Data => ", firstMessage.Data);
+            const lastMessage = messages[messages.length - 1];
+            // console.log("Last Messages Data => ", lastMessage.Data);
 
             // Parse the Messages
-            const messageData = JSON.parse(firstMessage.Data);
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            const messageData = JSON.parse(cleanedData);
 
             if (messageData && messageData.code == 200) {
                 dapps = Object.values(messageData.data);
@@ -122,13 +150,13 @@ export const DAppService = {
         console.log("MyDapps => ", dapps);
 
         // Filter the dummyDApps based on the parameters
-        const filtered = dummyDApps.filter(dapp => {
+        const filtered = dapps.filter(dapp => {
             const matchesProtocol = !params.protocol || params.protocol === 'all' || dapp.protocol === params.protocol;
             const matchesCategory = !params.category || params.category === 'all' || dapp.projectType === params.category;
             const matchesSearch = !params.search || dapp.appName.toLowerCase().includes(params.search.toLowerCase());
-            const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
+            // const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
 
-            return matchesProtocol && matchesCategory && matchesSearch && matchesVerification;
+            return matchesProtocol && matchesCategory && matchesSearch;
         });
 
         // Pagination
@@ -150,19 +178,48 @@ export const DAppService = {
         };
     },
 
-    async getDAppsLimited(params: DAppsFilterParams, limit: number = 4): Promise<{ data: AppData[], total: number }> {
-        // Simulate delay for fetching data
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    async getDAppsLimited(params: DAppsFilterParams, limit: number = 4): Promise<{ data: DappList[], total: number }> {
+        let dapps: DappList[] = [];
+
+        try {
+            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+            // console.log("Last Messages Data => ", lastMessage.Data);
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            const messageData = JSON.parse(cleanedData);
+
+            // console.log("Dapps Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                dapps = Object.values(messageData.data);
+
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to fetch Data, ${error}`)
+        }
 
         // Filter the dummyDApps based on the parameters
-        const filtered = dummyDApps.filter(dapp => {
+        const filtered = dapps.filter(dapp => {
             const matchesProtocol = !params.protocol || params.protocol === 'all' || dapp.protocol === params.protocol;
             const matchesCategory = !params.category || params.category === 'all' || dapp.projectType === params.category;
             const matchesSearch = !params.search || dapp.appName.toLowerCase().includes(params.search.toLowerCase());
-            const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
+            // const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
             const matchesCompanyName = !params.companyName || params.companyName === 'all' || dapp.companyName === params.companyName;
 
-            return matchesProtocol && matchesCategory && matchesSearch && matchesVerification && matchesCompanyName;
+            return matchesProtocol && matchesCategory && matchesSearch && matchesCompanyName;
         });
 
         // Pagination
@@ -179,25 +236,26 @@ export const DAppService = {
         };
     },
 
-    async getFavoriteDApps(params: DAppsFilterParams, signer: ReturnType<typeof createDataItemSigner>, useInfiniteScroll: boolean = false): Promise<{ data: AppData[], total: number }> {
+    async getFavoriteDApps(params: DAppsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: DappList[], total: number }> {
         let favoriteDapps: DappList[] = [];
 
         // Fetch Data from AO
         try {
-            const messages = await fetchAOmessages([{ name: "Action", value: "GetFavoriteApps" }],
-                PROCESS_ID_FAVORITE_DAPPS, signer
-            );
+            const messages = await fetchAOmessages([{ name: "Action", value: "GetFavoriteApps" }], PROCESS_ID_FAVORITE_DAPPS);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
 
             // Fetch the last message
-            const firstMessage = messages[0];
-            console.log("Favorite Dapps Messages Data => ", firstMessage.Data);
+            const lastMessage = messages[messages.length - 1];
+            console.log("Favorite Dapps Messages Data => ", lastMessage.Data);
 
             // Parse the Messages
-            const messageData = JSON.parse(firstMessage.Data);
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
 
             if (messageData && messageData.code == 200) {
                 favoriteDapps = Object.values(messageData.data);
@@ -210,15 +268,14 @@ export const DAppService = {
         console.log("Favorite Dapps => ", favoriteDapps);
 
         // Filter the dummyDApps based on the parameters
-        const filtered = dummyDApps
-            .filter(dapp => {
-                const matchesProtocol = !params.protocol || params.protocol === 'all' || dapp.protocol === params.protocol;
-                const matchesCategory = !params.category || params.category === 'all' || dapp.projectType === params.category;
-                const matchesSearch = !params.search || dapp.appName.toLowerCase().includes(params.search.toLowerCase());
-                const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
+        const filtered = favoriteDapps.filter(dapp => {
+            const matchesProtocol = !params.protocol || params.protocol === 'all' || dapp.protocol === params.protocol;
+            const matchesCategory = !params.category || params.category === 'all' || dapp.projectType === params.category;
+            const matchesSearch = !params.search || dapp.appName.toLowerCase().includes(params.search.toLowerCase());
+            // const matchesVerification = !params.verified || params.verified === 'all' || dapp.verified === params.verified;
 
-                return matchesProtocol && matchesCategory && matchesSearch && matchesVerification;
-            });
+            return matchesProtocol && matchesCategory && matchesSearch;
+        });
 
         // Pagination
         const page = 1;
@@ -239,51 +296,131 @@ export const DAppService = {
         };
     },
 
-    async createDApp(dappData: Partial<AppData>): Promise<AppData> {
-        await new Promise(resolve => setTimeout(resolve, 1500));
+    async createDApp(dappData: CreateDapp) {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "AddProjectZ" },
+                { name: "appName", value: dappData.appName },
+                { name: "appIconUrl", value: dappData.appIconUrl },
+                { name: "projectType", value: dappData.projectType },
+                { name: "description", value: dappData.description },
+                { name: "companyName", value: dappData.companyName },
+                { name: "websiteUrl", value: dappData.websiteUrl },
+                { name: "twitterUrl", value: dappData.twitterUrl },
+                { name: "discordUrl", value: dappData.discordUrl },
+                { name: "coverUrl", value: dappData.coverUrl },
+                { name: "bannerUrls", value: JSON.stringify(dappData.bannerUrls) },
+                { name: "protocol", value: dappData.protocol },
+                { name: "username", value: dappData.username },
+                { name: "profileUrl", value: dappData.profileUrl },
 
-        const newDApp: AppData = {
-            appId: `dapp-${Date.now()}`,
-            appName: dappData.appName || '',
-            companyName: dappData.companyName || '',
-            description: dappData.description || '',
-            protocol: dappData.protocol || 'aocomputer',
-            projectType: dappData.projectType || 'Infrastructure',
-            websiteUrl: dappData.websiteUrl || '',
-            discordUrl: dappData.discordUrl || '',
-            twitterUrl: dappData.twitterUrl || '',
-            appIconUrl: dappData.appIconUrl || '',  // Add this
-            coverUrl: dappData.coverUrl || '',      // Add this
-            company: dappData.company || '',        // Add this
-            verified: 'unverified',
-            createdTime: Date.now(),
-            ratings: 0,
-            totalRatings: 0,
-            upvotes: {},
-            downvotes: {},
-            reviews: {},
-            bannerUrls: {}
-        };
+            ], PROCESS_ID_DAPPS);
 
-        dummyDApps.unshift(newDApp);
-        return newDApp;
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            console.log("Messages => ", messages);
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (!messageData || messageData.code != 200) {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to add Dapp, ${error}`)
+        }
     },
 
-    async updateDApp(appId: string, updates: Partial<AppData>): Promise<AppData> {
-        await new Promise(resolve => setTimeout(resolve, 800));
+    async updateDApp(appId: string, dappData: CreateDapp): Promise<Dapp> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "UpdateAppDetails" },
+                { name: "appId", value: appId },
+                { name: "appName", value: dappData.appName },
+                { name: "appIconUrl", value: dappData.appIconUrl },
+                { name: "projectType", value: dappData.projectType },
+                { name: "description", value: dappData.description },
+                { name: "companyName", value: dappData.companyName },
+                { name: "websiteUrl", value: dappData.websiteUrl },
+                { name: "twitterUrl", value: dappData.twitterUrl },
+                { name: "discordUrl", value: dappData.discordUrl },
+                { name: "coverUrl", value: dappData.coverUrl },
+                { name: "bannerUrls", value: JSON.stringify(dappData.bannerUrls) },
+                { name: "protocol", value: dappData.protocol },
+                { name: "username", value: dappData.username },
+                { name: "profileUrl", value: dappData.profileUrl },
 
-        const index = dummyDApps.findIndex(d => d.appId === appId);
-        if (index === -1) throw new Error('DApp not found');
+            ], PROCESS_ID_DAPPS);
 
-        dummyDApps[index] = { ...dummyDApps[index], ...updates };
-        return dummyDApps[index];
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                const updatedDapp: Dapp = messageData.data;
+                return updatedDapp
+            }
+            else {
+                throw new Error(messageData.message)
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to update Dapp, ${error}`)
+        }
     },
 
     async deleteDApp(appId: string): Promise<void> {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const index = dummyDApps.findIndex(d => d.appId === appId);
-        if (index === -1) throw new Error('DApp not found');
-        dummyDApps.splice(index, 1);
+        // Fetch Data from AO
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "DeleteApp" },
+                { name: "appId", value: appId }
+            ], PROCESS_ID_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (!messageData || messageData.code != 200) {
+                throw new Error(messageData.message);
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to delete dapp, ${error}`);
+        }
     },
 
     async submitVerification(appId: string): Promise<void> {
@@ -299,4 +436,285 @@ export const DAppService = {
         const newTip = tipData;
         return newTip
     },
+
+    async addDappToken(appId: string, tokenData: AppTokenData): Promise<AppTokenData> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "AddTokenTable" },
+                { name: "tokenId", value: tokenData.tokenId },
+                { name: "tokenName", value: tokenData.tokenName },
+                { name: "tokenTicker", value: tokenData.tokenTicker },
+                { name: "tokenDenomination", value: tokenData.tokenDenomination.toString() },
+                { name: "logo", value: tokenData.logo },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_TIP_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                const tokenData: AppTokenData = messageData.data;
+                return tokenData;
+            } else {
+                throw new Error(messageData.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to add token data, ${error}`);
+        }
+    },
+
+    async FetchTokenData(tokenId: string): Promise<AppTokenData | undefined> {
+        // Fetch Data from AO
+        try {
+            const messages = await fetchAOmessages([{ name: "Action", value: "info" }], tokenId);
+            console.log("Messages => ", messages);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            console.log("Messages => ", messages);
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                const tokenData: AppTokenData = messageData.data;
+                return { ...tokenData, tokenId };
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error("Failed to fetch token data.");
+        }
+    },
+
+    async changeDappOwner(appId: string, newOwnerId: string): Promise<void> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "ChangeAppOwnership" },
+                { name: "appId", value: appId },
+                { name: "newOwnerId", value: newOwnerId }
+            ], PROCESS_ID_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (!messageData || messageData.code != 200) {
+                throw new Error(messageData.message);
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to Change dapp ownership, ${error}`);
+        }
+    },
+
+    async addMods(appId: string, mods: string[]): Promise<string[]> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "AddMods" },
+                { name: "appId", value: appId },
+                { name: "mods", value: JSON.stringify(mods) },
+
+            ], PROCESS_ID_TIP_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Dapps Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                const mods: string[] = messageData.data;
+                return mods;
+            } else {
+                throw new Error(messageData.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to add token data, ${error}`);
+        }
+    },
+
+    async getMods(appId: string): Promise<{ data: string[], total: number }> {
+        let mods: string[] = [];
+
+        // Fetch Data from AO
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetMods" },
+                { name: "appId", value: appId }
+            ], PROCESS_ID_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+            // console.log("First Messages Data => ", firstMessage.Data);
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            const messageData = JSON.parse(cleanedData);
+
+            console.log("Mods Messages Data => ", messageData);
+
+            if (messageData && messageData.code == 200) {
+                mods = Object.values(messageData.data);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+
+        console.log("mods => ", mods);
+
+
+        // Return the filtered data and the total count
+        return { data: mods, total: mods.length }
+    },
+
+    async getDappRating(appId: string): Promise<{ rating: number, totalReviews: number }> {
+        let rating = { rating: 0, totalReviews: 0 };
+
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FetchAppReviewsInfo" },
+                { name: "appId", value: appId }
+            ], PROCESS_ID_REVIEW_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("RATINGS DATA: =>", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData && messageData.code == 200) {
+                const totalReviews = messageData.data.reviewsCount;
+                const appRating = messageData.data.totalRatings / messageData.data.ratingsCount;
+
+                rating = { rating: appRating, totalReviews }
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get Dapp Rating, ${error}`)
+        }
+        return rating
+    },
+
+    async addDappToFavorites(appId: string) {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "AddAppToFavorite" },
+                { name: "appId", value: appId }
+            ], PROCESS_ID_FAVORITE_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            console.log("Favorites Data: => ", cleanedData)
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (!messageData || messageData.code != 200) {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get Dapp Rating, ${error}`)
+        }
+    },
+    async flagDappAsInappropriate(appId: string) {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FlagApp" },
+                { name: "appId", value: appId }
+            ], PROCESS_ID_FLAG_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (!messageData || messageData.code != 200) {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to flag Dapp as Inappropriate, ${error}`)
+        }
+    }
 };

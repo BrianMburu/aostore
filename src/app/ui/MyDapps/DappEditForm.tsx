@@ -1,25 +1,30 @@
 // components/DAppEditForm.tsx
 'use client';
-import { useActionState, useOptimistic } from 'react';
+import { useActionState, useOptimistic, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { AppData, ProjectType, projectTypes, Protocol } from '@/types/dapp';
-import { dappSchema, State, updateDapp } from '@/lib/mydappActions';
+import { Dapp, ProjectType, projectTypes, Protocol } from '@/types/dapp';
+import { dappSchema, DappState, updateDapp } from '@/lib/mydappActions';
 import Loader from '../Loader';
+import { useAuth } from '@/context/AuthContext';
+import { MultiItemInput } from './MultiItemInput';
 
 
 export function DAppEditForm({ initialDapp }: {
-    initialDapp: AppData,
+    initialDapp: Dapp,
 }) {
     const [optimisticDApp, setOptimisticDApp] = useOptimistic(
         initialDapp,
-        (state, newData: AppData) => ({ ...state, ...newData })
+        (state, newData: Dapp) => ({ ...state, ...newData })
     )
-    const initialState: State = { message: null, errors: {}, dapp: optimisticDApp };
-
+    const initialState: DappState = { message: null, errors: {}, dapp: optimisticDApp };
+    const [bannerUrls, setBannerUrls] = useState<string[]>(Object.values(optimisticDApp.bannerUrls))
+    const { user } = useAuth()
 
     const [state, formAction, isSubmitting] = useActionState(
-        async (prevState: State, _formData: FormData) => {
+        async (prevState: DappState, _formData: FormData) => {
+            _formData.append('bannerUrls', bannerUrls.join(","));
+
             try {
                 const tempData = {
                     appName: _formData.get('appName') as string,
@@ -32,11 +37,10 @@ export function DAppEditForm({ initialDapp }: {
                     protocol: _formData.get('protocol') as Protocol,
                     projectType: _formData.get('projectType') as ProjectType,
                     companyName: _formData.get('companyName') as string,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    bannerUrls: _formData.get('bannerUrls')?.toString().split(',').map(url => url.trim()) as Record<string, any>,
+                    bannerUrls: _formData.get('bannerUrls')?.toString().split(',').map(url => url.trim()) as string[],
                 };
 
-                setOptimisticDApp(tempData as AppData)
+                setOptimisticDApp(tempData as Dapp)
 
                 const validatedFields = dappSchema.safeParse(tempData);
 
@@ -48,9 +52,9 @@ export function DAppEditForm({ initialDapp }: {
                     };
                 }
 
-                const newState: State = await updateDapp(initialDapp.appId, prevState, _formData);
+                const newState: DappState = await updateDapp(initialDapp.appId, user!, prevState, _formData);
 
-                if (newState.message === 'success' && newState.dapp) {
+                if (newState.message === 'success') {
                     // Update with actual server data
                     // setDapps(prev => newState.dapp ? [newState.dapp, ...prev] : prev);
 
@@ -68,14 +72,6 @@ export function DAppEditForm({ initialDapp }: {
             }
 
         }, initialState)
-
-    // useEffect(() => {
-    //     if (state.message === 'success' && state.dapp) {
-    //         // setDapp({ ...dapp, ...state.dapp });
-    //         toast.success('DApp updated successfully!');
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [state.message, state.dapp]);
 
     return (
         <form action={formAction} className="space-y-6">
@@ -222,12 +218,12 @@ export function DAppEditForm({ initialDapp }: {
                         ))}
                 </div>
 
-                <div>
+                {/* <div>
                     <label className="text-gray-900 dark:text-white">Banner URLs</label>
                     <input
                         className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         name="bannerUrls"
-                        defaultValue={optimisticDApp.bannerUrls?.main.join(",")}
+                        defaultValue={Object.values(optimisticDApp.bannerUrls)?.join(",")}
                     />
                     {state?.errors?.bannerUrls &&
                         state.errors.bannerUrls.map((error: string) => (
@@ -235,8 +231,24 @@ export function DAppEditForm({ initialDapp }: {
                                 {error}
                             </p>
                         ))}
-                </div>
+                </div> */}
             </div>
+            <div >
+                <label className="text-gray-900 dark:text-white">Banner URLs</label>
+                <MultiItemInput
+                    items={bannerUrls}
+                    onChange={setBannerUrls}
+                    placeholder="Enter banner urls separated by commas..."
+                    inputClassName='focus:ring-0'
+                />
+                {state?.errors?.bannerUrls &&
+                    state.errors.bannerUrls.map((error: string) => (
+                        <p className="mt-2 text-sm text-red-500" key={error}>
+                            {error}
+                        </p>
+                    ))}
+            </div>
+
             {/* Form Error */}
             <div id='form-error' aria-live="polite" aria-atomic="true">
                 {state?.message && state?.message != "success" &&

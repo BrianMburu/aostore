@@ -2,13 +2,16 @@ import { createDataItemSigner, message, result } from "@permaweb/aoconnect";
 
 export async function fetchAOmessages(
     tags: { name: string; value: string }[],
-    process: string, signer: ReturnType<typeof createDataItemSigner>
+    process: string
 ) {
-    console.log("Fetching AO messages using signer: ", signer);
+    console.log("Fetching AO messages using Window wallet: ", window.arweaveWallet);
+    console.log("Tags => ", tags);
+    console.log("Process => ", process);
+
     const fetchDappsMessages = await message({
         process: process,
         tags: tags,
-        signer,
+        signer: createDataItemSigner(window.arweaveWallet),
     });
     const { Messages, Error: error } = await result({
         message: fetchDappsMessages,
@@ -17,7 +20,17 @@ export async function fetchAOmessages(
 
     if (error) {
         console.error("Error => ", error);
+        throw new Error("Error fetching AO messages");
     }
 
     return Messages
+}
+
+export function cleanAoJson(messageData: string) {
+    const cleanedData = messageData
+        .replace(/\n/g, '\\n')  // Escape newlines
+        .replace(/\r/g, '\\r')  // Escape carriage returns
+        .replace(/\t/g, '\\t');
+
+    return cleanedData
 }

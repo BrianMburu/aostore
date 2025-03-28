@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { sendReply } from '@/lib/reviewActions'
 import { ReplyState } from '@/lib/reviewActions'
 import toast from 'react-hot-toast'
@@ -8,29 +8,47 @@ import { useAuth } from '@/context/AuthContext'
 import Loader from '../../Loader'
 import { motion } from 'framer-motion'
 import { AnimatedButton } from '../../animations/AnimatedButton'
+import { useRank } from '@/context/RankContext'
+import { useRouter } from 'next/navigation'
 
-export function ReviewReplyForm({ reviewId }: { reviewId: string }) {
+const initialState: ReplyState = { message: null, errors: {}, reply: null }
+export function ReviewReplyForm({ appId, reviewId }: { appId: string, reviewId: string }) {
     const { user } = useAuth();
+    const { rank } = useRank();
+    const router = useRouter();
 
-    const initialState: ReplyState = { message: null, errors: {}, reply: null }
+    // Local state for the request details to support optimistic updates
+    const [localRequest, setLocalRequest] = useState<{ description: string }>({ description: "" });
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ReplyState, _formData: FormData) => {
+            // Capture form values for the optimistic update
+            const newDescription = _formData.get("description") as string;
+            const previousRequest = { ...localRequest };
+
+            // Optimistically update local request state
+            const updatedRequest = { ...localRequest, description: newDescription };
+            setLocalRequest(updatedRequest);
+
             try {
-                const newState = await sendReply(reviewId, user!, prevState, _formData);
+                const newState = await sendReply(appId, reviewId, user, rank, prevState, _formData);
 
-                if (newState.message === 'success' && newState.reply) {
-                    toast.success("Reply posted successfully!");
+                // If the server returns an updated request, update localRequest accordingly.
+                if (newState.message === 'success') {
+                    toast.success('Reply posted successfully!');
                 }
-
-                return newState
-            } catch {
-
-                toast.error("Failed to update DApp. Please try again.");
-                return initialState
+                router.refresh();
+                return newState;
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalRequest(previousRequest);
+                toast.error(`"Failed to create Reply. Please try again later."`);
+                console.error("Create reply failed:", error);
+                return initialState;
             }
-
-        }, initialState)
+        },
+        initialState
+    );
 
     return (
         <motion.div
@@ -41,13 +59,14 @@ export function ReviewReplyForm({ reviewId }: { reviewId: string }) {
             <form action={formAction} className="space-y-2 max-w-lg">
                 <div>
                     <textarea
-                        name="comment"
+                        name="description"
+                        defaultValue={localRequest.description}
                         placeholder="Write a reply..."
                         className="w-full p-2 rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         rows={2}
                     />
-                    {state?.errors?.comment &&
-                        state.errors.comment.map((error: string) => (
+                    {state?.errors?.description &&
+                        state.errors.description.map((error: string) => (
                             <p className="mt-2 text-sm text-red-500" key={error}>
                                 {error}
                             </p>

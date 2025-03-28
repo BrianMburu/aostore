@@ -18,7 +18,7 @@ export function TypeToggle() {
         <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
             <button
                 onClick={() => handleToggle('type', 'feature')}
-                className={`px-4 py-2 rounded-md text-sm ${searchParams.get('type') === 'feature'
+                className={`px-4 py-2 rounded-md text-sm ${searchParams.get('type') === 'feature' || !searchParams.get('type')
                     ? 'text-green-700 rounded-full hover:bg-green-200 dark:bg-green-900 dark:text-green-100 shadow-sm '
                     : 'text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-500'
                     }`}

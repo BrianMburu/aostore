@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { AppData } from "@/types/dapp";
+import { Dapp } from "@/types/dapp";
 import { DAppsListLimit } from "./DappListLimit";
 import { Suspense } from "react";
 import DappSupport from "./Support/DappSupport";
@@ -9,15 +9,7 @@ import DappCardsSkeleton from "./Skeletons/DappCardsSkeleton";
 import { AirdropsListLimit } from "../AirDrops/AirdropListLimit";
 import { AirdropsSkeletonVertical } from "../AirDrops/skeletons/AirdropsSkeleton";
 
-const developerInfo = {
-    name: "AO Dev Team",
-    contact: "dev@aosocial.com",
-    website: "https://ao.dev",
-    forum: "https://forum.ao.dev"
-};
-
-
-export function DappInfo({ appData }: { appData: AppData }) {
+export function DappInfo({ appData }: { appData: Dapp }) {
     const [showFullDescription, setShowFullDescription] = useState(false);
 
     return (
@@ -48,10 +40,11 @@ export function DappInfo({ appData }: { appData: AppData }) {
                         </p>
                     </div>
                 </div>
+
                 {/* // Add new sections in the Details tab */}
                 <div className="mt-12 space-y-12">
                     {/* Support Section */}
-                    <DappSupport developerInfo={developerInfo} />
+                    <DappSupport appData={appData} />
 
                     {/* Similar DApps Section */}
                     <section>

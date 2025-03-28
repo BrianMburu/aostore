@@ -17,6 +17,8 @@
     "@remixicon/react": "^4.6.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tremor/react": "^3.18.7",
+    "arconnect": "^1.0.4",
+    "arweave": "^1.15.5",
     "clsx": "^2.1.1",
     "framer-motion": "^12.0.6",
     "jose": "^6.0.8",

@@ -13,12 +13,49 @@ export interface Project {
 export interface DappList {
     appId: string;
     appName: string;
-    appIconUrl: string
+    companyName: string;
+    appIconUrl: string;
     projectType: ProjectType;
     description: string;
     createdTime: number;
     websiteUrl: string;
     protocol: Protocol;
+    verified?: string
+}
+
+export interface Dapp {
+    appId: string;
+    appName: string;
+    appIconUrl: string;
+    projectType: ProjectType;
+    description: string;
+    createdTime: number;
+    companyName: string;
+    websiteUrl: string;
+    twitterUrl: string;
+    discordUrl: string;
+    coverUrl: string;
+    bannerUrls: string[];
+    protocol: Protocol;
+    username?: string;
+    profileUrl?: string;
+    token?: AppTokenData;
+    verified?: string
+}
+export interface CreateDapp {
+    appName: string;
+    appIconUrl: string;
+    projectType: ProjectType;
+    description: string;
+    companyName: string;
+    websiteUrl: string;
+    twitterUrl: string;
+    discordUrl: string;
+    coverUrl: string;
+    bannerUrls: string[];
+    protocol: Protocol;
+    username: string;
+    profileUrl: string;
 }
 
 export const projectTypes = [
@@ -54,6 +91,7 @@ export interface AppData {
     upvotes: Record<string, any>;
     totalRatings: number;
     verified?: Verified;
+    token?: AppTokenData;
 }
 
 export interface AppDataMini {
@@ -68,12 +106,13 @@ export interface AppDataMini {
     createdTime: number;
     protocol: string;
     totalRatings: number;
+    token?: AppTokenData;
 }
 
 export interface AppTokenData {
     tokenId: string;
     tokenName: string;
-    tokenSymbol: string;
+    tokenTicker: string;
     tokenDenomination: number;
-    tokenLogoUrl: string;
+    logo: string;
 }

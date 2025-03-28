@@ -1,28 +1,16 @@
-export interface Reply {
-    replyId: string;
-    comment: string;
-    timestamp: number;
-    upvotes: number;
-    downvotes: number;
-    user: string;
-    username: string;
-    profileUrl: string;
-}
+import { Reply } from "./reply";
+import { Voters } from "./voter";
 
 export interface Review {
     appId: string,
     reviewId: string;
     username: string;
-    userId: string;
-    comment: string;
+    user: string;
+    description: string;
     rating: number;
-    timestamp: number;
-    upvotes: number;
-    downvotes: number;
-    helpfulVotes: number;
-    unhelpfulVotes: number;
+    createdTime: number;
     profileUrl: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    voters: Record<string, any>;
+    rank: string;
+    voters: Voters;
     replies: Reply[];
 }

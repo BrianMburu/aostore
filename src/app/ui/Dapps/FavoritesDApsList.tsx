@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import DAppCard from './DappCard'
 import { DAppService, DAppsFilterParams } from '@/services/ao/dappService'
 import { useAuth } from '@/context/AuthContext';
-import { AppData } from '@/types/dapp';
+import { DappList } from '@/types/dapp';
 import PaginationControls from '../PaginationControls';
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import DappCardsSkeleton from './Skeletons/DappCardsSkeleton';
@@ -12,19 +12,18 @@ import { EmptyState } from '../EmptyState';
 
 
 export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterParams }) {
-    const [favoriteDapps, setFavoriteDapps] = useState<AppData[]>([]);
+    const [favoriteDapps, setFavoriteDapps] = useState<DappList[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [isFetching, StartTransition] = useTransition();
 
-    const { isLoading: isAuthLoading, isConnected, getDataItemSigner } = useAuth();
+    const { isLoading: isAuthLoading, isConnected } = useAuth();
 
     useEffect(() => {
         StartTransition(async () => {
             try {
                 if (!isAuthLoading && isConnected) {
-                    const signer = await getDataItemSigner();
                     const { data, total: totalItems } = await DAppService.getFavoriteDApps(
-                        filterParams, signer, false);
+                        filterParams, false);
 
                     if (data) {
                         setFavoriteDapps(data);
@@ -40,7 +39,7 @@ export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterP
             }
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getDataItemSigner, filterParams.fv_page]);
+    }, [isConnected, filterParams.fv_page]);
 
 
     // Show combined loading states
@@ -49,7 +48,7 @@ export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterP
     }
 
     // Show empty state if no favorites
-    if (favoriteDapps.length === 0) {
+    if (!isFetching && favoriteDapps.length === 0) {
         return (
             <EmptyState
                 title="No Favorite DApps Found"
