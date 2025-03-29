@@ -1,3 +1,27 @@
+export interface Airdrop {
+    airdropId: string;
+    owner: string;
+    minAosPoints: number;
+    appId: string;
+    appIconUrl: string;
+    tokenId: string;
+    claimedUsers: Record<string, { time: string }>;
+    verifiedParticipants: Record<string, { time: string }>;
+    unverifiedParticipants: Record<string, { time: string }>;
+    amount: number;
+    createdTime: number,
+    endTime: number;
+    startTime: number;
+    title: string;
+    description: string;
+    airdropsReceivers: string;
+    appName: string;
+    status: statusType;
+}
+export const receiverOptions = ["ReviewsTable", "FavoritesTable"] as const;
+
+export type receiverOptionsType = typeof receiverOptions[number];
+
 export interface AppAirdropData {
     userId: string;
     appId: string;
@@ -24,7 +48,7 @@ export interface AppAirdropDataMini {
 }
 
 export const statusOptions = [
-    'active', 'claimed', 'pending', 'expired'
+    'ongoing', 'pending', 'completed'
 ] as const;
 
 export type statusType = typeof statusOptions[number];

@@ -1,16 +1,23 @@
 'use client'
 
-import { useState } from 'react';
-import { Dapp } from "@/types/dapp";
+import { useContext, useState } from 'react';
 import { DAppsListLimit } from "./DappListLimit";
 import { Suspense } from "react";
 import DappSupport from "./Support/DappSupport";
 import DappCardsSkeleton from "./Skeletons/DappCardsSkeleton";
 import { AirdropsListLimit } from "../AirDrops/AirdropListLimit";
 import { AirdropsSkeletonVertical } from "../AirDrops/skeletons/AirdropsSkeleton";
+import { AppDataContext, AppLoadingContext } from '@/app/dapps/[appId]/layout';
+import { ContentSkeleton } from './Skeletons/ContentSkeleton';
 
-export function DappInfo({ appData }: { appData: Dapp }) {
+export function DappInfo() {
+    const appData = useContext(AppDataContext);
+    const fetching = useContext(AppLoadingContext);
     const [showFullDescription, setShowFullDescription] = useState(false);
+
+    if (!appData || fetching) {
+        return <ContentSkeleton />;
+    }
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

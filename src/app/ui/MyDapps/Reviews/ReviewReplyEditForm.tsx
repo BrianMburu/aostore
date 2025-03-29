@@ -37,9 +37,10 @@ export function DappReplyEditForm({ appId, reviewId, reply }: { appId: string, r
                 // If the server returns an updated request, update localRequest accordingly.
                 if (newState.message === 'success') {
                     setIsOpen(false);
+                    router.refresh();
                     toast.success('Reply updated successfully!');
                 }
-                router.refresh();
+
                 return newState;
             } catch (error) {
                 // Revert optimistic update on error

@@ -1,45 +1,73 @@
 import { AirdropService } from "@/services/ao/airdropService";
-import { AppAirdropData } from "@/types/airDrop";
+import { Airdrop } from "@/types/airDrop";
+import { AppTokenData } from "@/types/dapp";
 import * as z from "zod";
 
 export type AirDropState = {
     message?: string | null;
-    errors?: { [key: string]: string[] },
-    airdrop?: AppAirdropData
+    // errors?: { [key: string]: string[] },
+    errors?: {
+        title?: string[],
+        amount?: string[],
+        description?: string[],
+        airdropsReceivers?: string[],
+        minAosPoints?: string[],
+        startTime?: string[],
+        endTime?: string[],
+    };
+    airdrop?: Airdrop | null
 };
 
-export const airdropSchema = z.object({
-    title: z.string().min(3, 'Name must be at least 3 characters'),
-    tokenId: z.string().max(100, 'Token must not exceed 100 characters'),
-    amount: z.number().gt(0, 'Amount must be greater than 0'),
-    description: z.string().min(10, 'Description must be at least 10 characters'),
-    expiryTime: z
-        .number().refine((val) => val > Date.now(), {
-            message: "Expiry Time must be a valid future date and time",
-        }),
-});
+export const airdropSchema = z
+    .object({
+        title: z.string().min(3, { message: "Name must be at least 3 characters" }),
+        amount: z.number().gt(0, { message: "Amount must be greater than 0" }),
+        description: z.string().min(10, { message: "Description must be at least 10 characters" }),
+        airdropsReceivers: z.string().min(1, { message: "ReciverType cannot be empty" }),
+        minAosPoints: z.number().gt(0, { message: "Amount must be greater than 0" }),
+        startTime: z.number().refine(
+            (val) => val > Date.now(),
+            { message: "Start Time must be a valid future date and time" }
+        ),
+        endTime: z.number().refine(
+            (val) => val > Date.now(),
+            { message: "Expiry Time must be a valid future date and time" }
+        )
+    })
+    .refine(
+        (data) => data.startTime < data.endTime,
+        { message: "End Time must be after Start Time", path: ["endTime"] }
+    );
+
 
 export type FormValues = z.infer<typeof airdropSchema>;
 
 export async function createAirDrop(userId: string, appId: string, prevState: AirDropState, formData: FormData) {
     // Fetch raw form data.
     const title = formData.get("title");
-    const tokenId = formData.get("tokenId");
     const amount = formData.get("amount");
+    const minAosPoints = formData.get("minAosPoints");
     const description = formData.get("description");
-    const rawExpiryTime = formData.get("expiryTime");
+    const airdropsReceivers = formData.get("airdropsReceivers");
+    const rawExpiryTime = formData.get("endTime");
+    const rawStartTime = formData.get("startTime");
     const timezone = formData.get("timezone") || "America/New_York"; // default to UTC
 
-    const date = new Date(new Date(rawExpiryTime as string).toLocaleString('en-US', { timeZone: timezone as string }));
-    const expiryTimeUnix = date.getTime();
+    const startDate = new Date(new Date(rawStartTime as string).toLocaleString('en-US', { timeZone: timezone as string }));
+    const startTimeUnix = startDate.getTime();
+
+    const expiryDate = new Date(new Date(rawExpiryTime as string).toLocaleString('en-US', { timeZone: timezone as string }));
+    const expiryTimeUnix = expiryDate.getTime();
 
     // Build our data object. Note: amount should be a number.
     const data = {
         title,
-        tokenId,
+        airdropsReceivers,
         amount: Number(amount),
+        minAosPoints: Number(minAosPoints),
         description,
-        expiryTime: expiryTimeUnix,
+        startTime: startTimeUnix,
+        endTime: expiryTimeUnix,
     };
 
     const validatedFields = airdropSchema.safeParse(data);
@@ -51,10 +79,18 @@ export async function createAirDrop(userId: string, appId: string, prevState: Ai
         };
     }
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Fetch Token Data
+        const tokenData: AppTokenData = await AirdropService.fetchTokenDetails(appId);
 
-        const newAirdrop = await AirdropService.createAirdrop(userId, appId, validatedFields.data);
+        // Transfer to our main Process.
+        const amount = validatedFields.data.amount
+        await AirdropService.transferToken(amount * tokenData.tokenDenomination);
+
+        // Confirm Deposit.
+        const airdropId = await AirdropService.confirmAirdropTokenDeposit(appId, tokenData, amount);
+
+        // Create Airdrop
+        const newAirdrop = await AirdropService.createAirdrop(appId, airdropId, validatedFields.data);
 
         return { message: 'success', airdrop: newAirdrop };
 

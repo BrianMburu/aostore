@@ -7,27 +7,56 @@ import { EditButton } from "../../EditButton";
 import ModalDialog from "../ModalDialog";
 import { AnimatedButton } from "../../animations/AnimatedButton";
 import { editAnswer, ForumReplyState } from "@/lib/forumActions";
-import { ForumReply } from "@/types/forum";
 import Loader from "../../Loader";
+import { Reply } from "@/types/reply";
+import { useAuth } from "@/context/AuthContext";
+import { useRank } from "@/context/RankContext";
+import { useRouter } from "next/navigation";
 
+const initialState: ForumReplyState = { message: null, errors: {}, reply: null };
 
-export function ForumEditAnswerForm({ reply }: { reply: ForumReply }) {
-    const [isOpen, setIsOpen] = useState(false)
-    const initialState: ForumReplyState = { message: null, errors: {}, reply: null };
+export function ForumEditAnswerForm({ reply, postId, appId }:
+    { appId: string, postId: string, reply: Reply }) {
+    const { user } = useAuth();
+    const { rank } = useRank();
+
+    const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
+
+    // Local state for the request details to support optimistic updates
+    const [localRequest, setLocalRequest] = useState<{ description: string }>({ description: reply.description });
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ForumReplyState, _formData: FormData) => {
-            const newState = await editAnswer(reply.replyId, prevState, _formData)
+            // Capture form values for the optimistic update
+            const newDescription = _formData.get("description") as string;
+            const previousRequest = { ...localRequest };
 
-            if (newState.message === 'success' && newState.reply) {
-                setIsOpen(false);
-                toast.success('Answer updated successfully!');
+            // Optimistically update local request state
+            const updatedRequest = { ...localRequest, description: newDescription };
+            setLocalRequest(updatedRequest);
+
+            try {
+                const newState = await editAnswer(appId, postId, reply.replyId, user, rank, prevState, _formData)
+
+                // If the server returns an updated request, update localRequest accordingly.
+                if (newState.message === 'success') {
+                    setIsOpen(false);
+
+                    router.refresh();
+                    toast.success('Answer updated successfully!');
+                }
+
+                return newState;
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalRequest(previousRequest);
+                console.error("Edit request failed:", error);
+                return initialState;
             }
-
-            return newState
-        }
-        , initialState);
-
+        },
+        initialState
+    );
 
     return (
         <>
@@ -45,19 +74,20 @@ export function ForumEditAnswerForm({ reply }: { reply: ForumReply }) {
                     <form action={formAction} className="space-y-2 max-w-lg">
                         <div>
                             <textarea
-                                name="content"
+                                name="description"
                                 placeholder="Write a reply..."
-                                defaultValue={reply.content}
+                                defaultValue={localRequest.description}
                                 className="w-full p-2 rounded-lg dark:bg-gray-700 dark:text-gray-300"
                                 rows={2}
                             />
-                            {state?.errors?.content &&
-                                state.errors.content.map((error: string) => (
+                            {state?.errors?.description &&
+                                state.errors.description.map((error: string) => (
                                     <p className="mt-2 text-sm text-red-500" key={error}>
                                         {error}
                                     </p>
                                 ))}
                         </div>
+
                         {/* Form Error */}
                         <div id='form-error' aria-live="polite" aria-atomic="true">
                             {state?.message && state?.message != "success" &&

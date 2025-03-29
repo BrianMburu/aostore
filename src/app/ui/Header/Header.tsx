@@ -33,7 +33,7 @@ const Header: React.FC = () => {
     const navigation: NavLink[] = [
         // { href: '/games', label: 'Games' },
         { href: "/dapps", label: "Dapps" },
-        { href: "/airdrops", label: "Airdrops" },
+        // { href: "/airdrops", label: "Airdrops" },
         { href: "/about", label: "About" },
         // { href: '/decentralized', label: 'Decentralized' },
         // { href: '/dao', label: 'DAO Verified' },

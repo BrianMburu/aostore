@@ -481,7 +481,7 @@ export const DAppService = {
     async FetchTokenData(tokenId: string): Promise<AppTokenData | undefined> {
         // Fetch Data from AO
         try {
-            const messages = await fetchAOmessages([{ name: "Action", value: "info" }], tokenId);
+            const messages = await fetchAOmessages([{ name: "Action", value: "Info" }], tokenId);
             console.log("Messages => ", messages);
 
             if (!messages || messages.length === 0) {
@@ -689,6 +689,7 @@ export const DAppService = {
             throw new Error(`Failed to get Dapp Rating, ${error}`)
         }
     },
+
     async flagDappAsInappropriate(appId: string) {
         try {
             const messages = await fetchAOmessages([

@@ -1,15 +1,19 @@
+import { Reply } from "./reply";
+import { Voters } from "./voter";
+
 // types/forum.ts
 export interface ForumPost {
-    appId: string;
-    postId: string;
+    devForumId: string;
     title: string;
-    content: string;
+    description: string;
     topic: string;
-    author: string;
-    likes: number;
-    replies: ForumReply[];
-    createdAt: number;
-    updatedAt: number;
+    user: string;
+    username: string;
+    profileUrl: string;
+    statusHistory: Record<number, { status: string, time: number }>
+    replies: Record<string, Reply>;
+    createdTime: number;
+    voters: Voters;
 }
 
 export interface ForumReply {
@@ -31,3 +35,5 @@ export const updateOptions = [
     { key: "7", value: "Security and Compliance" },
     { key: "8", value: "Collaboration and Feedback" }
 ];
+
+export type TopicOptionsType = typeof updateOptions[number];

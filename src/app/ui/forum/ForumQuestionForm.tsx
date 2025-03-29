@@ -1,38 +1,57 @@
 'use client'
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import toast from 'react-hot-toast';
 import { postForumQuestion, ForumPostState } from '@/lib/forumActions';
-import { ForumPost, updateOptions } from '@/types/forum';
+import { updateOptions } from '@/types/forum';
 import Loader from '../Loader';
 import { useAuth } from '@/context/AuthContext';
-import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { AnimatedButton } from '../animations/AnimatedButton';
+import { useRank } from '@/context/RankContext';
 
-export default function ForumQuestionForm({ setPosts }: { setPosts: React.Dispatch<React.SetStateAction<ForumPost[]>> }) {
-    const initialState: ForumPostState = { message: null, errors: {}, post: null }
+const initialState: ForumPostState = { message: null, errors: {}, post: null }
+
+export default function ForumQuestionForm({ appId }: { appId: string }) {
     const { user } = useAuth();
-    const params = useParams();
-    const appId = params.appId as string;
+    const { rank } = useRank();
+    const router = useRouter()
+
+    // Local state for the request details to support optimistic updates
+    const [localRequest, setLocalRequest] = useState<{ topic: string, title: string, description: string }>({ title: "", topic: "", description: "" });
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ForumPostState, _formData: FormData) => {
-            try {
-                const newState = await postForumQuestion(appId, user?.walletAddress || null, prevState, _formData);
+            // Capture form values for the optimistic update
+            const newDescription = _formData.get("description") as string;
+            const previousRequest = { ...localRequest };
 
-                if (newState.message === 'success' && newState.post) {
-                    setPosts(prev => state.post ? [state.post, ...prev] : prev);
+            // Optimistically update local request state
+            const updatedRequest = { ...localRequest, description: newDescription };
+            setLocalRequest(updatedRequest);
+
+            try {
+                const newState = await postForumQuestion(appId, user, rank, prevState, _formData);
+
+                // If the server returns an updated request, update localRequest accordingly.
+                if (newState.message === 'success') {
+                    setLocalRequest({ title: "", topic: "", description: "" })
+
+                    router.refresh();
                     toast.success('Support request submitted successfully!');
                 }
 
-                return newState
-
-            } catch {
+                return newState;
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalRequest(previousRequest);
                 toast.error("Failed to submit Post. Please try again.");
-                return initialState
+                console.error("Edit request failed:", error);
+                return initialState;
             }
-
-        }, initialState)
+        },
+        initialState
+    );
 
     return (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm mb-8">
@@ -43,6 +62,7 @@ export default function ForumQuestionForm({ setPosts }: { setPosts: React.Dispat
                 <input
                     name="title"
                     placeholder="Question title"
+                    defaultValue={localRequest.title}
                     className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     aria-describedby="forum-title-error"
                 />
@@ -59,6 +79,7 @@ export default function ForumQuestionForm({ setPosts }: { setPosts: React.Dispat
                     name="topic"
                     className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     aria-describedby="forum-topic-error"
+                    defaultValue={localRequest.topic}
                 >
                     <option value="">Select Topic</option>
                     {updateOptions.map(opt => (
@@ -77,14 +98,15 @@ export default function ForumQuestionForm({ setPosts }: { setPosts: React.Dispat
                 </span>
 
                 <textarea
-                    name="content"
+                    name="description"
                     placeholder="Detailed description"
                     className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-32"
                     aria-describedby="forum-content-error"
+                    defaultValue={localRequest.description}
                 />
                 <span id="forum-content-error" aria-live="polite" aria-atomic="true">
-                    {state?.errors?.content &&
-                        state.errors.content.map((error: string) => (
+                    {state?.errors?.description &&
+                        state.errors.description.map((error: string) => (
                             <p className="mt-2 text-sm text-red-500" key={error}>
                                 {error}
                             </p>

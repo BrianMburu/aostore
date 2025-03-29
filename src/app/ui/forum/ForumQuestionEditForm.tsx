@@ -9,25 +9,47 @@ import { AnimatedButton } from "../animations/AnimatedButton";
 import { ForumPost, updateOptions } from "@/types/forum";
 import { editForumQuestion, ForumPostState } from "@/lib/forumActions";
 import Loader from "../Loader";
+import { useRank } from "@/context/RankContext";
 
 
-export function ForumEditQuestionForm({ post }: { post: ForumPost }) {
+export function ForumEditQuestionForm({ post, appId }: { appId: string, post: ForumPost }) {
     const [isOpen, setIsOpen] = useState(false)
     const initialState: ForumPostState = { message: null, errors: {}, post: null };
+    const { rank } = useRank();
+
+    // Local state for the request details to support optimistic updates
+    const [localRequest, setLocalRequest] = useState<ForumPost>(post);
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ForumPostState, _formData: FormData) => {
-            const newState = await editForumQuestion(post.postId, prevState, _formData)
+            // Capture form values for the optimistic update
+            const newDescription = _formData.get("description") as string;
+            const previousRequest = { ...localRequest };
 
-            if (newState.message === 'success' && newState.post) {
-                setIsOpen(false);
-                toast.success('ForumPost updated successfully!');
+            // Optimistically update local request state
+            const updatedRequest = { ...localRequest, description: newDescription };
+            setLocalRequest(updatedRequest);
+
+            try {
+                const newState = await editForumQuestion(appId, post.devForumId, rank, prevState, _formData);
+
+                // If the server returns an updated request, update localRequest accordingly.
+                if (newState.message === 'success') {
+                    setLocalRequest(post);
+                    setIsOpen(false);
+                    toast.success('ForumPost updated successfully!');
+                }
+
+                return newState;
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalRequest(previousRequest);
+                console.error("Edit request failed:", error);
+                return initialState;
             }
-
-            return newState
-        }
-        , initialState);
-
+        },
+        initialState
+    );
 
     return (
         <>
@@ -81,15 +103,15 @@ export function ForumEditQuestionForm({ post }: { post: ForumPost }) {
                         </span>
 
                         <textarea
-                            name="content"
+                            name="description"
                             placeholder="Detailed description"
                             className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-32"
                             aria-describedby="forum-content-error"
-                            defaultValue={post.content}
+                            defaultValue={post.description}
                         />
                         <span id="forum-content-error" aria-live="polite" aria-atomic="true">
-                            {state?.errors?.content &&
-                                state.errors.content.map((error: string) => (
+                            {state?.errors?.description &&
+                                state.errors.description.map((error: string) => (
                                     <p className="mt-2 text-sm text-red-500" key={error}>
                                         {error}
                                     </p>
