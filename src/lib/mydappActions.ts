@@ -2,6 +2,7 @@ import * as z from 'zod';
 import { DAppService } from '@/services/ao/dappService';
 import { AppData, AppTokenData, CreateDapp, Dapp, ProjectType, projectTypes, Protocol } from '@/types/dapp';
 import { User } from '@/types/user';
+import { calculateDenominationAmount } from '@/utils/ao';
 
 export type DappState = {
     message?: string | null;
@@ -171,7 +172,7 @@ export async function addDappToken(appId: string, prevState: DappTokenState, for
         tokenId: formData.get('tokenId') as string,
         tokenName: formData.get('tokenName') as string,
         tokenTicker: formData.get('tokenTicker') as string,
-        tokenDenomination: Number(formData.get('tokenDenomination')) as number,
+        tokenDenomination: calculateDenominationAmount(Number(formData.get('tokenDenomination'))),
         logo: formData.get('logo') as string,
     }
 
@@ -184,9 +185,6 @@ export async function addDappToken(appId: string, prevState: DappTokenState, for
         };
     }
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
         const dappToken = await DAppService.addDappToken(appId, validatedFields.data);
 
         return { message: 'success', dappToken: dappToken };

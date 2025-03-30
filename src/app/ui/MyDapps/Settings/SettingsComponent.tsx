@@ -8,7 +8,6 @@ import { VerificationSection, VerificationStatus } from '@/app/ui/MyDapps/Verifi
 import { DAppService } from '@/services/ao/dappService';
 import DeleteDAppButton from '@/app/ui/MyDapps/DeleteDAppButton';
 import { ChangeDappOwnershipForm } from '@/app/ui/MyDapps/ChangeDappOwnershipForm';
-import { AddDappTokenForm } from '@/app/ui/MyDapps/AddDappTokenForm';
 import { TokenCard } from '@/app/ui/MyDapps/TokenCard';
 import { AddModeratorsForm } from '@/app/ui/MyDapps/AddModeratorsForm';
 import { Dapp } from '@/types/dapp';
@@ -67,13 +66,7 @@ function SettingsComponent({ appId }: { appId: string }) {
                 <DAppEditForm initialDapp={dapp} />
             </div>
 
-            {dapp.token ? (
-                <TokenCard token={dapp.token} />
-            ) : (
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-                    <AddDappTokenForm appId={appId} />
-                </div>
-            )}
+            <TokenCard appId={appId} />
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
                 <AddModeratorsForm appId={appId} />

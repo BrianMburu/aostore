@@ -1,30 +1,53 @@
 'use client'
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import toast from "react-hot-toast";
 import Loader from "../Loader";
 import { addDappToken, DappTokenState } from "@/lib/mydappActions";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 
 
 export const AddDappTokenForm = ({ appId }: { appId: string }) => {
     const initialState: DappTokenState = { message: null, errors: {} };
+    const router = useRouter()
+
+    const defaultFormValues = { tokenId: "", tokenName: "", tokenTicker: "", tokenDenomination: 0, logo: "" };
+
+    // Local state for the request details to support optimistic updates
+    const [localRequest, setLocalRequest] = useState<
+        { tokenId: string, tokenName: string, tokenTicker: string, tokenDenomination: number, logo: string }>(
+            defaultFormValues);
 
     const [state, formAction, isSubmitting] = useActionState(
-        async (_prevState: DappTokenState, _formData: FormData) => {
+        async (prevState: DappTokenState, _formData: FormData) => {
+            // Capture form values for the optimistic update
+            const newDescription = _formData.get("description") as string;
+            const previousRequest = { ...localRequest };
+
+            // Optimistically update local request state
+            const updatedRequest = { ...localRequest, description: newDescription };
+            setLocalRequest(updatedRequest);
+
             try {
-                const newState: DappTokenState = await addDappToken(appId, _prevState, _formData);
-                if (newState.message === 'success' && newState.dappToken) {
+                const newState: DappTokenState = await addDappToken(appId, prevState, _formData);
 
+                // If the server returns an updated request, update localRequest accordingly.
+                if (newState.message === 'success') {
+                    setLocalRequest(defaultFormValues)
                     toast.success("DApp Token added successfully!");
-                    router.push(`/mydapps/${appId}`);
+                    router.refresh();
                 }
-                return newState
 
-            } catch {
+                return newState;
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalRequest(previousRequest);
                 toast.error("Failed to add DApp Token. Please try again.");
-                return initialState
+                console.error("Edit request failed:", error);
+                return initialState;
             }
-        }, initialState);
+        },
+        initialState
+    );
 
     return (
         <form action={formAction} className="space-y-6">
@@ -37,6 +60,7 @@ export const AddDappTokenForm = ({ appId }: { appId: string }) => {
                     <input
                         className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         name="tokenId"
+                        defaultValue={localRequest.tokenId}
                         placeholder="Enter Token ID"
                     />
                     {state?.errors?.tokenId &&
@@ -51,6 +75,7 @@ export const AddDappTokenForm = ({ appId }: { appId: string }) => {
                     <input
                         className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         name="tokenName"
+                        defaultValue={localRequest.tokenName}
                         placeholder="Enter Token Name"
                     />
                     {state?.errors?.tokenName &&
@@ -65,6 +90,7 @@ export const AddDappTokenForm = ({ appId }: { appId: string }) => {
                     <input
                         className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         name="tokenTicker"
+                        defaultValue={localRequest.tokenTicker}
                         placeholder="Enter Token Ticker"
                     />
                     {state?.errors?.tokenTicker &&
@@ -79,6 +105,8 @@ export const AddDappTokenForm = ({ appId }: { appId: string }) => {
                     <input
                         className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         name="tokenDenomination"
+                        type="number"
+                        defaultValue={localRequest.tokenDenomination}
                         placeholder="Enter Token Denomination"
                     />
                     {state?.errors?.tokenDenomination &&
@@ -93,6 +121,7 @@ export const AddDappTokenForm = ({ appId }: { appId: string }) => {
                     <input
                         className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         name="logo"
+                        defaultValue={localRequest.logo}
                         placeholder="Enter Token Logo URL"
                     />
                     {state?.errors?.logo &&

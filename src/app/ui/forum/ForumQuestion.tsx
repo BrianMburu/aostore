@@ -66,8 +66,8 @@ export default function ForumQuestion({ post, appId, postId }: { post: ForumPost
 
     return (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm mb-8">
-            <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-row items-center justify-between gap-2 mb-4">
+                <div className="flex items-start flex-col sm:flex-row sm:items-center gap-2">
                     <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-full text-sm">
                         {post.topic}
                     </span>
@@ -83,7 +83,7 @@ export default function ForumQuestion({ post, appId, postId }: { post: ForumPost
             <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">{post.title}</h1>
             <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{post.description}</p>
 
-            <div className="flex items-center gap-4 mt-6">
+            <div className="flex items-center flex-wrap gap-4 mt-6">
                 <DetailedHelpfulButton
                     helpfulVotes={voters.foundHelpful?.count || 0}
                     unhelpfulVotes={voters.foundUnhelpful?.count || 0}

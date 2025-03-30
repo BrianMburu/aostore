@@ -16,15 +16,6 @@ export interface ForumPost {
     voters: Voters;
 }
 
-export interface ForumReply {
-    postId: string;
-    replyId: string;
-    content: string;
-    author: string;
-    likes: number;
-    createdAt: number;
-}
-
 export const updateOptions = [
     { key: "1", value: "Technical Requirements" },
     { key: "2", value: "Integration and Dependencies" },

@@ -6,7 +6,7 @@ export const RankService = {
     async fetchRanks(): Promise<Rank> {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "GetUserRank" },
+                { name: "Action", value: "GetUserRankA" },
             ], PROCESS_ID_RANKS);
 
             if (!messages || messages.length === 0) {

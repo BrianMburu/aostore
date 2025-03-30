@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect, useTransition } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 
 import { DappList } from '@/types/dapp'
 import { DAppCard } from './DappCard'
@@ -16,12 +16,12 @@ import { useAuth } from '@/context/AuthContext'
 export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams }) {
     const [dapps, setDapps] = useState<DappList[]>([]);
     const [totalItems, setTotalItems] = useState(0);
-    const [isLoading, startTransition] = useTransition();
+    const [isLoading, setIsLoading] = useState(true);
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
-        startTransition(
-            async () => {
+        const fetchDapps = async () => {
+            try {
                 if (!isAuthLoading && isConnected) {
                     const { data, total } = await DAppService.getMyDApps(filterParams, true);
 
@@ -34,7 +34,15 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
                     setDapps([]);
                     setTotalItems(0)
                 }
-            })
+            } catch (error) {
+                console.error(error)
+
+            } finally {
+                setIsLoading(false)
+            }
+
+        }
+        fetchDapps();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnected, filterParams.page, filterParams.protocol, filterParams.search, filterParams.category])
 

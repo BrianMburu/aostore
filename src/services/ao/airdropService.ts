@@ -304,14 +304,13 @@ export const AirdropService = {
         }
     },
 
-    async transferToken(amount: number) {
+    async transferToken(tokenId: string, amount: number) {
         try {
             const messages = await fetchAOmessages([
                 { name: "Action", value: "Transfer" },
                 { name: "Recipient", value: PROCESS_ID_AIRDROP_TABLE },
                 { name: "Quantity", value: String(amount) }
-
-            ], PROCESS_ID_TIP_TABLE);
+            ], tokenId);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");

@@ -14,6 +14,7 @@ const tabs = [
     { name: 'Analytics', href: '/analytics' },
     { name: 'Messages', href: '/messages' },
     { name: 'Airdrops', href: '/airdrops' },
+    { name: 'Tasks', href: '/tasks' },
 ];
 
 export function DesktopTabs() {

@@ -440,13 +440,13 @@ export const DAppService = {
     async addDappToken(appId: string, tokenData: AppTokenData): Promise<AppTokenData> {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "AddTokenTable" },
+                { name: "Action", value: "AddTokenDetails" },
+                { name: "appId", value: appId },
                 { name: "tokenId", value: tokenData.tokenId },
                 { name: "tokenName", value: tokenData.tokenName },
                 { name: "tokenTicker", value: tokenData.tokenTicker },
                 { name: "tokenDenomination", value: tokenData.tokenDenomination.toString() },
                 { name: "logo", value: tokenData.logo },
-                { name: "appId", value: appId },
 
             ], PROCESS_ID_TIP_TABLE);
 
@@ -478,17 +478,18 @@ export const DAppService = {
         }
     },
 
-    async FetchTokenData(tokenId: string): Promise<AppTokenData | undefined> {
+    async FetchTokenData(appId: string): Promise<AppTokenData | undefined> {
         // Fetch Data from AO
         try {
-            const messages = await fetchAOmessages([{ name: "Action", value: "Info" }], tokenId);
-            console.log("Messages => ", messages);
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetTokenDetails" },
+                { name: "appId", value: appId }
+            ], PROCESS_ID_TIP_TABLE);
+
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
-
-            console.log("Messages => ", messages);
 
             // Fetch the last message
             const lastMessage = messages[messages.length - 1];
@@ -499,11 +500,9 @@ export const DAppService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
-
             if (messageData && messageData.code == 200) {
                 const tokenData: AppTokenData = messageData.data;
-                return { ...tokenData, tokenId };
+                return tokenData;
             }
 
         } catch (error) {

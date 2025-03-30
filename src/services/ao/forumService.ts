@@ -49,9 +49,9 @@ export const ForumService = {
         }
 
         // Filter the dummy Posts based on the parameters
-        const filtered = forumPosts.filter(dapp => {
-            const matchesTopic = !params.topic || params.topic === 'all' || dapp.topic === params.topic;
-            const matchesSearch = !params.search || dapp.title.toLowerCase().includes(params.search.toLowerCase());
+        const filtered = forumPosts.filter(post => {
+            const matchesTopic = !params.topic || params.topic === 'all' || post.topic === params.topic;
+            const matchesSearch = !params.search || post.title.toLowerCase().includes(params.search.toLowerCase());
 
             return matchesTopic && matchesSearch;
         });
@@ -278,7 +278,7 @@ export const ForumService = {
     async helpfulVote(appId: string, postId: string) {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "MarkHelpfulDevForum" },
+                { name: "Action", value: "MarkHelpfulDevForumPost" },
                 { name: "appId", value: appId },
                 { name: "devForumId", value: postId },
 
@@ -313,7 +313,7 @@ export const ForumService = {
     async unhelpfulVote(appId: string, postId: string) {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "MarkUnhelpfulDevForum" },
+                { name: "Action", value: "MarkUnhelpfulDevForumPost" },
                 { name: "appId", value: appId },
                 { name: "devForumId", value: postId },
 

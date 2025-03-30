@@ -3,32 +3,72 @@
 import { motion } from 'framer-motion';
 import { DocumentDuplicateIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { AppTokenData } from '@/types/dapp';
+import { AddDappTokenForm } from './AddDappTokenForm';
+import { useAuth } from '@/context/AuthContext';
+import { DAppService } from '@/services/ao/dappService';
 
 interface TokenCardProps {
-    token: AppTokenData;
-    loading?: boolean;
+    appId: string;
     error?: string;
 }
 
-export function TokenCard({ token, loading, error }: TokenCardProps) {
+export function TokenCard({ appId }: TokenCardProps) {
+    const [tokenData, setTokenData] = useState<AppTokenData | null>(null)
     const [copied, setCopied] = useState(false);
     const [imageError, setImageError] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const { isConnected, isLoading: isAuthLoading } = useAuth();
+
+    useEffect(() => {
+        const fetchTokenData = async () => {
+            try {
+                if (!isAuthLoading && isConnected) {
+                    const data = await DAppService.FetchTokenData(appId);
+
+                    if (data) {
+                        setTokenData(data);
+                    }
+                    console.log("TOken Data:", data)
+
+                } else {
+                    setTokenData(null);
+                }
+            } catch (error) {
+                console.error(error)
+
+            } finally {
+                setIsLoading(false)
+            }
+
+        }
+        fetchTokenData()
+    }, [isConnected, appId, isAuthLoading]);
+
+    if (isLoading) return <TokenCardSkeleton />;
+
+    if (!tokenData) {
+        return (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                <AddDappTokenForm appId={appId} />
+            </div>
+        )
+    }
 
     const handleCopyId = () => {
-        navigator.clipboard.writeText(token.tokenName);
+        navigator.clipboard.writeText(tokenData.tokenName);
         setCopied(true);
         toast.success('Token ID copied!');
         setTimeout(() => setCopied(false), 2000);
     };
 
-    if (loading) return <TokenCardSkeleton />;
-    if (error) return <TokenError message={error} />;
+    // if (error) return <TokenError message={error} />;
 
     return (
+
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -39,10 +79,10 @@ export function TokenCard({ token, loading, error }: TokenCardProps) {
                 {/* Token Logo */}
                 <div className="relative flex-shrink-0">
                     <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                        {token.logo && !imageError ? (
+                        {tokenData.logo && !imageError ? (
                             <Image
-                                src={token.logo}
-                                alt={`${token.tokenName} logo`}
+                                src={tokenData.logo}
+                                alt={`${tokenData.tokenName} logo`}
                                 className="rounded-lg object-cover"
                                 width={64}
                                 height={64}
@@ -58,15 +98,15 @@ export function TokenCard({ token, loading, error }: TokenCardProps) {
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
-                            {token.tokenName}
+                            {tokenData.tokenName}
                         </h3>
                         <span className="text-sm font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded">
-                            {token.tokenTicker}
+                            {tokenData.tokenTicker}
                         </span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <span className="font-mono truncate">{token.tokenId}</span>
+                        <span className="font-mono truncate">{tokenData.tokenId}</span>
                         <button
                             onClick={handleCopyId}
                             className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -81,16 +121,16 @@ export function TokenCard({ token, loading, error }: TokenCardProps) {
 
                     <div className="mt-2 flex items-center gap-2">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Denomination: {token.tokenDenomination}
+                            Denomination: {tokenData.tokenDenomination}
                         </span>
                     </div>
                 </div>
 
                 {/* Quick Actions */}
                 <div className="flex flex-col gap-2">
-                    {token.logo && (
+                    {tokenData.logo && (
                         <a
-                            href={token.logo}
+                            href={tokenData.logo}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -121,12 +161,12 @@ export function TokenCardSkeleton() {
 }
 
 // Error State
-function TokenError({ message }: { message: string }) {
-    return (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-xl">
-            <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
-                <span className="text-sm font-medium">{message}</span>
-            </div>
-        </div>
-    );
-}
+// function TokenError({ message }: { message: string }) {
+//     return (
+//         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-xl">
+//             <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+//                 <span className="text-sm font-medium">{message}</span>
+//             </div>
+//         </div>
+//     );
+// }

@@ -34,3 +34,9 @@ export function cleanAoJson(messageData: string) {
 
     return cleanedData
 }
+
+export function calculateDenominationAmount(denomination: number): number {
+    const amountValue = Math.pow(10, denomination);
+
+    return amountValue;
+}
