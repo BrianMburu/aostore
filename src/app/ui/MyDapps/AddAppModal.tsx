@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useActionState } from 'react';
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 import ModalDialog from './ModalDialog';
 import { projectTypes } from '@/types/dapp';
@@ -16,9 +16,9 @@ import { AnimatedButton } from '../animations/AnimatedButton';
 import { MultiItemInput } from './MultiItemInput';
 
 export const AddDAppModal = () => {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const { replace } = useRouter();
+    // const searchParams = useSearchParams();
+    // const pathname = usePathname();
+    // const { replace } = useRouter();
     const [bannerUrls, setBannerUrls] = useState<string[]>([]);
     const router = useRouter();
 
@@ -26,47 +26,70 @@ export const AddDAppModal = () => {
     const initialState: DappState = { message: null, errors: {} };
     const { user } = useAuth();
 
-    const clearFilters = (filterNames: string[]) => {
-        filterNames.map(
-            (filtername: string) => {
-                const params = new URLSearchParams(searchParams)
-                //reset Page
-                params.delete(filtername);
+    // const clearFilters = (filterNames: string[]) => {
+    //     filterNames.map(
+    //         (filtername: string) => {
+    //             const params = new URLSearchParams(searchParams)
+    //             //reset Page
+    //             params.delete(filtername);
 
-                replace(`${pathname}?${params.toString()}`);
-            }
-        )
+    //             replace(`${pathname}?${params.toString()}`);
+    //         }
+    //     )
+    // }
+
+    // Local state for the request details to support optimistic updates
+
+    const initialFormData = {
+        appName: "", appIconUrl: "", description: "",
+        websiteUrl: "", discordUrl: "", protocol: "",
+        projectType: "", companyName: "", coverUrl: "",
+        twitterUrl: "", bannerUrls: []
     }
+
+    const [localRequest, setLocalRequest] = useState<{
+        appName: string, appIconUrl: string, description: string,
+        websiteUrl: string, discordUrl: string, protocol: string,
+        projectType: string, companyName: string, coverUrl: string,
+        twitterUrl: string
+    }>(initialFormData);
 
     const [state, formAction, isSubmitting] = useActionState(
         async (_prevState: DappState, _formData: FormData) => {
             _formData.append('bannerUrls', bannerUrls.join(","));
 
+            // Capture form values for the optimistic update
+            const previousRequest = { ...localRequest };
+
+            // Get form data as object and include bannerUrls
+            const formValues = Object.fromEntries(_formData.entries());
+            const updatedRequest = { ...localRequest, ...formValues };
+
+            // Optimistically update local request state
+            setLocalRequest(updatedRequest);
+
             try {
-                // Call createDapp to submit the data to the server
-                const newState = await createDapp(user!, _prevState, _formData);
+                const newState = await createDapp(user, _prevState, _formData);
 
+                // If the server returns an updated request, update localRequest accordingly.
                 if (newState.message === 'success') {
-                    // Close modal and show success message
+                    setLocalRequest(initialFormData);
                     setIsOpen(false);
-
-                    // clear page filters
-                    clearFilters(['page'])
-
-                    toast.success("DApp submitted successfully! It will be visible after verification.");
-
-                    //Revalidate Mydapps Page.
                     router.refresh();
+                    toast.success("DApp submitted successfully! It will be visible after verification.");
                 }
+
                 return newState;
-
-            } catch {
-                // Handle error and rollback
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalRequest(previousRequest);
                 toast.error("Failed to submit DApp. Please try again.");
-                return _prevState
+                console.error("Edit request failed:", error);
+                return initialState;
             }
+        },
+        initialState);
 
-        }, initialState);
 
     return (
         <div>
@@ -83,7 +106,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">DApp Name</label>
                         <input
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="appName"
+                            name="appName" defaultValue={localRequest.appName}
                         />
                         {state?.errors?.appName &&
                             state.errors.appName.map((error: string) => (
@@ -97,7 +120,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">AppIconUrl URL</label>
                         <input
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="appIconUrl"
+                            name="appIconUrl" defaultValue={localRequest.appIconUrl}
                         />
                         {state?.errors?.appIconUrl &&
                             state.errors.appIconUrl.map((error: string) => (
@@ -111,7 +134,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">Description</label>
                         <textarea
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="description"
+                            name="description" defaultValue={localRequest.description}
                             rows={4}
                         />
                         {state?.errors?.description &&
@@ -126,7 +149,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">Website URL</label>
                         <input
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="websiteUrl"
+                            name="websiteUrl" defaultValue={localRequest.websiteUrl}
                         />
                         {state?.errors?.websiteUrl &&
                             state.errors.websiteUrl.map((error: string) => (
@@ -140,7 +163,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">Twitter URL</label>
                         <input
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="twitterUrl"
+                            name="twitterUrl" defaultValue={localRequest.twitterUrl}
                         />
                         {state?.errors?.twitterUrl &&
                             state.errors.twitterUrl.map((error: string) => (
@@ -154,7 +177,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">Discord URL</label>
                         <input
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="discordUrl"
+                            name="discordUrl" defaultValue={localRequest.discordUrl}
                         />
                         {state?.errors?.discordUrl &&
                             state.errors.discordUrl.map((error: string) => (
@@ -168,7 +191,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">Cover URL</label>
                         <input
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="coverUrl"
+                            name="coverUrl" defaultValue={localRequest.coverUrl}
                         />
                         {state?.errors?.websiteUrl &&
                             state.errors.websiteUrl.map((error: string) => (
@@ -183,7 +206,7 @@ export const AddDAppModal = () => {
                             <label className="text-gray-900 dark:text-white">Protocol</label>
                             <select
                                 className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 dark:text-gray-300"
-                                name="protocol"
+                                name="protocol" defaultValue={localRequest.protocol}
                             >
                                 <option value="">Select Protocol</option>
                                 <option value="aocomputer">AO Computer</option>
@@ -201,7 +224,7 @@ export const AddDAppModal = () => {
                             <label className="text-gray-900 dark:text-white pb-2">Project Type</label>
                             <select
                                 className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 dark:text-gray-300"
-                                name="projectType"
+                                name="projectType" defaultValue={localRequest.projectType}
                             >
                                 <option value="">Select Project Type</option>
                                 {projectTypes.map((type) => (
@@ -223,7 +246,7 @@ export const AddDAppModal = () => {
                         <label className="text-gray-900 dark:text-white">Company Name</label>
                         <input
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                            name="companyName"
+                            name="companyName" defaultValue={localRequest.companyName}
                         />
                         {state?.errors?.companyName &&
                             state.errors.companyName.map((error: string) => (

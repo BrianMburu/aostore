@@ -1,25 +1,8 @@
 import { DEFAULT_PAGE_SIZE } from '@/config/page';
 import { Airdrop } from '@/types/airDrop';
-// import { DAPPIDS } from '@/utils/dataGenerators';
-// import { DAppService } from './dappService';
 import { cleanAoJson, fetchAOmessages } from '@/utils/ao';
-import { PROCESS_ID_AIRDROP_TABLE, PROCESS_ID_TIP_TABLE } from '@/config/ao';
+import { PROCESS_ID_AIRDROP_TABLE } from '@/config/ao';
 import { AppTokenData } from '@/types/dapp';
-
-// const dummyAirdrops: AppAirdropData[] = Array.from({ length: 48 }, (_, i) => ({
-//     userId: `user_${i}`,
-//     title: `Airdrop ${i % 6 + 1}${String.fromCharCode(65 + i % 3)}`,
-//     appId: DAPPIDS[i],
-//     tokenId: `token_${i}`,
-//     description: `Description for Airdrop ${i}`,
-//     airdropsReceivers: [`receiver1_${i}`, `receiver2_${i}`],
-//     amount: Math.floor(Math.random() * 1000),
-//     publishTime: Date.now() - Math.floor(Math.random() * 1000000000),
-//     expiryTime: Date.now() + Math.floor(Math.random() * 1000000000),
-//     appName: `DApp ${i % 6 + 1}${String.fromCharCode(65 + i % 3)}`,
-//     airdropId: `airdrop_${i}`,
-//     status: ['claimed', 'pending', 'expired'][i % 3] as 'claimed' | 'pending' | 'expired'
-// }));
 
 export interface AidropsFilterParams {
     appId?: string;
@@ -111,7 +94,7 @@ export const AirdropService = {
         console.log("AirDrops Messages filtered Data => ", filteredData);
 
         // Pagination
-        const page = Number(params.page) || 1;
+        const page = Number(params?.page) || 1;
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         const sortedData = filteredData
@@ -189,7 +172,7 @@ export const AirdropService = {
     },
 
     async createAirdrop(appId: string, airdropId: string, airdropData: {
-        airdropsReceivers: string, description: string,
+        airdropsReceivers: string, description: string, title: string,
         startTime: number, endTime: number, minAosPoints: number
     }) {
         try {
@@ -197,6 +180,7 @@ export const AirdropService = {
                 { name: "Action", value: "FinalizeAirdropN" },
                 { name: "appId", value: appId },
                 { name: "airdropId", value: airdropId },
+                { name: "title", value: airdropData.title },
                 { name: "airdropsReceivers", value: airdropData.airdropsReceivers },
                 { name: "description", value: airdropData.description },
                 { name: "startTime", value: String(airdropData.startTime) },
@@ -268,65 +252,4 @@ export const AirdropService = {
         }
 
     },
-
-    async fetchTokenDetails(appId: string): Promise<AppTokenData> {
-        try {
-            const messages = await fetchAOmessages([
-                { name: "Action", value: "GetTokenDetails" },
-                { name: "appId", value: appId }
-
-            ], PROCESS_ID_TIP_TABLE);
-
-            if (!messages || messages.length === 0) {
-                throw new Error("No messages were returned from ao. Please try later.");
-            }
-
-            // Fetch the last message
-            const lastMessage = messages[messages.length - 1];
-
-            // Parse the Messages
-            const cleanedData = cleanAoJson(lastMessage.Data)
-
-            const messageData = JSON.parse(cleanedData);
-
-            if (messageData && messageData.code == 200) {
-                const tokenData = messageData.data;
-                // console.log("Dapps Messages Data => ", messageData);
-                return tokenData
-
-            } else {
-                throw new Error(messageData.message)
-            }
-
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to fetch Data, ${error}`)
-        }
-    },
-
-    async transferToken(tokenId: string, amount: number) {
-        try {
-            const messages = await fetchAOmessages([
-                { name: "Action", value: "Transfer" },
-                { name: "Recipient", value: PROCESS_ID_AIRDROP_TABLE },
-                { name: "Quantity", value: String(amount) }
-            ], tokenId);
-
-            if (!messages || messages.length === 0) {
-                throw new Error("No messages were returned from ao. Please try later.");
-            }
-
-            if (!(messages?.[0].Tags
-                .find((tag: { name: string, value: string }) => tag.name === "Action").value === "Debit-Notice")
-            ) {
-                throw new Error("Token Transfer Failed")
-            }
-
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to fetch Data, ${error}`)
-        }
-    },
-
-    async editAirdrop() { }
 };

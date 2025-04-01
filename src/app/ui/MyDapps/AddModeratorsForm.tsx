@@ -1,25 +1,42 @@
 'use client'
-import { useState, useActionState, useRef } from 'react';
+import { useState, useActionState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 import Loader from '../Loader';
 import toast from 'react-hot-toast';
 import { addModerators, DappModeratorState } from '@/lib/mydappActions';
-import { ModeratorsList } from './ModeratorList';
+import { DAppService } from '@/services/ao/dappService';
 
 
 export function AddModeratorsForm({ appId }: { appId: string }) {
     const [inputValue, setInputValue] = useState('');
     const [moderators, setModerators] = useState<string[]>([]);
+    const [accessPage, setAccessPage] = useState<string>("reviews")
     const inputRef = useRef<HTMLInputElement>(null);
-    const initialState = { message: null, errors: {} }
+    const initialState = { message: null, errors: {} };
+
+    useEffect(() => {
+        const fetchDappMods = async () => {
+            try {
+                const { data } = await DAppService.getMods(appId, accessPage);
+                setModerators(data);
+
+            } catch (error) {
+                toast.error('Failed to fetch moderators');
+                console.error(error)
+            }
+        };
+        fetchDappMods()
+
+    }, [appId, accessPage]);
+
 
     const [state, formAction, isSubmitting] = useActionState<DappModeratorState, FormData>(
         async (_prevState: DappModeratorState, _formData: FormData) => {
             try {
                 _formData.append('mods', moderators.join(","));
 
-                const newState = await addModerators(appId, _prevState, _formData);
+                const newState = await addModerators(appId, accessPage, _prevState, _formData);
                 if (newState.message === 'success') {
                     toast.success('Moderators added successfully!');
                     setModerators([]);
@@ -65,10 +82,23 @@ export function AddModeratorsForm({ appId }: { appId: string }) {
     return (
         <form action={formAction} className="space-y-6">
             <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Add Moderators
-                </h2>
-                <ModeratorsList appId={appId} refreshTrigger={state.message} />
+                <div className='flex flex-col sm:flex-row sm:justify-between'>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Add Moderators
+                    </h2>
+                    <select
+                        value={accessPage}
+                        onChange={(e) => {
+                            setAccessPage(e.target.value)
+                        }}
+                        className="dark:bg-gray-800 dark:text-white rounded p-2 text-sm"
+                    >
+                        <option value="reviews">Reviews</option>
+                        <option value="bugReport">Bug Report</option>
+                        <option value="developerForum">Developer Forum</option>
+                        <option value="featureRequest">Feature Request</option>
+                    </select>
+                </div>
 
                 <div className="relative">
                     <div

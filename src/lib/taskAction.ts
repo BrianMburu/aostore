@@ -1,4 +1,6 @@
+import { PROCESS_ID_TASKS_TABLE } from "@/config/ao";
 import { TaskService } from "@/services/ao/taskService";
+import { TokenService } from "@/services/ao/tokenService";
 import { AppTokenData } from "@/types/dapp";
 import { Rank } from "@/types/rank";
 import { Task, TaskReply } from "@/types/task";
@@ -58,11 +60,11 @@ export async function createTask(appId: string, prevState: TaskState, formData: 
     try {
         // console.log(validatedFields.data)
         // Fetch Token Data
-        const tokenData: AppTokenData = await TaskService.fetchTokenDetails(appId);
+        const tokenData: AppTokenData = await TokenService.fetchTokenDetails(appId);
 
         // Transfer to our main Process.
         const amount = validatedFields.data.amount
-        await TaskService.transferToken(tokenData.tokenId, amount * tokenData.tokenDenomination);
+        await TokenService.transferToken(tokenData.tokenId, PROCESS_ID_TASKS_TABLE, amount * tokenData.tokenDenomination);
 
         // Confirm Deposit.
         const taskId = await TaskService.confirmTaskTokenDeposit(appId, tokenData, amount);

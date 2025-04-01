@@ -22,6 +22,7 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
     useEffect(() => {
         const fetchDapps = async () => {
             try {
+                setIsLoading(true)
                 if (!isAuthLoading && isConnected) {
                     const { data, total } = await DAppService.getMyDApps(filterParams, true);
 
@@ -44,7 +45,7 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
         }
         fetchDapps();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, filterParams.page, filterParams.protocol, filterParams.search, filterParams.category])
+    }, [isConnected, filterParams])
 
     if (isLoading) {
         return <DappCardsSkeleton />

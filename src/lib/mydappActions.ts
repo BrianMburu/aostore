@@ -3,6 +3,7 @@ import { DAppService } from '@/services/ao/dappService';
 import { AppData, AppTokenData, CreateDapp, Dapp, ProjectType, projectTypes, Protocol } from '@/types/dapp';
 import { User } from '@/types/user';
 import { calculateDenominationAmount } from '@/utils/ao';
+import { TokenService } from '@/services/ao/tokenService';
 
 export type DappState = {
     message?: string | null;
@@ -41,7 +42,11 @@ export const dappSchema = z.object({
 
 export type FormValues = z.infer<typeof dappSchema>;
 
-export async function createDapp(user: User, prevState: DappState, formData: FormData) {
+export async function createDapp(user: User | null, prevState: DappState, formData: FormData) {
+    if (!user) {
+        return { message: 'Invalid Session: User not Found!' }
+    }
+
     const data = {
         appName: formData.get('appName'),
         appIconUrl: formData.get('appIconUrl'),
@@ -65,9 +70,6 @@ export async function createDapp(user: User, prevState: DappState, formData: For
         };
     }
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
         const dappData: CreateDapp = {
             ...validatedFields.data,
             username: user.username,
@@ -164,7 +166,7 @@ export const dappTokenSchema = z.object({
     tokenName: z.string().min(3, 'Name must be at least 3 characters'),
     tokenTicker: z.string().min(3, 'Ticker must be at least 3 characters'),
     tokenDenomination: z.number().min(1, 'Denomination must be at least 1'),
-    logo: z.string().min(1, 'Logo is required').url('Invalid URL format for Token Logo URL'),
+    logo: z.string().min(1, 'Logo ID is required').url('Invalid URL, only enter the logo ID.'),
 })
 
 export async function addDappToken(appId: string, prevState: DappTokenState, formData: FormData) {
@@ -173,7 +175,7 @@ export async function addDappToken(appId: string, prevState: DappTokenState, for
         tokenName: formData.get('tokenName') as string,
         tokenTicker: formData.get('tokenTicker') as string,
         tokenDenomination: calculateDenominationAmount(Number(formData.get('tokenDenomination'))),
-        logo: formData.get('logo') as string,
+        logo: "https://arweave.net/raw/" + formData.get('logo')
     }
 
     const validatedFields = dappTokenSchema.safeParse(data);
@@ -185,7 +187,7 @@ export async function addDappToken(appId: string, prevState: DappTokenState, for
         };
     }
     try {
-        const dappToken = await DAppService.addDappToken(appId, validatedFields.data);
+        const dappToken = await TokenService.addDappToken(appId, validatedFields.data);
 
         return { message: 'success', dappToken: dappToken };
 
@@ -244,7 +246,7 @@ export const dappAddModsSchema = z.object({
     mods: z.array(z.string().min(8, "Minimum 8 characters")).nonempty('Atleast one mod is required')
 });
 
-export async function addModerators(appId: string, prevState: DappChangeOwnerState, formData: FormData) {
+export async function addModerators(appId: string, accessPage: string, prevState: DappChangeOwnerState, formData: FormData) {
     const data = {
         mods: formData.get('mods')?.toString().split(',').map(url => url.trim()),
     }
@@ -261,7 +263,7 @@ export async function addModerators(appId: string, prevState: DappChangeOwnerSta
     try {
         const mods = validatedFields.data.mods
 
-        const newMods = await DAppService.addMods(appId, mods);
+        const newMods = await DAppService.addMods(appId, mods, accessPage);
 
         return { message: 'success', mods: newMods };
 

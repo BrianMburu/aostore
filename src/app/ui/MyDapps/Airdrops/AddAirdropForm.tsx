@@ -47,7 +47,7 @@ export const AddAirDropForm = () => {
                 // Call createDapp to submit the data to the server
                 const newState = await createAirDrop(user?.walletAddress || '', appId, prevState, _formData);
 
-                if (newState.message === 'success' && newState.airdrop) {
+                if (newState.message === 'success') {
                     // Close modal and show success message
                     setIsOpen(false);
 
@@ -63,7 +63,6 @@ export const AddAirDropForm = () => {
                 toast.error("Failed to submit Airdrop. Please try again.");
                 return prevState
             }
-
 
         }, initialState)
 
@@ -178,6 +177,7 @@ export const AddAirDropForm = () => {
                             ))}
                     </div>
 
+                    {/* Start Time with Timepicker and Timezone Picker */}
                     <div>
                         <label htmlFor="startTime" className="text-gray-900 dark:text-white">
                             Start Time

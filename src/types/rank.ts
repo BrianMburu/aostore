@@ -4,4 +4,4 @@ export const rankTypes = [
 
 export type RankType = typeof rankTypes[number];
 
-export type Rank = { rank: RankType, aosPoints: number };
+export type Rank = { rank: RankType, points: number };

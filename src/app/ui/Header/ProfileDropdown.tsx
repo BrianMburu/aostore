@@ -10,11 +10,11 @@ import {
     CubeIcon,
     // UserCircleIcon
 } from '@heroicons/react/24/outline';
-import { User, Wallet } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 
 import toast from 'react-hot-toast';
-import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
+import ProfileImage from '../ProfilePic';
 
 interface ProfileDropdownProps {
     address: string;
@@ -49,9 +49,7 @@ export function ProfileDropdown({ address, onDisconnect, isDisconnecting }: Prof
         <Menu as="div" className="relative ml-3">
             <div>
                 <MenuButton className="relative flex rounded-full bg-gray-100 dark:bg-gray-700 p-1.5 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                    {user?.avatar ? <Image src={user!.avatar} alt="User avatar" className="rounded-full" width={32} height={32} /> :
-                        <User className=" rounded-full h-6 w-6" />
-                    }
+                    <ProfileImage imgUrl={user?.avatar || ''} alt={user?.username || ""} className={'h-8 w-8'} />
                 </MenuButton>
             </div>
 

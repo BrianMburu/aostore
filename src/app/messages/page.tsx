@@ -1,12 +1,16 @@
-'use client'
-// app/messages/page.tsx
 import { Suspense } from 'react';
 
 import { ReceivedMessageList } from '../ui/Messages/ReceivedMessageList';
 import { MessageFilters } from '../ui/Messages/MessageFilter';
 import MessageListSkeleton from '../ui/Messages/skeletons/MessageListSkeleton';
+import { MessageFilterParams } from '@/services/ao/messageService';
+interface Props {
+    params: Promise<{ appId: string }>;
+    searchParams: Promise<MessageFilterParams>;
+}
+export default async function MessagesPage(props: Props) {
 
-export default function MessagesPage() {
+    const searchParams = await props.searchParams;
     return (
         <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -37,7 +41,7 @@ export default function MessagesPage() {
             </div>
 
             <Suspense fallback={<MessageListSkeleton n={6} />}>
-                <ReceivedMessageList />
+                <ReceivedMessageList searchParams={searchParams} />
             </Suspense>
         </div>
     );

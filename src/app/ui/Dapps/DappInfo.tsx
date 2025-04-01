@@ -76,7 +76,7 @@ export function DappInfo() {
             <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Events & Offers</h2>
                 <Suspense fallback={<AirdropsSkeletonVertical n={4} />}>
-                    <AirdropsListLimit params={{ appId: appData.appId }} />
+                    <AirdropsListLimit appId={appData.appId} params={{ appId: appData.appId }} />
                 </Suspense>
             </div>
         </div>

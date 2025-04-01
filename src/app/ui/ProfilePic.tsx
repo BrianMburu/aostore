@@ -24,7 +24,7 @@ export default function ProfileImage({
                     alt={alt}
                     height={40}
                     width={40}
-                    className="rounded-full object-cover"
+                    className={`rounded-full object-cover ${className}`}
                     onError={() => setHasError(true)}
                 />
             ) : (

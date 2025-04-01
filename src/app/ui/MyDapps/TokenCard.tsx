@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { AppTokenData } from '@/types/dapp';
 import { AddDappTokenForm } from './AddDappTokenForm';
 import { useAuth } from '@/context/AuthContext';
-import { DAppService } from '@/services/ao/dappService';
+import { TokenService } from '@/services/ao/tokenService';
 
 interface TokenCardProps {
     appId: string;
@@ -27,7 +27,7 @@ export function TokenCard({ appId }: TokenCardProps) {
         const fetchTokenData = async () => {
             try {
                 if (!isAuthLoading && isConnected) {
-                    const data = await DAppService.FetchTokenData(appId);
+                    const data = await TokenService.fetchTokenDetails(appId);
 
                     if (data) {
                         setTokenData(data);
@@ -50,7 +50,7 @@ export function TokenCard({ appId }: TokenCardProps) {
 
     if (isLoading) return <TokenCardSkeleton />;
 
-    if (!tokenData) {
+    if (!tokenData || tokenData.tokenId === "nil") {
         return (
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
                 <AddDappTokenForm appId={appId} />

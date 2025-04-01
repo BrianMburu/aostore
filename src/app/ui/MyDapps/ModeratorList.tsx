@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { DAppService } from '@/services/ao/dappService';
 
 
-export function ModeratorsList({ appId, refreshTrigger }: { appId: string; refreshTrigger?: string | null }) {
+export function ModeratorsList({ appId, accessPage, refreshTrigger }: { appId: string; refreshTrigger?: string | null, accessPage: string }) {
     const [moderators, setModerators] = useState<string[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
 
@@ -16,7 +16,7 @@ export function ModeratorsList({ appId, refreshTrigger }: { appId: string; refre
     useEffect(() => {
         startTransition(async () => {
             try {
-                const { data, total } = await DAppService.getMods(appId);
+                const { data, total } = await DAppService.getMods(appId, accessPage);
 
                 setModerators(data);
                 setTotalItems(total)
@@ -26,7 +26,7 @@ export function ModeratorsList({ appId, refreshTrigger }: { appId: string; refre
             }
         }
         );
-    }, [appId, refreshTrigger]);
+    }, [appId, refreshTrigger, accessPage]);
 
     return (
         <div className="space-y-4">

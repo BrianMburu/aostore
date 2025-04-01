@@ -10,21 +10,22 @@ export const AddDappTokenForm = ({ appId }: { appId: string }) => {
     const initialState: DappTokenState = { message: null, errors: {} };
     const router = useRouter()
 
-    const defaultFormValues = { tokenId: "", tokenName: "", tokenTicker: "", tokenDenomination: 0, logo: "" };
+    const defaultFormValues = { tokenId: "", tokenName: "", tokenTicker: "", tokenDenomination: "", logo: "" };
 
     // Local state for the request details to support optimistic updates
     const [localRequest, setLocalRequest] = useState<
-        { tokenId: string, tokenName: string, tokenTicker: string, tokenDenomination: number, logo: string }>(
+        { tokenId: string, tokenName: string, tokenTicker: string, tokenDenomination: string, logo: string }>(
             defaultFormValues);
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: DappTokenState, _formData: FormData) => {
             // Capture form values for the optimistic update
-            const newDescription = _formData.get("description") as string;
+            const formValues = Object.fromEntries(_formData.entries());
+
             const previousRequest = { ...localRequest };
 
             // Optimistically update local request state
-            const updatedRequest = { ...localRequest, description: newDescription };
+            const updatedRequest = { ...localRequest, ...formValues };
             setLocalRequest(updatedRequest);
 
             try {

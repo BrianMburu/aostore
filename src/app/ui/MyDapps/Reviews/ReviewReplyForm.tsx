@@ -22,12 +22,13 @@ export function ReviewReplyForm({ appId, reviewId }: { appId: string, reviewId: 
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ReplyState, _formData: FormData) => {
+            const formValues = Object.fromEntries(_formData.entries());
+
             // Capture form values for the optimistic update
-            const newDescription = _formData.get("description") as string;
             const previousRequest = { ...localRequest };
 
             // Optimistically update local request state
-            const updatedRequest = { ...localRequest, description: newDescription };
+            const updatedRequest = { ...localRequest, ...formValues };
             setLocalRequest(updatedRequest);
 
             try {
@@ -35,6 +36,7 @@ export function ReviewReplyForm({ appId, reviewId }: { appId: string, reviewId: 
 
                 // If the server returns an updated request, update localRequest accordingly.
                 if (newState.message === 'success') {
+                    setLocalRequest({ description: "" })
                     toast.success('Reply posted successfully!');
                 }
                 router.refresh();

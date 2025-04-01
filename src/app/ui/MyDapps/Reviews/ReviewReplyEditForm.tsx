@@ -23,12 +23,13 @@ export function DappReplyEditForm({ appId, reviewId, reply }: { appId: string, r
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ReplyState, _formData: FormData) => {
+            const formValues = Object.fromEntries(_formData.entries());
+
             // Capture form values for the optimistic update
-            const newDescription = _formData.get("description") as string;
             const previousRequest = { ...localRequest };
 
             // Optimistically update local request state
-            const updatedRequest = { ...localRequest, description: newDescription };
+            const updatedRequest = { ...localRequest, ...formValues };
             setLocalRequest(updatedRequest);
 
             try {

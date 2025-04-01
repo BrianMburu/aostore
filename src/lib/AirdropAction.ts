@@ -1,20 +1,13 @@
+import { PROCESS_ID_AIRDROP_TABLE } from "@/config/ao";
 import { AirdropService } from "@/services/ao/airdropService";
+import { TokenService } from "@/services/ao/tokenService";
 import { Airdrop } from "@/types/airDrop";
 import { AppTokenData } from "@/types/dapp";
 import * as z from "zod";
 
 export type AirDropState = {
     message?: string | null;
-    // errors?: { [key: string]: string[] },
-    errors?: {
-        title?: string[],
-        amount?: string[],
-        description?: string[],
-        airdropsReceivers?: string[],
-        minAosPoints?: string[],
-        startTime?: string[],
-        endTime?: string[],
-    };
+    errors?: { [key: string]: string[] },
     airdrop?: Airdrop | null
 };
 
@@ -80,19 +73,20 @@ export async function createAirDrop(userId: string, appId: string, prevState: Ai
     }
     try {
         // Fetch Token Data
-        const tokenData: AppTokenData = await AirdropService.fetchTokenDetails(appId);
+        const tokenData: AppTokenData = await TokenService.fetchTokenDetails(appId);
 
         // Transfer to our main Process.
         const amount = validatedFields.data.amount
-        await AirdropService.transferToken(amount * tokenData.tokenDenomination);
+        await TokenService.transferToken(tokenData.tokenId, PROCESS_ID_AIRDROP_TABLE, amount * tokenData.tokenDenomination);
 
         // Confirm Deposit.
         const airdropId = await AirdropService.confirmAirdropTokenDeposit(appId, tokenData, amount);
 
         // Create Airdrop
-        const newAirdrop = await AirdropService.createAirdrop(appId, airdropId, validatedFields.data);
+        await AirdropService.createAirdrop(appId, airdropId, validatedFields.data);
 
-        return { message: 'success', airdrop: newAirdrop };
+
+        return { message: 'success' };
 
     } catch (error) {
         return { message: `AO Error: failed to submit Airdrop: ${error}` };

@@ -13,7 +13,7 @@ type RankContextType = {
 const RankContext = createContext<RankContextType | undefined>(undefined);
 
 export function RankProvider({ children }: { children: React.ReactNode }) {
-    const [rank, setRank] = useState<Rank>({ rank: "BluePill", aosPoints: 0 });
+    const [rank, setRank] = useState<Rank>({ rank: "BluePill", points: 0 });
     const [isfetchingRank, setIsFetchingRank] = useState(true);
     const { isConnected } = useAuth();
 

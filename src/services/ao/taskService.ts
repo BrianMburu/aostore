@@ -1,4 +1,4 @@
-import { PROCESS_ID_TASKS_TABLE, PROCESS_ID_TIP_TABLE } from '@/config/ao';
+import { PROCESS_ID_TASKS_TABLE } from '@/config/ao';
 import { DEFAULT_PAGE_SIZE } from '@/config/page';
 import { AppTokenData } from '@/types/dapp';
 import { Rank } from '@/types/rank';
@@ -42,7 +42,6 @@ export const TaskService = {
 
             if (messageData.code === 200) {
                 fetchedTasks = Object.values(messageData.data);
-                console.log("Tasks Data: => ", fetchedTasks)
             }
             else {
                 throw new Error(messageData.message)
@@ -60,7 +59,7 @@ export const TaskService = {
         });
 
         // Pagination
-        const page = Number(params.page) || 1;
+        const page = Number(params?.page) || 1;
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort and slice the data for the current page
@@ -101,7 +100,6 @@ export const TaskService = {
             if (messageData.code === 200) {
                 const forumPost = messageData.data;
 
-                console.log("Task Data: => ", forumPost)
                 return forumPost
             }
             else {
@@ -197,66 +195,6 @@ export const TaskService = {
 
     },
 
-    async fetchTokenDetails(appId: string): Promise<AppTokenData> {
-        try {
-            const messages = await fetchAOmessages([
-                { name: "Action", value: "GetTokenDetails" },
-                { name: "appId", value: appId }
-
-            ], PROCESS_ID_TIP_TABLE);
-
-            if (!messages || messages.length === 0) {
-                throw new Error("No messages were returned from ao. Please try later.");
-            }
-
-            // Fetch the last message
-            const lastMessage = messages[messages.length - 1];
-
-            // Parse the Messages
-            const cleanedData = cleanAoJson(lastMessage.Data)
-
-            const messageData = JSON.parse(cleanedData);
-
-            if (messageData && messageData.code == 200) {
-                const tokenData = messageData.data;
-                // console.log("Dapps Messages Data => ", messageData);
-                return tokenData
-
-            } else {
-                throw new Error(messageData.message)
-            }
-
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to fetch Data, ${error}`)
-        }
-    },
-
-    async transferToken(tokenId: string, amount: number) {
-        try {
-            const messages = await fetchAOmessages([
-                { name: "Action", value: "Transfer" },
-                { name: "Recipient", value: PROCESS_ID_TASKS_TABLE },
-                { name: "Quantity", value: String(amount) }
-
-            ], tokenId);
-
-            if (!messages || messages.length === 0) {
-                throw new Error("No messages were returned from ao. Please try later.");
-            }
-
-            if (!(messages?.[0].Tags
-                .find((tag: { name: string, value: string }) => tag.name === "Action").value === "Debit-Notice")
-            ) {
-                throw new Error("Token Transfer Failed")
-            }
-
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to fetch Data, ${error}`)
-        }
-    },
-
     async submitReply(appId: string, taskId: string, user: User, rank: Rank, replyData: { url: string }): Promise<TaskReply> {
         try {
             const messages = await fetchAOmessages([
@@ -344,7 +282,7 @@ export const TaskService = {
         });
 
         // Pagination
-        const page = Number(params.page) || 1;
+        const page = Number(params?.page) || 1;
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort and slice the data for the current page

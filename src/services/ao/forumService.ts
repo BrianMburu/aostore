@@ -57,7 +57,7 @@ export const ForumService = {
         });
 
         // Pagination
-        const page = Number(params.page) || 1;
+        const page = Number(params?.page) || 1;
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort and slice the data for the current page

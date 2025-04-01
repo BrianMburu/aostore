@@ -31,12 +31,11 @@ export function DappFeatureRequestEditForm({ request, requestType, appId }: Dapp
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: FeatureRequestState, _formData: FormData) => {
             // Capture form values for the optimistic update
-            const newTitle = _formData.get("title") as string;
-            const newDescription = _formData.get("description") as string;
+            const formValues = Object.fromEntries(_formData.entries());
             const previousRequest = { ...localRequest };
 
             // Optimistically update local request state
-            const updatedRequest = { ...localRequest, title: newTitle, description: newDescription };
+            const updatedRequest = { ...localRequest, ...formValues };
             setLocalRequest(updatedRequest);
 
             try {

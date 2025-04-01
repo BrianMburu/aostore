@@ -1,9 +1,12 @@
 
-import { AppTokenData, CreateDapp, Dapp, DappList } from "@/types/dapp";
+import { CreateDapp, Dapp, DappList } from "@/types/dapp";
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
 // import { generateDAppTestData } from "@/utils/dataGenerators";
 import { Tip } from "@/types/tip";
-import { PROCESS_ID_DAPPS, PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FLAG_TABLE, PROCESS_ID_REVIEW_TABLE, PROCESS_ID_TIP_TABLE } from "@/config/ao";
+import {
+    PROCESS_ID_BUG_REPORT_TABLE, PROCESS_ID_DAPPS, PROCESS_ID_DEV_FORUM_TABLE,
+    PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FEATURE_REQUEST_TABLE, PROCESS_ID_FLAG_TABLE, PROCESS_ID_REVIEW_TABLE
+} from "@/config/ao";
 import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
 // services/dapps.ts
 export interface DAppsFilterParams {
@@ -16,6 +19,12 @@ export interface DAppsFilterParams {
     fv_page?: string
 }
 
+const processes: Record<string, string> = {
+    reviews: PROCESS_ID_REVIEW_TABLE,
+    bugReport: PROCESS_ID_BUG_REPORT_TABLE,
+    developerForum: PROCESS_ID_DEV_FORUM_TABLE,
+    featureRequest: PROCESS_ID_FEATURE_REQUEST_TABLE,
+}
 // const dummyDApps: AppData[] = generateDAppTestData(20)
 
 export const DAppService = {
@@ -101,7 +110,7 @@ export const DAppService = {
         });
 
         // Pagination
-        const page = Number(params.page) || 1;
+        const page = Number(params?.page) || 1;
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort the filtered data
@@ -141,6 +150,8 @@ export const DAppService = {
 
             if (messageData && messageData.code == 200) {
                 dapps = Object.values(messageData.data);
+            } else {
+                throw new Error(messageData.message)
             }
 
         } catch (error) {
@@ -160,7 +171,7 @@ export const DAppService = {
         });
 
         // Pagination
-        const page = Number(params.page) || 1;
+        const page = Number(params?.page) || 1;
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort the filtered data
@@ -437,80 +448,6 @@ export const DAppService = {
         return newTip
     },
 
-    async addDappToken(appId: string, tokenData: AppTokenData): Promise<AppTokenData> {
-        try {
-            const messages = await fetchAOmessages([
-                { name: "Action", value: "AddTokenDetails" },
-                { name: "appId", value: appId },
-                { name: "tokenId", value: tokenData.tokenId },
-                { name: "tokenName", value: tokenData.tokenName },
-                { name: "tokenTicker", value: tokenData.tokenTicker },
-                { name: "tokenDenomination", value: tokenData.tokenDenomination.toString() },
-                { name: "logo", value: tokenData.logo },
-
-            ], PROCESS_ID_TIP_TABLE);
-
-            if (!messages || messages.length === 0) {
-                throw new Error("No messages were returned from ao. Please try later.");
-            }
-
-            // Fetch the last message
-            const lastMessage = messages[messages.length - 1];
-
-            // Parse the Messages
-            const cleanedData = cleanAoJson(lastMessage.Data)
-
-            // Parse the Messages
-            const messageData = JSON.parse(cleanedData);
-
-            console.log("Dapps Messages Data => ", messageData);
-
-            if (messageData && messageData.code == 200) {
-                const tokenData: AppTokenData = messageData.data;
-                return tokenData;
-            } else {
-                throw new Error(messageData.message);
-            }
-
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to add token data, ${error}`);
-        }
-    },
-
-    async FetchTokenData(appId: string): Promise<AppTokenData | undefined> {
-        // Fetch Data from AO
-        try {
-            const messages = await fetchAOmessages([
-                { name: "Action", value: "GetTokenDetails" },
-                { name: "appId", value: appId }
-            ], PROCESS_ID_TIP_TABLE);
-
-
-            if (!messages || messages.length === 0) {
-                throw new Error("No messages were returned from ao. Please try later.");
-            }
-
-            // Fetch the last message
-            const lastMessage = messages[messages.length - 1];
-
-            // Parse the Messages
-            const cleanedData = cleanAoJson(lastMessage.Data)
-
-            // Parse the Messages
-            const messageData = JSON.parse(cleanedData);
-
-            if (messageData && messageData.code == 200) {
-                const tokenData: AppTokenData = messageData.data;
-                return tokenData;
-            }
-
-        } catch (error) {
-            console.error(error);
-            throw new Error("Failed to fetch token data.");
-        }
-    },
-
     async changeDappOwner(appId: string, newOwnerId: string): Promise<void> {
         try {
             const messages = await fetchAOmessages([
@@ -543,14 +480,14 @@ export const DAppService = {
         }
     },
 
-    async addMods(appId: string, mods: string[]): Promise<string[]> {
+    async addMods(appId: string, mods: string[], accessPage: string): Promise<string[]> {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "AddMods" },
+                { name: "Action", value: "AddModerator" },
                 { name: "appId", value: appId },
                 { name: "mods", value: JSON.stringify(mods) },
 
-            ], PROCESS_ID_TIP_TABLE);
+            ], processes[accessPage] || PROCESS_ID_REVIEW_TABLE);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
@@ -580,24 +517,23 @@ export const DAppService = {
         }
     },
 
-    async getMods(appId: string): Promise<{ data: string[], total: number }> {
+    async getMods(appId: string, accessPage: string): Promise<{ data: string[], total: number }> {
         let mods: string[] = [];
 
         // Fetch Data from AO
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "GetMods" },
+                { name: "Action", value: "FetchModsLists" },
                 { name: "appId", value: appId }
-            ], PROCESS_ID_DAPPS);
+            ], processes[accessPage] || PROCESS_ID_REVIEW_TABLE);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
 
-
             // Fetch the last message
             const lastMessage = messages[messages.length - 1];
-            // console.log("First Messages Data => ", firstMessage.Data);
+            console.log("First Messages Data => ", lastMessage.Data);
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data)
@@ -607,7 +543,7 @@ export const DAppService = {
             console.log("Mods Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
-                mods = Object.values(messageData.data);
+                mods = Object.keys(messageData.data);
             }
 
         } catch (error) {
