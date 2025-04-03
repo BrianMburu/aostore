@@ -4,9 +4,9 @@ export async function fetchAOmessages(
     tags: { name: string; value: string }[],
     process: string
 ) {
-    console.log("Fetching AO messages using Window wallet: ", window.arweaveWallet);
-    console.log("Tags => ", tags);
-    console.log("Process => ", process);
+    // console.log("Fetching AO messages using Window wallet: ", window.arweaveWallet);
+    // console.log("Tags => ", tags);
+    // console.log("Process => ", process);
 
     const fetchDappsMessages = await message({
         process: process,
