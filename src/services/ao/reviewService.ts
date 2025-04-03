@@ -40,7 +40,7 @@ export const ReviewService = {
 
             if (messageData.code === 200) {
                 reviews = Object.values(messageData.data);
-                console.log("Reviews: => ", reviews)
+                // console.log("Reviews: => ", reviews)
             }
             else {
                 throw new Error(messageData.message)
@@ -254,7 +254,7 @@ export const ReviewService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Review helpful Data: => ", cleanedData)
+            // console.log("Review helpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -289,7 +289,7 @@ export const ReviewService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Review helpful Data: => ", cleanedData)
+            // console.log("Review helpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 

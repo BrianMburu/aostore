@@ -434,9 +434,9 @@ export const DAppService = {
         }
     },
 
-    async submitVerification(appId: string): Promise<void> {
+    async submitVerification(): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log("Submitting verification for appId => ", appId);
+        // console.log("Submitting verification for appId => ", appId);
         // Simulate verification process
     },
 

@@ -35,7 +35,7 @@ export function AirdropsList({ appId, searchParams }: { appId: string, searchPar
                 } catch (error) {
                     setAirdrops([]);
                     setTotalItems(0);
-                    console.log(error)
+                    console.error(error)
                 }
             })
 

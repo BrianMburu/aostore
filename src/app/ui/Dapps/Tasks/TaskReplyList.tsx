@@ -27,7 +27,7 @@ export function TaskReplyList({ replies, searchParams }: { replies: TaskReply[],
         } catch (error) {
             setTaskReplies([]);
             setTotalItems(0);
-            console.log(error)
+            console.error(error)
         }
 
     }, [replies, isConnected, searchParams])

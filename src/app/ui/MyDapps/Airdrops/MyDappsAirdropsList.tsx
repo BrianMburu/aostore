@@ -36,7 +36,7 @@ export function MyDappsAirdropsList({ appId, searchParams }: { appId: string, se
                 } catch (error) {
                     setAirdrops([]);
                     setTotalItems(0);
-                    console.log(error)
+                    console.error(error)
                 }
             })
 

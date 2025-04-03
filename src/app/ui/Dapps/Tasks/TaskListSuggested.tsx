@@ -22,7 +22,6 @@ export function TasksListSuggested({ appId, searchParams }: { appId: string, sea
                     if (!isAuthLoading && isConnected) {
                         // const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
                         const { tasks } = await TaskService.fetchTasks(appId, searchParams, true);
-                        console.log(tasks);
 
                         if (tasks) {
                             setTasks(tasks);
@@ -32,7 +31,7 @@ export function TasksListSuggested({ appId, searchParams }: { appId: string, sea
                     }
                 } catch (error) {
                     setTasks([]);
-                    console.log(error)
+                    console.error(error)
                 }
             })
 

@@ -29,8 +29,6 @@ export function WalletMain() {
             })
     }, [isConnected]);
 
-    console.log("All App Tokens=>>", tokens)
-
     return (
         <div className="flex flex-col lg:flex-row gap-6">
             {/* Left Column */}

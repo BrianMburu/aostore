@@ -32,7 +32,6 @@ export function TokenCard({ appId }: TokenCardProps) {
                     if (data) {
                         setTokenData(data);
                     }
-                    console.log("TOken Data:", data)
 
                 } else {
                     setTokenData(null);

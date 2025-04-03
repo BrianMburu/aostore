@@ -109,9 +109,9 @@ export const AnalyticsService = {
 
         return dataSpec;
     },
-    fetchDappRatingsTotals: async (appId: string): Promise<{ dataSpec: Record<string, number | string>[]; categories: string[] }> => {
+    fetchDappRatingsTotals: async (): Promise<{ dataSpec: Record<string, number | string>[]; categories: string[] }> => {
         await new Promise(resolve => setTimeout(resolve, 800));
-        console.log("fetchDappRatingsTotals", appId)
+        // console.log("fetchDappRatingsTotals", appId)
         const { dataSpec, categories } = await generateRatingsDataSpec("Total Reviews") as { dataSpec: Record<string, number | string>[]; categories: string[] };
 
         return { dataSpec, categories };
@@ -123,9 +123,9 @@ export const AnalyticsService = {
 
         return dataSpec;
     },
-    fetchFeatureBugTotals: async (appId: string): Promise<{ dataSpec: Record<string, number | string>[]; categories: string[] }> => {
+    fetchFeatureBugTotals: async (): Promise<{ dataSpec: Record<string, number | string>[]; categories: string[] }> => {
         await new Promise(resolve => setTimeout(resolve, 800));
-        console.log("fetchFeatureBugTotals", appId)
+        // console.log("fetchFeatureBugTotals", appId)
         const { dataSpec, categories } = await generateFeatureBugDataSpec("value") as { dataSpec: Record<string, number | string>[]; categories: string[] };
 
         return { dataSpec, categories };
@@ -191,7 +191,7 @@ export const AnalyticsService = {
                 const userHistoryData = userHistory
                     .map(({ time, count }) => ({ date: new Date(Number(time)).toISOString().split('T')[0], users: count }))
                     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-                console.log("userHistoryData", userHistoryData)
+                // console.log("userHistoryData", userHistoryData)
                 return userHistoryData;
             } else {
                 throw new Error(messageData.message)

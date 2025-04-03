@@ -133,7 +133,7 @@ export async function updateReply(appId: string, reviewId: string, replyId: stri
         return { message: 'success', reply: reply };
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
 
         return { message: 'AO Error: failed to send reply.' };
     }

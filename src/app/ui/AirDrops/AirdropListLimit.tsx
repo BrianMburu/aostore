@@ -32,7 +32,7 @@ export function AirdropsListLimit({ params, appId }: { appId: string, params: Ai
                     }
                 } catch (error) {
                     setAirdrops([]);
-                    console.log(error)
+                    console.error(error)
                 }
             }
         );

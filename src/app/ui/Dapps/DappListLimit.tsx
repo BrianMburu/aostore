@@ -30,7 +30,7 @@ export function DAppsListLimit({ params }: { params: DAppsFilterParams }) {
                     }
                 } catch (error) {
                     setDapps([]);
-                    console.log(error)
+                    console.error(error)
                 }
             }
         );

@@ -26,8 +26,6 @@ export function MyTasksList({ appId, searchParams }: { appId: string, searchPara
                     if (!isAuthLoading && isConnected) {
                         // const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
                         const { tasks, total } = await TaskService.fetchTasks(appId, searchParams, true);
-                        console.log(tasks);
-
                         if (tasks) {
                             setTasks(tasks);
                             setTotalItems(total)
@@ -39,7 +37,7 @@ export function MyTasksList({ appId, searchParams }: { appId: string, searchPara
                 } catch (error) {
                     setTasks([]);
                     setTotalItems(0);
-                    console.log(error)
+                    console.error(error)
                 }
             })
 

@@ -44,7 +44,7 @@ export function QuestionsList({ appId, searchParams }: { appId: string, searchPa
                 } catch (error) {
                     setForumPosts([]);
                     setTotalItems(0);
-                    console.log(error)
+                    console.error(error)
                 }
             })
 

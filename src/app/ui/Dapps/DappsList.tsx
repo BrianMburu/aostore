@@ -35,7 +35,7 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
                 } catch (error) {
                     setDapps([]);
                     setTotalItems(0);
-                    console.log(error)
+                    console.error(error)
                 }
             })
 
