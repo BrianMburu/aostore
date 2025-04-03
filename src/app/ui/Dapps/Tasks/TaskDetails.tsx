@@ -11,7 +11,7 @@ import { TaskReplyForm } from './TaskReplyForm'
 import { Progress } from './TaskProgress'
 
 
-export function TaskDetails({ task, appId }: { task: Task, appId: string }) {
+export function TaskDetails({ task, appId, refreshTask }: { task: Task, appId: string, refreshTask: () => void }) {
     const progress = (task.completedRate.completeCount / task.taskerCount) * 100
     const totalReward = (task.tasksAmount).toLocaleString();
     const [showForm, setShowForm] = useState(false)
@@ -87,7 +87,8 @@ export function TaskDetails({ task, appId }: { task: Task, appId: string }) {
             <Button className="w-full md:w-auto" onClick={() => setShowForm(true)}>
                 Participate Now
             </Button>
-            <TaskReplyForm taskId={task.taskId} appId={appId} showForm={showForm} onClose={() => setShowForm(false)} />
+            <TaskReplyForm taskId={task.taskId} appId={appId} onParticipate={refreshTask}
+                showForm={showForm} onClose={() => setShowForm(false)} />
         </motion.div>
     )
 }

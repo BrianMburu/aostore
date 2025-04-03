@@ -18,7 +18,7 @@ export const RankService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Ranking Data: => ", cleanedData)
+            // console.log("Ranking Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 

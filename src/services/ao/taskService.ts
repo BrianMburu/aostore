@@ -140,7 +140,7 @@ export const TaskService = {
 
             if (messageData.code === 200) {
                 const newTask: Task = messageData.data;
-                console.log("New Task Data: => ", newTask)
+                // console.log("New Task Data: => ", newTask)
                 return newTask;
             }
             else {
@@ -184,7 +184,6 @@ export const TaskService = {
                 return airdropId
 
             } else {
-
                 throw new Error(messageData.message)
             }
 
@@ -217,7 +216,7 @@ export const TaskService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Task Reply Data: => ", cleanedData)
+            // console.log("Task Reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -261,7 +260,7 @@ export const TaskService = {
             }
         } catch (error) {
             console.error(error);
-            throw new Error(`Failed to submit Question, ${error}`)
+            throw new Error(`Failed to submit Task Reward, ${error}`)
         }
     },
 

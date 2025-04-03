@@ -49,7 +49,7 @@ export function MyTaskReplyItem({ reply, appId, taskId }: { appId: string, taskI
                             <span className="ml-2">{reply.completedTasks.amount} to be rewarded</span>
                         </div>
                         <div className="text-gray-500 dark:text-gray-400">
-                            {formatActivityTime(reply.completedTasks.completedTime)}
+                            {formatActivityTime(Number(reply.completedTasks.completedTime))}
                         </div>
                     </div>
                     <div className="flex items-center justify-between text-sm">

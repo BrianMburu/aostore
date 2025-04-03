@@ -41,7 +41,7 @@ export const UserService = {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
 
-            console.log("Messages => ", messages);
+            // console.log("Messages => ", messages);
 
             // Fetch the last message
             const firstMessage = messages[0];
@@ -50,7 +50,7 @@ export const UserService = {
             // Parse the Messages
             const messageData = JSON.parse(firstMessage.Data);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 const user: User = messageData.data;
@@ -74,7 +74,6 @@ export const UserService = {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
 
-
             // Fetch the last message
             const firstMessage = messages[0];
 
@@ -90,6 +89,7 @@ export const UserService = {
 
         } catch (error) {
             console.error(error);
+            throw new Error(`Failed to Update User Data, ${error}`)
         }
     },
 }

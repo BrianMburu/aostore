@@ -106,7 +106,7 @@ export const ReviewService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Review Data: => ", cleanedData)
+            // console.log("Review Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -126,7 +126,7 @@ export const ReviewService = {
     async updateReview(appId: string, reviewId: string, reviewData: { rating: number, description: string }): Promise<Review> {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "EditAppReview" },
+                { name: "Action", value: "EditReview" },
                 { name: "appId", value: appId },
                 { name: "reviewId", value: reviewId },
                 { name: "description", value: reviewData.description },
@@ -143,7 +143,7 @@ export const ReviewService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Review Data: => ", cleanedData)
+            // console.log("Review Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -182,7 +182,7 @@ export const ReviewService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Review reply Data: => ", cleanedData)
+            // console.log("Review reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -202,7 +202,7 @@ export const ReviewService = {
     async updateReply(appId: string, reviewId: string, replyId: string, replyData: { description: string }): Promise<Reply> {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "AddReviewReply" },
+                { name: "Action", value: "EditReviewReply" },
                 { name: "appId", value: appId },
                 { name: "reviewId", value: reviewId },
                 { name: "replyId", value: replyId },
@@ -219,7 +219,7 @@ export const ReviewService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Review reply Data: => ", cleanedData)
+            // console.log("Review reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -239,7 +239,7 @@ export const ReviewService = {
     async helpfulVote(appId: string, reviewId: string) {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "MarkReviewHelpful" },
+                { name: "Action", value: "MarkHelpfulReview" },
                 { name: "appId", value: appId },
                 { name: "reviewId", value: reviewId },
 
@@ -274,7 +274,7 @@ export const ReviewService = {
     async unhelpfulVote(appId: string, reviewId: string) {
         try {
             const messages = await fetchAOmessages([
-                { name: "Action", value: "MarkReviewUnHelpful" },
+                { name: "Action", value: "MarkUnHelpfulReview" },
                 { name: "appId", value: appId },
                 { name: "reviewId", value: reviewId },
 

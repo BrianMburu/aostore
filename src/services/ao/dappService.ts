@@ -48,7 +48,7 @@ export const DAppService = {
 
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Details Messages Data => ", messageData);
+            // console.log("Dapps Details Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 const dapp: Dapp = messageData.data;
@@ -97,7 +97,7 @@ export const DAppService = {
             throw new Error(`Failed to fetch Data, ${error}`)
         }
 
-        console.log("Dapps => ", dapps);
+        // console.log("Dapps => ", dapps);
 
         // Filter the dummyDApps based on the parameters
         const filtered = dapps.filter(dapp => {
@@ -158,7 +158,7 @@ export const DAppService = {
             console.error(error);
         }
 
-        console.log("MyDapps => ", dapps);
+        // console.log("MyDapps => ", dapps);
 
         // Filter the dummyDApps based on the parameters
         const filtered = dapps.filter(dapp => {
@@ -260,7 +260,7 @@ export const DAppService = {
 
             // Fetch the last message
             const lastMessage = messages[messages.length - 1];
-            console.log("Favorite Dapps Messages Data => ", lastMessage.Data);
+            // console.log("Favorite Dapps Messages Data => ", lastMessage.Data);
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data)
@@ -276,7 +276,7 @@ export const DAppService = {
             console.error(error);
         }
 
-        console.log("Favorite Dapps => ", favoriteDapps);
+        // console.log("Favorite Dapps => ", favoriteDapps);
 
         // Filter the dummyDApps based on the parameters
         const filtered = favoriteDapps.filter(dapp => {
@@ -331,7 +331,7 @@ export const DAppService = {
                 throw new Error("No messages were returned from ao. Please try later.");
             }
 
-            console.log("Messages => ", messages);
+            // console.log("Messages => ", messages);
 
             // Fetch the last message
             const lastMessage = messages[messages.length - 1];
@@ -342,7 +342,7 @@ export const DAppService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (!messageData || messageData.code != 200) {
                 throw new Error(messageData.message)
@@ -387,7 +387,7 @@ export const DAppService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 const updatedDapp: Dapp = messageData.data;
@@ -423,7 +423,7 @@ export const DAppService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (!messageData || messageData.code != 200) {
                 throw new Error(messageData.message);
@@ -469,7 +469,7 @@ export const DAppService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (!messageData || messageData.code != 200) {
                 throw new Error(messageData.message);
@@ -502,7 +502,7 @@ export const DAppService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 const mods: string[] = messageData.data;
@@ -513,7 +513,7 @@ export const DAppService = {
 
         } catch (error) {
             console.error(error);
-            throw new Error(`Failed to add token data, ${error}`);
+            throw new Error(`Failed to add moderator, ${error}`);
         }
     },
 
@@ -533,14 +533,14 @@ export const DAppService = {
 
             // Fetch the last message
             const lastMessage = messages[messages.length - 1];
-            console.log("First Messages Data => ", lastMessage.Data);
+            // console.log("First Messages Data => ", lastMessage.Data);
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data)
 
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Mods Messages Data => ", messageData);
+            // console.log("Mods Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 mods = Object.keys(messageData.data);
@@ -549,9 +549,6 @@ export const DAppService = {
         } catch (error) {
             console.error(error);
         }
-
-        console.log("mods => ", mods);
-
 
         // Return the filtered data and the total count
         return { data: mods, total: mods.length }
@@ -575,7 +572,7 @@ export const DAppService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("RATINGS DATA: =>", cleanedData)
+            // console.log("RATINGS DATA: =>", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -611,7 +608,7 @@ export const DAppService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Favorites Data: => ", cleanedData)
+            // console.log("Favorites Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 

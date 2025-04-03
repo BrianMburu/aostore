@@ -1,7 +1,7 @@
 'use client'
 
 import { Task } from '@/types/task'
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from '@/context/AuthContext'
 import { TaskReplyParams, TaskService } from '@/services/ao/taskService'
 import { TaskPageSkeleton } from './skeletons/TaskPageSkeleton'
@@ -15,21 +15,25 @@ export function TaskDetailsMain({ taskId, appId, searchParams }: { taskId: strin
     const [loading, setLoading] = useState(true)
     const { isConnected } = useAuth()
 
-    useEffect(() => {
-        const loadTask = async () => {
-            try {
-                const taskData = await TaskService.fetchTask(appId, taskId);
+    const loadTask = useCallback(async () => {
+        try {
+            const taskData = await TaskService.fetchTask(appId, taskId);
 
-                if (taskData) {
-                    setTask(taskData);
-                }
-            } finally {
-                setLoading(false)
+            if (taskData) {
+                setTask(taskData);
             }
+        } finally {
+            setLoading(false)
         }
+    }, [appId, taskId]);
 
+    useEffect(() => {
         loadTask()
-    }, [appId, taskId, isConnected])
+    }, [loadTask, isConnected])
+
+    const refreshTask = () => {
+        loadTask();
+    };
 
     if (loading) return <TaskPageSkeleton />
 
@@ -39,7 +43,7 @@ export function TaskDetailsMain({ taskId, appId, searchParams }: { taskId: strin
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Main Task Details */}
-            <TaskDetails task={task} appId={appId} />
+            <TaskDetails task={task} appId={appId} refreshTask={refreshTask} />
 
             {/* Task Submissions */}
             <div className="space-y-6 mb-12">

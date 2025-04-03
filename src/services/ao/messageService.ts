@@ -66,7 +66,7 @@ export const aoMessageService = {
 
             if (messageData && messageData.code == 200) {
                 recievedMesages = Object.values(messageData.data);
-                console.log("Messages Data:=>", recievedMesages)
+                // console.log("Messages Data:=>", recievedMesages)
             }
 
         } catch (error) {
@@ -121,7 +121,7 @@ export const aoMessageService = {
 
             if (messageData && messageData.code == 200) {
                 sentMesages = Object.values(messageData.data);
-                console.log("Messages Data:=>", sentMesages)
+                // console.log("Messages Data:=>", sentMesages)
             } else {
                 throw new Error(messageData.message)
             }
@@ -207,7 +207,7 @@ export const aoMessageService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Requests Data: => ", cleanedData)
+            // console.log("Feature Requests Data: => ", cleanedData)
 
             const newMessageData = JSON.parse(cleanedData);
 

@@ -80,7 +80,7 @@ export const SupportService = {
             ? sortedRequests.slice(0, page * itemsPerPage)
             : sortedRequests.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-        console.log("Feature Request Data: => ", data)
+        // console.log("Feature Request Data: => ", data)
 
         return {
             data,
@@ -142,7 +142,7 @@ export const SupportService = {
             ? sortedRequests.slice(0, page * itemsPerPage)
             : sortedRequests.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-        console.log("Bug Reports Data: => ", data)
+        // console.log("Bug Reports Data: => ", data)
 
         return {
             data,
@@ -172,7 +172,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Requests Data: => ", cleanedData)
+            // console.log("Feature Requests Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -187,22 +187,6 @@ export const SupportService = {
             console.error(error);
             throw new Error(`Failed to send Feature Request, ${error}`)
         }
-        // // Simulate a delay
-        // await new Promise(resolve => setTimeout(resolve, 500));
-
-        // const newRequest = {
-        //     ...requestData,
-        //     appId: appId,
-        //     userId: userId,
-        //     id: `${requestData.type}-${Date.now()}`,
-        //     timestamp: Date.now(),
-        //     helpfulVotes: 0,
-        //     unhelpfulVotes: 0,
-        // } as (FeatureRequest | BugReport);
-
-        // testFeaturesRequestData.unshift(newRequest)
-        // // Return the updated review array
-        // return newRequest;
     },
 
     async createBugReport(appId: string, user: User, rank: Rank, requestData: { title: string, description: string }): Promise<BugReport> {
@@ -227,7 +211,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Bug Report Data: => ", cleanedData)
+            // console.log("Bug Report Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -266,7 +250,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Requests Data: => ", cleanedData)
+            // console.log("Feature Requests Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -304,7 +288,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Bug Report Data: => ", cleanedData)
+            // console.log("Bug Report Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -339,7 +323,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Unhelpful Data: => ", cleanedData)
+            // console.log("Feature Unhelpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -374,7 +358,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Unhelpful Data: => ", cleanedData)
+            // console.log("Feature Unhelpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -409,7 +393,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Bug helpful Data: => ", cleanedData)
+            // console.log("Bug helpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -444,7 +428,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Bug Unhelpful Data: => ", cleanedData)
+            // console.log("Bug Unhelpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -483,7 +467,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Request reply Data: => ", cleanedData)
+            // console.log("Feature Request reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -522,7 +506,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Bug Report reply Data: => ", cleanedData)
+            // console.log("Bug Report reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -559,7 +543,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Request reply Data: => ", cleanedData)
+            // console.log("Feature Request reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -596,7 +580,7 @@ export const SupportService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Bug Report reply Data: => ", cleanedData)
+            // console.log("Bug Report reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 

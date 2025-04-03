@@ -7,15 +7,13 @@ import { AnimatedButton } from "../../animations/AnimatedButton";
 import Loader from "../../Loader";
 import { motion } from "framer-motion";
 import { useRank } from "@/context/RankContext";
-import { useRouter } from "next/navigation";
 import { sendReply, TaskReplyState } from "@/lib/taskAction";
 import ModalDialog from "../../MyDapps/ModalDialog";
 
-export function TaskReplyForm({ taskId, appId, showForm, onClose }:
-    { taskId: string, appId: string, showForm: boolean, onClose: () => void }) {
+export function TaskReplyForm({ taskId, appId, showForm, onClose, onParticipate }:
+    { taskId: string, appId: string, showForm: boolean, onClose: () => void, onParticipate: () => void }) {
     const { user } = useAuth();
     const { rank } = useRank();
-    const router = useRouter();
 
     const initialState: TaskReplyState = { message: null, errors: {}, reply: null }
 
@@ -25,8 +23,9 @@ export function TaskReplyForm({ taskId, appId, showForm, onClose }:
                 const newState = await sendReply(appId, taskId, user, rank, prevState, _formData);
 
                 if (newState.message === 'success' && newState.reply) {
-                    router.refresh()
+                    onParticipate();
                     toast.success("Reply posted successfully!");
+                    onClose();
                 }
 
                 return newState

@@ -28,7 +28,7 @@ export const TokenService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 const tokenData: AppTokenData = messageData.data;
@@ -121,7 +121,7 @@ export const TokenService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Token Balance Data => ", messageData);
+            // console.log("Dapps Token Balance Data => ", messageData);
 
             if (messageData) {
                 const tokenBalance: string = messageData;
@@ -155,7 +155,7 @@ export const TokenService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 const tokens: AppTokenData[] = Object.values(messageData.data);

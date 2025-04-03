@@ -38,7 +38,7 @@ export const ForumService = {
 
             if (messageData.code === 200) {
                 forumPosts = Object.values(messageData.data);
-                console.log("Forum Posts Data: => ", forumPosts)
+                // console.log("Forum Posts Data: => ", forumPosts)
             }
             else {
                 throw new Error(messageData.message)
@@ -97,7 +97,7 @@ export const ForumService = {
 
             if (messageData.code === 200) {
                 const forumPost = messageData.data;
-                console.log("Forum Posts Data: => ", forumPost)
+                // console.log("Forum Posts Data: => ", forumPost)
                 return forumPost
             }
             else {
@@ -107,13 +107,6 @@ export const ForumService = {
             console.error(error);
             throw new Error(`Failed to get Forum Posts, ${error}`)
         }
-
-        // const post = dummyPosts.find(p => p.postId === postId);
-
-        // if (!post) {
-        //     throw new Error('Post not found');
-        // }
-        // return post;
     },
 
     async createForumPost(appId: string, user: User, rank: Rank,
@@ -140,7 +133,7 @@ export const ForumService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Requests Data: => ", cleanedData)
+            // console.log("Feature Requests Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -179,7 +172,7 @@ export const ForumService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Feature Requests Data: => ", cleanedData)
+            // console.log("Feature Requests Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -218,7 +211,7 @@ export const ForumService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Forum Reply Data: => ", cleanedData)
+            // console.log("Forum Reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -258,7 +251,7 @@ export const ForumService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Forum Reply Data: => ", cleanedData)
+            // console.log("Forum Reply Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -293,7 +286,7 @@ export const ForumService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("FOrum helpful Data: => ", cleanedData)
+            // console.log("FOrum helpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 
@@ -328,7 +321,7 @@ export const ForumService = {
 
             // Parse the Messages
             const cleanedData = cleanAoJson(lastMessage.Data);
-            console.log("Forum helpful Data: => ", cleanedData)
+            // console.log("Forum helpful Data: => ", cleanedData)
 
             const messageData = JSON.parse(cleanedData);
 

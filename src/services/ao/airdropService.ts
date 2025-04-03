@@ -91,7 +91,7 @@ export const AirdropService = {
                 return matchesSearch;
             });
 
-        console.log("AirDrops Messages filtered Data => ", filteredData);
+        // console.log("AirDrops Messages filtered Data => ", filteredData);
 
         // Pagination
         const page = Number(params?.page) || 1;

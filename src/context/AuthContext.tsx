@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const address = await window.arweaveWallet.getActiveAddress();
 
             if (address) {
-                const userdetails = await getUserDetails();
+                const userdetails = await getUserDetails(address);
                 if (userdetails) {
                     setUser(userdetails);
                     setIsConnected(true);
@@ -68,11 +68,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [checkArConnectInstalled]);
 
-    const getUserDetails = useCallback(async () => {
+    const getUserDetails = useCallback(async (address: string) => {
         const res = await fetch("/api/session");
         if (res.ok) {
             const data = await res.json(); // expected format: { user: UserDetails }
             if (data?.user) {
+                // Check of the address is the same as the one in the session
+                if (data.user.walletAddress !== address) {
+                    await logout();
+                    return null;
+                }
                 return data.user;
             } else {
                 // Only call logout if the user isn’t already null.
