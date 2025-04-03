@@ -59,7 +59,7 @@ export function TokenCard({ appId }: TokenCardProps) {
     }
 
     const handleCopyId = () => {
-        navigator.clipboard.writeText(tokenData.tokenName);
+        navigator.clipboard.writeText(tokenData.tokenId);
         setCopied(true);
         toast.success('Token ID copied!');
         setTimeout(() => setCopied(false), 2000);

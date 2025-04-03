@@ -42,12 +42,14 @@ function DappSupportForm({
                     newState = await sendBugReport(appId, user, rank, prevState, _formData);
                 }
 
-                toast.success(`${requestType == "feature" ? "Support request" : "Bug report"} submitted successfully!`);
+                if (newState.message == "success") {
+                    toast.success(`${requestType == "feature" ? "Support request" : "Bug report"} submitted successfully!`);
+                }
                 return newState;
 
             } catch (error) {
                 console.error(error);
-                toast.success(`${requestType == "feature" ? "Support request" : "Bug report"} submitted successfully!`);
+                toast.error(`${requestType == "feature" ? "Support request" : "Bug report"} submittion Failed!`);
                 return initialState
             }
         }, initialState);

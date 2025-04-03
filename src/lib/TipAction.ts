@@ -1,6 +1,6 @@
-import { DAppService } from "@/services/ao/dappService";
+import { TokenService } from "@/services/ao/tokenService";
+import { AppTokenData } from "@/types/dapp";
 import { Tip } from "@/types/tip";
-import { User } from "@/types/user";
 import { z } from "zod";
 
 export type TipState = {
@@ -15,10 +15,22 @@ export const tipSchema = z.object({
     amount: z.number().gt(0, 'Tip amount must be greater than 0'),
 });
 
-export async function sendTip(tokenId: string | null, recipientWallet: string, user: User | null, prevState: TipState, formData: FormData) {
+export async function sendTip(userBalance: number, tokenData: AppTokenData | null, recipientWallet: string, prevState: TipState, formData: FormData) {
+    if (!tokenData) {
+        return {
+            message: 'Invalid tokenId selected!',
+        };
+    }
+
     const validatedFields = tipSchema.safeParse({
-        amount: Number(formData.get('amount')),
+        amount: Number(formData.get('amount')) * Number(tokenData.tokenDenomination),
     });
+
+    if (!recipientWallet) {
+        return {
+            message: 'Invalid recipient wallet address!',
+        };
+    }
 
     if (!validatedFields.success) {
         return {
@@ -27,33 +39,19 @@ export async function sendTip(tokenId: string | null, recipientWallet: string, u
         };
     }
 
-    if (!tokenId) {
-        return {
-            message: 'Invalid tokenId selected!',
-        };
-    }
-
-    if (!user) {
-        return {
-            message: 'Invalid session. User not found!',
-        };
-    }
-
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const { amount } = validatedFields.data;
 
-        const tipData: Tip = {
-            ...validatedFields.data,
-            senderWallet: user.walletAddress,
-            recipientWallet,
-            tokenId,
-
+        if (amount > userBalance * Number(tokenData.tokenDenomination)) {
+            return {
+                errors: { amount: [`You have only ${userBalance} ${tokenData.tokenTicker} Tokens`] },
+                message: 'Form has errors. Failed to Tip.',
+            };
         }
 
-        const newTip = await DAppService.tip(tipData);
+        await TokenService.transferToken(tokenData.tokenId, recipientWallet, amount);
 
-        return { message: 'success', tip: newTip };
+        return { message: 'success' };
 
     } catch {
         return { message: 'AO Error: failed to send tip.' };

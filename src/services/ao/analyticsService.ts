@@ -1,3 +1,5 @@
+import { PROCESS_ID_BUG_REPORT_TABLE, PROCESS_ID_DEV_FORUM_TABLE, PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FEATURE_REQUEST_TABLE, PROCESS_ID_REVIEW_TABLE } from "@/config/ao";
+import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
 
 export async function generateDailyDataSpec(days: number, metric: string) {
     const baseValues: Record<string, number> = {
@@ -70,6 +72,8 @@ export const metricOptions = [
 export type MetricType = typeof metricOptions[number];
 
 export const AnalyticsService = {
+    // Dummy Data functions
+
     fetchTotals: async (metric: MetricType): Promise<number> => {
         await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
 
@@ -125,5 +129,245 @@ export const AnalyticsService = {
         const { dataSpec, categories } = await generateFeatureBugDataSpec("value") as { dataSpec: Record<string, number | string>[]; categories: string[] };
 
         return { dataSpec, categories };
+    },
+
+    // Dapps Latest Functions
+    fetchFavoritesCount: async (appId: string): Promise<string> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FetchFavoritesCount" },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_FAVORITE_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const bugTotals: string = messageData.data;
+                return bugTotals;
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get Favorites Totals, ${error}`)
+        }
+    },
+
+    fetchFavoritesData: async (appId: string): Promise<{ date: string; users: number }[]> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FetchFavoritesCountHistory" },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_FAVORITE_DAPPS);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const userHistory: { time: string, count: number }[] = Object.values(messageData.data);
+
+                const userHistoryData = userHistory
+                    .map(({ time, count }) => ({ date: new Date(Number(time)).toISOString().split('T')[0], users: count }))
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                console.log("userHistoryData", userHistoryData)
+                return userHistoryData;
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to Get Ratings Data, ${error}`)
+        }
+    },
+
+    fetchForumCount: async (appId: string): Promise<string> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetDevForumCount" },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_DEV_FORUM_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+
+            const messageData = JSON.parse(cleanedData);
+
+
+            if (messageData.code === 200) {
+                const bugTotals: string = messageData.data;
+                return bugTotals;
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get Forum Totals, ${error}`)
+        }
+    },
+
+    fetchTotalDappRatings: async (appId: string): Promise<string> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FetchAppReviewsCount" },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_REVIEW_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const bugTotals: string = messageData.data;
+                return bugTotals;
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get Bug Totals, ${error}`)
+        }
+    },
+
+    fetchDappRatingsData: async (appId: string): Promise<{ name: string; value: number }[]> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "FetchAppRatings" },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_REVIEW_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const ratings: Record<string, number> = messageData.data;
+                const ratingsData = Object.entries(ratings).map(([name, value]) => ({ name, value }));
+                return ratingsData;
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to Get Ratings Data, ${error}`)
+        }
+    },
+
+    fetchFeatureTotals: async (appId: string): Promise<string> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetFeatureRequestCount" },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_FEATURE_REQUEST_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const bugTotals: string = messageData.data;
+                return bugTotals;
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get Feature Totals, ${error}`)
+        }
+    },
+
+    fetchBugTotals: async (appId: string): Promise<string> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetBugReportCount" },
+                { name: "appId", value: appId },
+
+            ], PROCESS_ID_BUG_REPORT_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data);
+
+            const messageData = JSON.parse(cleanedData);
+
+            if (messageData.code === 200) {
+                const bugTotals: string = messageData.data;
+                return bugTotals;
+            } else {
+                throw new Error(messageData.message)
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to get Bug Totals, ${error}`)
+        }
     },
 }

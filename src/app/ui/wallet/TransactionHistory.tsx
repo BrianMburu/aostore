@@ -1,22 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Table, Badge } from '@tremor/react'
 
-const transactions = [
-    {
-        id: '1',
-        type: 'deposit',
-        amount: '0.500 ETH',
-        date: '2024-03-15 14:32',
-        status: 'completed'
-    },
-    {
-        id: '2',
-        type: 'swap',
-        amount: '500 AOS',
-        date: '2024-03-14 09:15',
-        status: 'pending'
-    }
+const transactions: any[] = [
+    // {
+    //     id: '1',
+    //     type: 'deposit',
+    //     amount: '0.500 ETH',
+    //     date: '2024-03-15 14:32',
+    //     status: 'completed'
+    // },
+    // {
+    //     id: '2',
+    //     type: 'swap',
+    //     amount: '500 AOS',
+    //     date: '2024-03-14 09:15',
+    //     status: 'pending'
+    // }
 ]
 
 export default function TransactionHistory() {

@@ -19,33 +19,38 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
     const [isLoading, setIsLoading] = useState(true);
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
-    useEffect(() => {
-        const fetchDapps = async () => {
-            try {
-                setIsLoading(true)
-                if (!isAuthLoading && isConnected) {
-                    const { data, total } = await DAppService.getMyDApps(filterParams, true);
+    const fetchDapps = async () => {
+        try {
+            setIsLoading(true)
+            if (!isAuthLoading && isConnected) {
+                const { data, total } = await DAppService.getMyDApps(filterParams, true);
 
-                    if (data) {
-                        setDapps(data);
-                        setTotalItems(total)
-                    }
-
-                } else {
-                    setDapps([]);
-                    setTotalItems(0)
+                if (data) {
+                    setDapps(data);
+                    setTotalItems(total)
                 }
-            } catch (error) {
-                console.error(error)
 
-            } finally {
-                setIsLoading(false)
+            } else {
+                setDapps([]);
+                setTotalItems(0)
             }
+        } catch (error) {
+            console.error(error)
 
+        } finally {
+            setIsLoading(false)
         }
+
+    }
+
+    useEffect(() => {
         fetchDapps();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, filterParams])
+    }, [isConnected, filterParams]);
+
+    const refreshDapps = () => {
+        fetchDapps(); // Trigger a re-fetch of the DApp list
+    };
 
     if (isLoading) {
         return <DappCardsSkeleton />
@@ -54,7 +59,7 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
     if (!isLoading && dapps.length === 0) {
         return (
             <div>
-                <AddDAppModal />
+                <AddDAppModal onDappAdded={refreshDapps} />
 
                 <EmptyState
                     title="No Dapps Found"
@@ -70,7 +75,7 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
     return (
         <div>
             {/* Add DApp Form Modal */}
-            <AddDAppModal />
+            <AddDAppModal onDappAdded={refreshDapps} />
 
             <Suspense fallback={<DappCardsSkeleton />}>
                 <div className="space-y-6">

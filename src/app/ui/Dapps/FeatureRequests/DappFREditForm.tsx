@@ -47,11 +47,12 @@ export function DappFeatureRequestEditForm({ request, requestType, appId }: Dapp
                 }
 
                 // If the server returns an updated request, update localRequest accordingly.
-                if (newState.request) {
+                if (newState.message == "success" && newState.request) {
                     setLocalRequest(newState.request);
+                    toast.success(`${requestType === "feature" ? "Support request" : "Bug report"} submitted successfully!`);
+                    router.refresh();
                 }
-                toast.success(`${requestType === "feature" ? "Support request" : "Bug report"} submitted successfully!`);
-                router.refresh();
+
                 return newState;
             } catch (error) {
                 // Revert optimistic update on error

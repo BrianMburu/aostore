@@ -40,12 +40,13 @@ export function FeatureRequestReplyEditForm({ appId, requestId, reply, requestTy
                 }
 
                 // Update local state if a new reply is returned from the server
-                if (newState.request) {
+                if (newState.message === "success" && newState.request) {
                     setLocalReply(newState.request);
+                    toast.success(`${requestType === "feature" ? "Support request" : "Bug report"} submitted successfully!`);
+                    router.refresh();
                 }
 
-                toast.success(`${requestType === "feature" ? "Support request" : "Bug report"} submitted successfully!`);
-                router.refresh();
+
                 return newState;
             } catch (error) {
                 // Revert the optimistic update on error

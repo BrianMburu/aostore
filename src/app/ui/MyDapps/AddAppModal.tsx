@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState, useActionState } from 'react';
-import { useRouter } from 'next/navigation'
 
 import ModalDialog from './ModalDialog';
 import { projectTypes } from '@/types/dapp';
@@ -15,30 +14,13 @@ import { useAuth } from '@/context/AuthContext';
 import { AnimatedButton } from '../animations/AnimatedButton';
 import { MultiItemInput } from './MultiItemInput';
 
-export const AddDAppModal = () => {
-    // const searchParams = useSearchParams();
-    // const pathname = usePathname();
-    // const { replace } = useRouter();
+export const AddDAppModal = ({ onDappAdded }: { onDappAdded?: () => void }) => {
+
     const [bannerUrls, setBannerUrls] = useState<string[]>([]);
-    const router = useRouter();
 
     const [isOpen, setIsOpen] = useState(false);
     const initialState: DappState = { message: null, errors: {} };
     const { user } = useAuth();
-
-    // const clearFilters = (filterNames: string[]) => {
-    //     filterNames.map(
-    //         (filtername: string) => {
-    //             const params = new URLSearchParams(searchParams)
-    //             //reset Page
-    //             params.delete(filtername);
-
-    //             replace(`${pathname}?${params.toString()}`);
-    //         }
-    //     )
-    // }
-
-    // Local state for the request details to support optimistic updates
 
     const initialFormData = {
         appName: "", appIconUrl: "", description: "",
@@ -75,7 +57,12 @@ export const AddDAppModal = () => {
                 if (newState.message === 'success') {
                     setLocalRequest(initialFormData);
                     setIsOpen(false);
-                    router.refresh();
+
+                    // Trigger the callback to refresh the DApp list
+                    if (onDappAdded) {
+                        onDappAdded();
+                    }
+
                     toast.success("DApp submitted successfully! It will be visible after verification.");
                 }
 

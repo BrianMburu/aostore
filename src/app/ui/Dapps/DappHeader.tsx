@@ -8,6 +8,7 @@ import { RatingStars } from "./RatingStars"
 import { DAppService } from "@/services/ao/dappService"
 import toast from "react-hot-toast"
 import { capitalizeFirstLetter } from "@/utils/message"
+import Link from "next/link"
 
 export function DappHeader({ appData }: { appData: Dapp }) {
     const addToFavorites = async () => {
@@ -54,14 +55,15 @@ export function DappHeader({ appData }: { appData: Dapp }) {
                     </span>
                 </div>
                 <div className="flex space-x-8">
-                    <a
+                    <Link
                         href={appData.websiteUrl}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
                     >
                         <ArrowUpTrayIcon className="h-5 w-5 mr-2" />
                         Visit Website
-                    </a>
+                    </Link>
                 </div>
 
             </div>

@@ -3,8 +3,9 @@ import { DappUserAcquisitionChart } from '@/app/ui/MyDapps/Analytics/DappUserAcq
 import { ChartSkeleton } from '@/app/ui/Analytics/skeletons/ChartSkeleton';
 import { FeatureBugChart } from '@/app/ui/MyDapps/Analytics/FeatureBugChart';
 import { DappRatingsChart } from '@/app/ui/MyDapps/Analytics/DappRatingsChart';
-import { TotalCard } from '@/app/ui/Analytics/TotalCard';
-import { TotalCardSkeleton } from '@/app/ui/Analytics/skeletons/TotalCardSkeleton';
+import ReviewTotals from '@/app/ui/Analytics/ReviewTotals';
+import UserTotals from '@/app/ui/Analytics/UserTotals';
+import ForumTotals from '@/app/ui/Analytics/ForumTotals';
 
 interface Props {
     params: Promise<{ appId: string }>;
@@ -12,21 +13,20 @@ interface Props {
 export default async function AnalyticsPage(props: Props) {
     const currParams = await props.params;
     const appId = currParams.appId
-    const stats = [
-        { title: 'Total Reviews Posted', metric: 'reviews', icon: '📝' },
-        { title: 'Total Forum Posts', metric: 'forumPosts', icon: '💬' },
-        { title: 'Total Subscribed Users', metric: 'users', icon: '👥' },
-    ];
+
 
     return (
         <div className="w-full p-6 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-                {stats.map((stat, i) => (
-
-                    <Suspense key={i} fallback={<TotalCardSkeleton />}>
-                        <TotalCard {...stat}></TotalCard>
-                    </Suspense>
-                ))}
+                <Suspense fallback={<ChartSkeleton />}>
+                    <ReviewTotals appId={appId} />
+                </Suspense>
+                <Suspense fallback={<ChartSkeleton />}>
+                    <ForumTotals appId={appId} />
+                </Suspense>
+                <Suspense fallback={<ChartSkeleton />}>
+                    <UserTotals appId={appId} />
+                </Suspense>
             </div>
             <Suspense fallback={<ChartSkeleton />}>
                 <DappUserAcquisitionChart appId={appId} title='User Acquisition' />

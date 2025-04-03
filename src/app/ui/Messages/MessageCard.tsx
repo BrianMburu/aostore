@@ -24,6 +24,7 @@ import { aoMessageService } from "@/services/ao/messageService";
 import toast from "react-hot-toast";
 import Loader from "../Loader";
 import { useRouter } from "next/navigation";
+import { AnimatedButton } from "../animations/AnimatedButton";
 
 
 const typeConfig = {
@@ -177,7 +178,7 @@ export function MessageCard({ message }: {
                             </button>
 
                             {!message.read && (
-                                <button
+                                <AnimatedButton
                                     onClick={markRead}
                                     disabled={isMarking}
                                     className="text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1"
@@ -185,7 +186,7 @@ export function MessageCard({ message }: {
                                     {isMarking ? (
                                         <div className="flex items-center justify-center">
                                             <Loader />
-                                            mearking...
+                                            marking...
                                         </div>
                                     ) :
                                         (
@@ -195,7 +196,7 @@ export function MessageCard({ message }: {
                                             </div>
                                         )
                                     }
-                                </button>
+                                </AnimatedButton>
                             )}
                         </div>
                     </div>

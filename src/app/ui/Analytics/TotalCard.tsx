@@ -1,14 +1,13 @@
-import { AnalyticsService, MetricType } from "@/services/ao/analyticsService";
+// import { AnalyticsService, MetricType } from "@/services/ao/analyticsService";
 import { formatNumber } from "@/utils/analytics";
 
 interface TotalCardProps {
     title: string;
-    metric: string;
+    total: number;
     icon: React.ReactNode;
 }
 
-export async function TotalCard({ title, metric, icon }: TotalCardProps) {
-    const total = await AnalyticsService.fetchTotals(metric as MetricType);
+export function TotalCard({ title, total, icon }: TotalCardProps) {
     const formattedTotal = formatNumber(total)
 
     return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import { BadgeDollarSignIcon } from "lucide-react";
 import { AnimatedButton } from "../animations/AnimatedButton";
 import ModalDialog from '../MyDapps/ModalDialog';
@@ -10,6 +10,10 @@ import { sendTip, TipState } from '@/lib/TipAction';
 import { useAuth } from '@/context/AuthContext';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import { TokenService } from '@/services/ao/tokenService';
+import { AppTokenData } from '@/types/dapp';
+import ProfileImage from '../ProfilePic';
+import { Skeleton } from '../skeleton';
 
 
 export function TipButton({ onClick }: { onClick: () => void }) {
@@ -23,31 +27,43 @@ export function TipButton({ onClick }: { onClick: () => void }) {
     );
 }
 
-
-const tokenOptions = [
-    { name: "AO", icon: "AO", tokenid: "adjandj" },
-    { name: "AOS", icon: "AOS", tokenid: "fjndjfvf" },
-    { name: "USDT", icon: "USDT", tokenid: "qwpoewdwmls" }
-];
-
 export function TipForm({ recipientWallet }: { recipientWallet: string }) {
+    const [tokens, setTokens] = useState<AppTokenData[]>([]);
+    const [activeToken, setActiveToken] = useState<AppTokenData | null>(null);
+    const [tokenBalance, setTokenBalance] = useState<number>(0);
+
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [selectedToken, setSelectedToken] = useState<string | null>(null);
     const initialState: TipState = { message: null, errors: {} };
 
-    const { user } = useAuth()
+    const { isConnected } = useAuth();
+
+    useEffect(() => {
+        const fetchTokens = async () => {
+            try {
+                const fetchedTokens = await TokenService.fetchTokens();
+                if (fetchedTokens.length > 0) {
+                    setTokens(fetchedTokens)
+                }
+            } catch (error) {
+                console.error(error);
+                setTokens([]);
+            }
+        }
+        fetchTokens();
+    }, [isConnected]);
+
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: TipState, _formData: FormData) => {
             try {
                 // Call createDapp to submit the data to the server
-                const newState = await sendTip(selectedToken, recipientWallet, user, prevState, _formData);
+                const newState = await sendTip(tokenBalance, activeToken, recipientWallet, prevState, _formData);
 
-                if (newState.message === 'success' && newState.tip) {
+                if (newState.message === 'success') {
                     // Close modal and show success message
                     setIsOpen(false);
-                    setSelectedToken(null);
+                    setActiveToken(null);
 
-                    toast.success(`${newState.tip.amount} sent to ${recipientWallet.substring(0, 5)}... successfully!`);
+                    toast.success(`$Tip sent to ${recipientWallet.substring(0, 5)}... successfully!`);
                 }
                 return newState;
 
@@ -71,16 +87,26 @@ export function TipForm({ recipientWallet }: { recipientWallet: string }) {
                 <div className="mb-6">
                     <p className="text-gray-900 dark:text-white mb-2">Select Token</p>
                     <div className="flex space-x-4">
-                        {tokenOptions.map((token) => (
-                            <TokenCard
-                                key={token.tokenid}
-                                {...token}
-                                isSelected={selectedToken === token.tokenid}
-                                onClick={() => setSelectedToken(token.tokenid)}
-                            />
-                        ))}
+                        {tokens.length > 0 && tokens.some(token => token.tokenTicker) &&
+                            tokens.map((token) => (
+                                token.tokenTicker && (
+                                    <TokenCard
+                                        key={token.tokenId}
+                                        name={token.tokenTicker}
+                                        isSelected={activeToken?.tokenTicker === token.tokenTicker}
+                                        onClick={() => setActiveToken(token)}
+                                        icon={<ProfileImage imgUrl={token.logo} alt={token.tokenTicker} className={'h-12 w-12'} />}
+                                    />
+                                )
+                            ))
+                        }
                     </div>
                 </div>
+
+                <div className='mb-6'>
+                    {<TokenBalance activeToken={activeToken!} tokenBalance={tokenBalance} setTokenBalance={setTokenBalance} />}
+                </div>
+
                 <form action={formAction} className="space-y-6">
                     <div>
                         <label htmlFor="amount" className="text-gray-900 dark:text-white">
@@ -164,4 +190,39 @@ function TokenCard({ name, icon, isSelected, onClick }: TokenCardProps) {
             <p className="font-medium dark:text-gray-100">{name}</p>
         </motion.button>
     );
+}
+
+export function TokenBalance({ activeToken, tokenBalance, setTokenBalance }:
+    {
+        activeToken: AppTokenData | undefined, tokenBalance: number,
+        setTokenBalance: React.Dispatch<React.SetStateAction<number>>
+    }) {
+    const [fetching, startTransition] = useTransition();
+
+    useEffect(() => {
+        startTransition(
+            async () => {
+                if (activeToken) {
+                    const fetchedTokenBalance = await TokenService.fetchTokenBalance(activeToken.tokenId);
+
+                    if (activeToken && fetchedTokenBalance) {
+                        const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
+
+                        setTokenBalance(Number(tokenValue.toFixed(2)))
+                    }
+                }
+            })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeToken]);
+
+    return (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 py-2 px-4">
+            <p className="text-gray-900 dark:text-white mb-2">Token Balance</p>
+            <div className="flex items-center gap-3">
+                {fetching ? <Skeleton className="h-5 w-10 animate-pulse" /> :
+                    <span className="text-3xl font-bold dark:text-white">{tokenBalance.toLocaleString("en-US")}</span>
+                }
+            </div>
+        </div>
+    )
 }
