@@ -6,6 +6,7 @@ import { AppTokenData } from "@/types/dapp"
 import { useEffect, useState, useTransition } from "react"
 import { Skeleton } from "../skeleton";
 import { findPrecision } from "@/utils/ao";
+import { useRank } from "@/context/RankContext";
 
 export default function BalanceCard({ tokens, fetchingTokens, activeToken, setActiveToken }:
   {
@@ -14,6 +15,7 @@ export default function BalanceCard({ tokens, fetchingTokens, activeToken, setAc
   }) {
   const [tokenBalance, setTokenBalance] = useState<number>(0.00);
   const [fetching, startTransition] = useTransition();
+  const { rank } = useRank();
 
   useEffect(() => {
     startTransition(
@@ -24,11 +26,11 @@ export default function BalanceCard({ tokens, fetchingTokens, activeToken, setAc
           if (activeToken && fetchedTokenBalance) {
             const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
 
-            setTokenBalance(Number(tokenValue.toFixed(findPrecision(activeToken.tokenDenomination))))
+            setTokenBalance(Number(tokenValue.toFixed(findPrecision(activeToken.tokenDenomination))) + 1)
           }
         }
       })
-  }, [activeToken]);
+  }, [activeToken, rank]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">

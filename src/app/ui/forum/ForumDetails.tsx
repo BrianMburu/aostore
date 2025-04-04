@@ -56,7 +56,8 @@ export default function ForumDetails({ appId, postId }: { appId: string, postId:
                     Replies ({Object.values(post.replies).length})
                 </h2>
                 {Object.values(post.replies).map(reply => (
-                    <ForumAnswer key={reply.replyId} reply={reply} appId={appId} postId={postId} />
+                    <ForumAnswer key={reply.replyId} reply={reply} appId={appId}
+                        postId={postId} refreshPost={refreshForumPost} />
                 ))}
             </div>
 

@@ -6,8 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { Reply } from '@/types/reply';
 import ProfileImage from "../ProfilePic";
 
-export default function ForumAnswer({ reply, postId, appId }:
-    { appId: string, postId: string, reply: Reply }) {
+export default function ForumAnswer({ reply, postId, appId, refreshPost }:
+    { appId: string, postId: string, reply: Reply, refreshPost: () => void }) {
     const { user } = useAuth();
 
     return (
@@ -24,7 +24,7 @@ export default function ForumAnswer({ reply, postId, appId }:
                     </div>
                     <div className='flex gap-2'>
                         {user && user.walletAddress == reply.user &&
-                            <ForumEditAnswerForm reply={reply} appId={appId} postId={postId} />}
+                            <ForumEditAnswerForm reply={reply} appId={appId} postId={postId} refreshPost={refreshPost} />}
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                             {formatActivityTime(reply.createdTime)}
                         </span>

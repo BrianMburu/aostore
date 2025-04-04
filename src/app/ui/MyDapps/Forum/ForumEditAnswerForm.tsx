@@ -11,17 +11,15 @@ import Loader from "../../Loader";
 import { Reply } from "@/types/reply";
 import { useAuth } from "@/context/AuthContext";
 import { useRank } from "@/context/RankContext";
-import { useRouter } from "next/navigation";
 
 const initialState: ForumReplyState = { message: null, errors: {}, reply: null };
 
-export function ForumEditAnswerForm({ reply, postId, appId }:
-    { appId: string, postId: string, reply: Reply }) {
+export function ForumEditAnswerForm({ reply, postId, appId, refreshPost }:
+    { appId: string, postId: string, reply: Reply, refreshPost: () => void }) {
     const { user } = useAuth();
     const { rank } = useRank();
 
     const [isOpen, setIsOpen] = useState(false);
-    const router = useRouter();
 
     // Local state for the request details to support optimistic updates
     const [localRequest, setLocalRequest] = useState<{ description: string }>({ description: reply.description });
@@ -44,7 +42,7 @@ export function ForumEditAnswerForm({ reply, postId, appId }:
                 if (newState.message === 'success') {
                     setIsOpen(false);
 
-                    router.refresh();
+                    refreshPost();
                     toast.success('Answer updated successfully!');
                 }
 

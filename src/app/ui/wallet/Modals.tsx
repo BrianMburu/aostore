@@ -18,6 +18,7 @@ export function TransferModal({ tokenData, open, onClose }: {
     onClose: () => void
 }) {
     const initialState: TokenTransferState = { message: null, errors: {} };
+    const { fetchRankData } = useRank();
 
     const [state, formAction, isSubmitting] = useActionState(
         async (_prevState: TokenTransferState, _formData: FormData) => {
@@ -25,7 +26,9 @@ export function TransferModal({ tokenData, open, onClose }: {
                 const newState = await transfer(tokenData, _prevState, _formData);
 
                 if (newState.message == "success") {
-                    toast.success("Token Transfer was successful.")
+                    toast.success("Token Transfer was successful.");
+                    fetchRankData();
+                    onClose()
                 }
                 return newState
             } catch (error) {
@@ -66,8 +69,6 @@ export function TransferModal({ tokenData, open, onClose }: {
                                 step={0.001}
                                 placeholder="Amount to send"
                                 className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-700"
-                                readOnly
-                                value="ao_computer_deposit_address_1234"
                             />
                             {state?.errors?.amount &&
                                 state.errors.amount.map((error: string) => (
@@ -130,7 +131,7 @@ export function SwapModal({ open, onClose }: {
     open: boolean
     onClose: () => void,
 }) {
-    const { rank } = useRank();
+    const { rank, fetchRankData } = useRank();
     const initialState: SwapTokenState = { message: null, errors: {} };
 
     const [state, formAction, isSubmitting] = useActionState(
@@ -139,7 +140,10 @@ export function SwapModal({ open, onClose }: {
                 const newState = await swap(rank.points, _prevState, _formData);
 
                 if (newState.message == "success") {
-                    toast.success("Points Swapped successful.")
+                    onClose();
+                    fetchRankData();
+
+                    toast.success("Points Swapped successful.");
                 }
                 return newState
             } catch (error) {
