@@ -86,7 +86,7 @@ export function TipForm({ recipientWallet }: { recipientWallet: string }) {
                 {/* Token Card selection */}
                 <div className="mb-6">
                     <p className="text-gray-900 dark:text-white mb-2">Select Token</p>
-                    <div className="flex space-x-4">
+                    <div className="p-4 max-h-80 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {tokens.length > 0 && tokens.some(token => token.tokenTicker) &&
                             tokens.map((token) => (
                                 token.tokenTicker && (
@@ -95,7 +95,7 @@ export function TipForm({ recipientWallet }: { recipientWallet: string }) {
                                         name={token.tokenTicker}
                                         isSelected={activeToken?.tokenTicker === token.tokenTicker}
                                         onClick={() => setActiveToken(token)}
-                                        icon={<ProfileImage imgUrl={token.logo} alt={token.tokenTicker} className={'h-12 w-12'} />}
+                                        icon={<ProfileImage imgUrl={token.logo} alt={token.tokenTicker} className="h-12 w-12" />}
                                     />
                                 )
                             ))

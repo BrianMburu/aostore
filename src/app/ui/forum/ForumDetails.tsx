@@ -1,7 +1,7 @@
 // app/forum/[postId]/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ForumPost } from '@/types/forum';
 import { ForumService } from '@/services/ao/forumService';
 import { ForumPostItemMini } from '@/app/ui/forum/PostItemMini';
@@ -17,35 +17,38 @@ export default function ForumDetails({ appId, postId }: { appId: string, postId:
     const [loading, setLoading] = useState(true);
     const { isConnected } = useAuth()
 
-    useEffect(() => {
-        const loadPost = async () => {
-            try {
-                const postData = await ForumService.fetchPost(appId, postId);
+    const loadPost = useCallback(async () => {
+        try {
+            const postData = await ForumService.fetchPost(appId, postId);
 
-                if (postData) {
-                    setPost(postData);
+            if (postData) {
+                setPost(postData);
 
-                    const { posts, } = await ForumService.fetchForumPosts(appId, { page: '1', topic: postData.topic })
-                    setSuggestedPosts(posts);
-                }
-            } finally {
-                setLoading(false)
+                const { posts, } = await ForumService.fetchForumPosts(appId, { page: '1', topic: postData.topic })
+                setSuggestedPosts(posts);
             }
-        };
+        } finally {
+            setLoading(false)
+        }
+    }, [appId, postId,]);
 
+    useEffect(() => {
         loadPost();
-    }, [appId, postId, isConnected]);
+    }, [loadPost, isConnected]);
 
     if (loading) return <ForumPageSkeleton />;
 
     if (!post) {
         notFound()
     };
+    const refreshForumPost = () => {
+        loadPost();
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Main Post */}
-            <ForumQuestion post={post} postId={postId} appId={appId} />
+            <ForumQuestion post={post} postId={postId} appId={appId} refreshPost={refreshForumPost} />
 
             {/* Replies */}
             <div className="space-y-6 mb-12">
@@ -69,6 +72,5 @@ export default function ForumDetails({ appId, postId }: { appId: string, postId:
                 </div>
             </div>
         </div>
-
     );
 }

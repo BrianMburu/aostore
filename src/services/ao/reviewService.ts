@@ -123,13 +123,14 @@ export const ReviewService = {
         }
     },
 
-    async updateReview(appId: string, reviewId: string, reviewData: { rating: number, description: string }): Promise<Review> {
+    async updateReview(appId: string, reviewId: string, rank: Rank, reviewData: { rating: number, description: string }): Promise<Review> {
         try {
             const messages = await fetchAOmessages([
                 { name: "Action", value: "EditReview" },
                 { name: "appId", value: appId },
                 { name: "reviewId", value: reviewId },
                 { name: "description", value: reviewData.description },
+                { name: "rank", value: rank.rank },
                 { name: "rating", value: reviewData.rating.toString() },
 
             ], PROCESS_ID_REVIEW_TABLE);
@@ -199,7 +200,7 @@ export const ReviewService = {
         }
     },
 
-    async updateReply(appId: string, reviewId: string, replyId: string, replyData: { description: string }): Promise<Reply> {
+    async updateReply(appId: string, reviewId: string, replyId: string, rank: Rank, replyData: { description: string }): Promise<Reply> {
         try {
             const messages = await fetchAOmessages([
                 { name: "Action", value: "EditReviewReply" },
@@ -207,6 +208,7 @@ export const ReviewService = {
                 { name: "reviewId", value: reviewId },
                 { name: "replyId", value: replyId },
                 { name: "description", value: replyData.description },
+                { name: "rank", value: rank.rank },
 
             ], PROCESS_ID_REVIEW_TABLE);
 

@@ -51,7 +51,7 @@ export async function sendReview(appId: string, user: User | null, rank: Rank, p
     }
 }
 
-export async function updateReview(appId: string, reviewId: string, prevState: ReviewState, formData: FormData) {
+export async function updateReview(appId: string, reviewId: string, rank: Rank, prevState: ReviewState, formData: FormData) {
     const validatedFields = reviewSchema.safeParse({
         description: formData.get('description'),
         rating: Number(formData.get('rating')),
@@ -65,7 +65,7 @@ export async function updateReview(appId: string, reviewId: string, prevState: R
     }
 
     try {
-        const updatedReview = await ReviewService.updateReview(appId, reviewId, validatedFields.data);
+        const updatedReview = await ReviewService.updateReview(appId, reviewId, rank, validatedFields.data);
 
         return { message: 'success', review: updatedReview };
 
@@ -103,9 +103,6 @@ export async function sendReply(appId: string, reviewId: string, user: User | nu
     }
 
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
         const reply = await ReviewService.submitReply(appId, reviewId, user, rank, validatedFields.data);
 
         return { message: 'success', reply: reply };
@@ -115,7 +112,7 @@ export async function sendReply(appId: string, reviewId: string, user: User | nu
     }
 }
 
-export async function updateReply(appId: string, reviewId: string, replyId: string, prevState: ReplyState, formData: FormData) {
+export async function updateReply(appId: string, reviewId: string, replyId: string, rank: Rank, prevState: ReplyState, formData: FormData) {
     const validatedFields = replySchema.safeParse({
         description: formData.get('description'),
     });
@@ -128,7 +125,7 @@ export async function updateReply(appId: string, reviewId: string, replyId: stri
     }
 
     try {
-        const reply = await ReviewService.updateReply(appId, reviewId, replyId, validatedFields.data);
+        const reply = await ReviewService.updateReply(appId, reviewId, replyId, rank, validatedFields.data);
 
         return { message: 'success', reply: reply };
 

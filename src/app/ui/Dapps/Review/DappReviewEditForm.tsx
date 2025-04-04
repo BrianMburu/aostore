@@ -10,7 +10,7 @@ import { StarIcon } from "lucide-react"
 import ModalDialog from "../../MyDapps/ModalDialog"
 import { EditButton } from "../../EditButton"
 import { AnimatedButton } from "../../animations/AnimatedButton"
-// import { useRank } from "@/context/RankContext"
+import { useRank } from "@/context/RankContext"
 import { useRouter } from "next/navigation"
 
 const initialState: ReviewState = { message: null, errors: {}, review: null };
@@ -18,7 +18,7 @@ const initialState: ReviewState = { message: null, errors: {}, review: null };
 export function DappReviewEditForm({ appId, review }: { appId: string, review: Review }) {
     const [isOpen, setIsOpen] = useState(false)
 
-    // const { rank } = useRank();
+    const { rank } = useRank();
     const router = useRouter();
 
     // Local state for the request details to support optimistic updates
@@ -36,7 +36,7 @@ export function DappReviewEditForm({ appId, review }: { appId: string, review: R
             setLocalReview(updatedRequest);
 
             try {
-                const newState = await updateReview(appId, review.reviewId, prevState, _formData);
+                const newState = await updateReview(appId, review.reviewId, rank, prevState, _formData);
 
                 // If the server returns an updated request, update localReview accordingly.
                 if (newState.message === 'success') {

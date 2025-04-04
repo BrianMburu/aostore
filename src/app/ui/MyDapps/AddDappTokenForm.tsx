@@ -118,7 +118,7 @@ export const AddDappTokenForm = ({ appId }: { appId: string }) => {
                         ))}
                 </div>
                 <div>
-                    <label className="text-gray-900 dark:text-white">Token Logo URL</label>
+                    <label className="text-gray-900 dark:text-white">Token Logo URL ID</label>
                     <input
                         className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         name="logo"

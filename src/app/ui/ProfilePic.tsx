@@ -1,5 +1,6 @@
 'use client'
 
+import { checkValidUrl } from "@/utils/airdrops";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -13,7 +14,7 @@ export default function ProfileImage({
     className: string;
 }) {
     const [hasError, setHasError] = useState(false);
-    const displayFallback = !imgUrl || hasError;
+    const displayFallback = !checkValidUrl(imgUrl) || hasError;
     const fallbackText = alt?.slice(0, 1) || 'U';
 
     return (

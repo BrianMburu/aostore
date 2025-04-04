@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Airdrop, statusType } from "@/types/airDrop";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import ProfileImage from "../../ProfilePic";
+import { applyPrecision } from "@/utils/ao";
 
 
 export function MyDappsAirDropCard({ airdrop }: { airdrop: Airdrop }) {
@@ -37,7 +38,7 @@ export function MyDappsAirDropCard({ airdrop }: { airdrop: Airdrop }) {
             <div className="space-y-2">
                 <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-300">Amount</span>
-                    <span className="font-medium dark:text-gray-200">{airdrop.amount.toLocaleString()} Tokens</span>
+                    <span className="font-medium dark:text-gray-200">{applyPrecision(airdrop.amount, airdrop.tokenDenomination || 1)} Tokens</span>
                 </div>
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-300">Published</span>

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { formatActivityTime } from "@/utils/forum";
 import { Task } from "@/types/task";
 import { Progress } from '../../Dapps/Tasks/TaskProgress';
+import { applyPrecision } from '@/utils/ao';
 
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -69,7 +70,7 @@ export function TaskItemMini({ task, appId }: { task: Task; appId: string }) {
                         </div>
                         <div className="flex items-center gap-1.5">
                             <CurrencyDollarIcon className="h-5 w-5" />
-                            <span>{task.amountPerTask} each</span>
+                            <span>{applyPrecision(task.amountPerTask, task.tokenDenomination)} each</span>
                         </div>
                     </div>
                 </div>

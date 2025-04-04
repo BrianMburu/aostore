@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import AirdropDetailsSkeleton from "./AirdropsDetailsSkeleton";
 import toast from "react-hot-toast";
 import ProfileImage from "../ProfilePic";
+import { applyPrecision } from "@/utils/ao";
 
 export default function AirdropDetails({ appId, airdropId }: { appId: string, airdropId: string }) {
     const [showAllReceivers, setShowAllReceivers] = useState(false);
@@ -78,7 +79,7 @@ export default function AirdropDetails({ appId, airdropId }: { appId: string, ai
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {airdrop.appName}
+                            {airdrop.title}
                         </h1>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${airdrop.status === 'completed'
                             ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
@@ -136,7 +137,7 @@ export default function AirdropDetails({ appId, airdropId }: { appId: string, ai
                                 <div>
                                     <p className="text-sm text-gray-500 dark:text-gray-300">Token Amount</p>
                                     <p className="text-xl font-bold text-gray-900 dark:text-white">
-                                        {airdrop.amount.toLocaleString()} Tokens
+                                        {applyPrecision(airdrop.amount, airdrop.tokenDenomination || 1)} Tokens
                                     </p>
                                 </div>
                             </div>

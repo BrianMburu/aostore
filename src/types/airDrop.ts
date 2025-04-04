@@ -5,6 +5,8 @@ export interface Airdrop {
     appId: string;
     appIconUrl: string;
     tokenId: string;
+    tokenDenomination: number;
+    tokenTicker: string;
     claimedUsers: Record<string, { time: string }>;
     verifiedParticipants: Record<string, { time: string }>;
     unverifiedParticipants: Record<string, { time: string }>;

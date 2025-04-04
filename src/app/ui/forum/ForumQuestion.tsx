@@ -13,7 +13,7 @@ import { useState, useTransition } from "react";
 import { Voters } from "@/types/voter";
 import { DetailedHelpfulButton } from "../MyDapps/DetailedHelpfulButton";
 
-export default function ForumQuestion({ post, appId, postId }: { post: ForumPost, postId: string, appId: string }) {
+export default function ForumQuestion({ post, appId, postId, refreshPost }: { post: ForumPost, postId: string, appId: string, refreshPost: () => void }) {
     const { user } = useAuth()
 
     const [isPending, startTransition] = useTransition();
@@ -76,7 +76,7 @@ export default function ForumQuestion({ post, appId, postId }: { post: ForumPost
                     </span>
                 </div>
 
-                {user && user.walletAddress === post.user && <ForumEditQuestionForm appId={appId} post={post} />}
+                {user && user.walletAddress === post.user && <ForumEditQuestionForm appId={appId} post={post} onEdit={refreshPost} />}
 
             </div>
 
@@ -98,6 +98,5 @@ export default function ForumQuestion({ post, appId, postId }: { post: ForumPost
                 <TipForm recipientWallet={post.user} />
             </div>
         </div>
-
     )
 }

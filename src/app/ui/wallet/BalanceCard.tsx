@@ -5,6 +5,7 @@ import { TokenService } from "@/services/ao/tokenService";
 import { AppTokenData } from "@/types/dapp"
 import { useEffect, useState, useTransition } from "react"
 import { Skeleton } from "../skeleton";
+import { findPrecision } from "@/utils/ao";
 
 export default function BalanceCard({ tokens, fetchingTokens, activeToken, setActiveToken }:
   {
@@ -23,7 +24,7 @@ export default function BalanceCard({ tokens, fetchingTokens, activeToken, setAc
           if (activeToken && fetchedTokenBalance) {
             const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
 
-            setTokenBalance(Number(tokenValue.toFixed(2)))
+            setTokenBalance(Number(tokenValue.toFixed(findPrecision(activeToken.tokenDenomination))))
           }
         }
       })

@@ -9,11 +9,12 @@ import { Loader2 } from "lucide-react"
 import clsx from 'clsx'
 import { TaskReplyForm } from './TaskReplyForm'
 import { Progress } from './TaskProgress'
+import { applyPrecision } from '@/utils/ao'
 
 
 export function TaskDetails({ task, appId, refreshTask }: { task: Task, appId: string, refreshTask: () => void }) {
     const progress = (task.completedRate.completeCount / task.taskerCount) * 100
-    const totalReward = (task.tasksAmount).toLocaleString();
+    const totalReward = applyPrecision(task.tasksAmount, task.tokenDenomination);
     const [showForm, setShowForm] = useState(false)
 
     return (

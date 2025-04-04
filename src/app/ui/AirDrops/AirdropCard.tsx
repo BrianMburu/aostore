@@ -8,6 +8,7 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Airdrop, statusType } from '@/types/airDrop';
 import ProfileImage from '../ProfilePic';
 import { capitalizeFirstLetter } from '@/utils/message';
+import { applyPrecision } from '@/utils/ao';
 
 export function AirdropCard({ airdrop }: {
     airdrop: Airdrop
@@ -47,7 +48,7 @@ export function AirdropCard({ airdrop }: {
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-300">Amount</span>
                     <span className="font-medium text-indigo-600 dark:text-indigo-400">
-                        {airdrop.amount.toLocaleString()} Tokens
+                        {applyPrecision(airdrop.amount, airdrop.tokenDenomination || 1)} Tokens
                     </span>
                 </div>
 

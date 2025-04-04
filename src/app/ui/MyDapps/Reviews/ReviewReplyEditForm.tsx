@@ -10,6 +10,7 @@ import { EditButton } from "../../EditButton"
 import { AnimatedButton } from "../../animations/AnimatedButton"
 import { Reply } from "@/types/reply"
 import { useRouter } from "next/navigation"
+import { useRank } from "@/context/RankContext"
 
 const initialState: ReplyState = { message: null, errors: {}, reply: null };
 
@@ -17,6 +18,7 @@ export function DappReplyEditForm({ appId, reviewId, reply }: { appId: string, r
     const [isOpen, setIsOpen] = useState(false)
 
     const router = useRouter();
+    const { rank } = useRank()
 
     // Local state for the request details to support optimistic updates
     const [localRequest, setLocalRequest] = useState<{ description: string }>({ description: reply.description });
@@ -33,7 +35,7 @@ export function DappReplyEditForm({ appId, reviewId, reply }: { appId: string, r
             setLocalRequest(updatedRequest);
 
             try {
-                const newState = await updateReply(appId, reviewId, reply.replyId, prevState, _formData);
+                const newState = await updateReply(appId, reviewId, reply.replyId, rank, prevState, _formData);
 
                 // If the server returns an updated request, update localRequest accordingly.
                 if (newState.message === 'success') {

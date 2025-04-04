@@ -12,7 +12,7 @@ import Loader from "../Loader";
 import { useRank } from "@/context/RankContext";
 
 
-export function ForumEditQuestionForm({ post, appId }: { appId: string, post: ForumPost }) {
+export function ForumEditQuestionForm({ post, appId, onEdit }: { appId: string, post: ForumPost, onEdit: () => void }) {
     const [isOpen, setIsOpen] = useState(false)
     const initialState: ForumPostState = { message: null, errors: {}, post: null };
     const { rank } = useRank();
@@ -37,6 +37,7 @@ export function ForumEditQuestionForm({ post, appId }: { appId: string, post: Fo
                 if (newState.message === 'success') {
                     setLocalRequest(post);
                     setIsOpen(false);
+                    onEdit();
                     toast.success('ForumPost updated successfully!');
                 }
 
@@ -136,10 +137,10 @@ export function ForumEditQuestionForm({ post, appId }: { appId: string, post: Fo
                             {isSubmitting ? (
                                 <div className="flex items-center justify-center">
                                     <Loader />
-                                    Posting...
+                                    Editing...
                                 </div>
                             ) : (
-                                'Post Question'
+                                'Edit Question'
                             )}
                         </AnimatedButton>
                     </form>

@@ -2,7 +2,7 @@ import * as z from 'zod';
 import { DAppService } from '@/services/ao/dappService';
 import { AppData, AppTokenData, CreateDapp, Dapp, ProjectType, projectTypes, Protocol } from '@/types/dapp';
 import { User } from '@/types/user';
-import { calculateDenominationAmount } from '@/utils/ao';
+import { calculateDenominationAmount, normalizeArweaveLogo } from '@/utils/ao';
 import { TokenService } from '@/services/ao/tokenService';
 
 export type DappState = {
@@ -175,7 +175,7 @@ export async function addDappToken(appId: string, prevState: DappTokenState, for
         tokenName: formData.get('tokenName') as string,
         tokenTicker: formData.get('tokenTicker') as string,
         tokenDenomination: calculateDenominationAmount(Number(formData.get('tokenDenomination'))),
-        logo: "https://arweave.net/raw/" + formData.get('logo')
+        logo: normalizeArweaveLogo(formData.get('logo') as string)
     }
 
     const validatedFields = dappTokenSchema.safeParse(data);
