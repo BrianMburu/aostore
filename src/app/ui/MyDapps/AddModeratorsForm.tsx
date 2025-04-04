@@ -1,10 +1,11 @@
 'use client'
-import { useState, useActionState, useEffect } from 'react';
+import { useState, useActionState, useEffect, useCallback } from 'react';
 import Loader from '../Loader';
 import toast from 'react-hot-toast';
 import { addModerators, DappModeratorState } from '@/lib/mydappActions';
 import { DAppService } from '@/services/ao/dappService';
 import { MultiItemInput } from './MultiItemInput';
+import { DeleteModForm } from './DeleteModForm';
 
 
 export function AddModeratorsForm({ appId }: { appId: string }) {
@@ -12,21 +13,24 @@ export function AddModeratorsForm({ appId }: { appId: string }) {
     const [accessPage, setAccessPage] = useState<string>("reviews")
     const initialState = { message: null, errors: {} };
 
-    useEffect(() => {
-        const fetchDappMods = async () => {
-            try {
-                const { data } = await DAppService.getMods(appId, accessPage);
-                setModerators(data);
+    const fetchDappMods = useCallback(async () => {
+        try {
+            const { data } = await DAppService.getMods(appId, accessPage);
+            setModerators(data);
 
-            } catch (error) {
-                toast.error('Failed to fetch moderators');
-                console.error(error)
-            }
-        };
-        fetchDappMods()
-
+        } catch (error) {
+            toast.error('Failed to fetch moderators');
+            console.error(error)
+        }
     }, [appId, accessPage]);
 
+    useEffect(() => {
+        fetchDappMods();
+    }, [fetchDappMods]);
+
+    const refreshMods = () => {
+        fetchDappMods();
+    }
 
     const [state, formAction, isSubmitting] = useActionState<DappModeratorState, FormData>(
         async (_prevState: DappModeratorState, _formData: FormData) => {
@@ -36,10 +40,8 @@ export function AddModeratorsForm({ appId }: { appId: string }) {
                 const newState = await addModerators(appId, accessPage, _prevState, _formData);
                 if (newState.message === 'success') {
                     toast.success('Moderators added successfully!');
-                    setModerators([]);
                 }
 
-                toast.error("Mods added successfully.");
                 return newState;
             } catch {
 
@@ -95,7 +97,9 @@ export function AddModeratorsForm({ appId }: { appId: string }) {
                     </ul>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                    <DeleteModForm appId={appId} accessPage={accessPage} refreshMods={refreshMods} />
+
                     <button
                         type="submit"
                         disabled={isSubmitting || moderators.length === 0}

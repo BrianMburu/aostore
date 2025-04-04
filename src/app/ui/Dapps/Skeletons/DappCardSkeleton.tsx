@@ -24,11 +24,11 @@ export const DAppCardSkeleton: React.FC = () => {
                     {/* Company Name Skeleton */}
                     <Skeleton className="w-1/2 h-4" />
                     {/* Ratings Skeleton */}
-                    <div className="flex items-center gap-1">
+                    {/* <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
                             <Skeleton key={i} className="w-4 h-4 rounded" />
                         ))}
-                    </div>
+                    </div> */}
                     {/* Project Type Skeleton */}
                     <Skeleton className="w-1/3 h-6 rounded-full" />
                 </div>

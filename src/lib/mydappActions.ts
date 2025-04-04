@@ -246,7 +246,7 @@ export const dappAddModsSchema = z.object({
     mods: z.array(z.string().min(8, "Minimum 8 characters")).nonempty('Atleast one mod is required')
 });
 
-export async function addModerators(appId: string, accessPage: string, prevState: DappChangeOwnerState, formData: FormData) {
+export async function addModerators(appId: string, accessPage: string, prevState: DappModeratorState, formData: FormData) {
     const data = {
         mods: formData.get('mods')?.toString().split(',').map(url => url.trim()),
     }
@@ -256,7 +256,7 @@ export async function addModerators(appId: string, accessPage: string, prevState
     if (!validatedFields.success) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Form has errors. Failed to change DApp Owner.',
+            message: 'Form has errors. Failed to change add moderators.',
         };
     }
 
@@ -268,7 +268,38 @@ export async function addModerators(appId: string, accessPage: string, prevState
         return { message: 'success', mods: newMods };
 
     } catch (error) {
-        return { message: `AO Error: failed to add DApp Token. ${error}` };
+        return { message: `AO Error: failed to add Moderator. ${error}` };
+    }
+
+}
+
+export const dappDeleteModsSchema = z.object({
+    modId: z.string().min(8, "Minimum 8 characters")
+});
+
+export async function deleteModerator(appId: string, accessPage: string, prevState: DappModeratorState, formData: FormData) {
+    const data = {
+        modId: formData.get('modId'),
+    }
+
+    const validatedFields = dappDeleteModsSchema.safeParse(data);
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has errors. Failed to Delete Moderator.',
+        };
+    }
+
+    try {
+        const modId = validatedFields.data.modId
+
+        await DAppService.removeMod(appId, modId, accessPage);
+
+        return { message: 'success' };
+
+    } catch (error) {
+        return { message: `AO Error: failed to add Delete moderator. ${error}` };
     }
 
 }

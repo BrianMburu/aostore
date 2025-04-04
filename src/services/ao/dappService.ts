@@ -554,6 +554,40 @@ export const DAppService = {
         return { data: mods, total: mods.length }
     },
 
+    async removeMod(appId: string, modId: string, accessPage: string) {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "RemoveModerator" },
+                { name: "appId", value: appId },
+                { name: "modId", value: modId },
+
+            ], processes[accessPage] || PROCESS_ID_REVIEW_TABLE);
+
+            if (!messages || messages.length === 0) {
+                throw new Error("No messages were returned from ao. Please try later.");
+            }
+
+            // Fetch the last message
+            const lastMessage = messages[messages.length - 1];
+
+            // Parse the Messages
+            const cleanedData = cleanAoJson(lastMessage.Data)
+
+            // Parse the Messages
+            const messageData = JSON.parse(cleanedData);
+
+            // console.log("Dapps Messages Data => ", messageData);
+
+            if (!messageData || messageData.code !== 200) {
+                throw new Error(messageData.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            throw new Error(`Failed to delete moderator, ${error}`);
+        }
+    },
+
     async getDappRating(appId: string): Promise<{ rating: number, totalReviews: number }> {
         let rating = { rating: 0, totalReviews: 0 };
 
