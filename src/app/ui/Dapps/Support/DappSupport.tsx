@@ -8,6 +8,7 @@ import { DiscordIcon, TwitterIcon } from '../../SocialIcons';
 import { AnimatedButton } from '../../animations/AnimatedButton';
 import { DAppService } from '@/services/ao/dappService';
 import { FlagIcon } from '@heroicons/react/24/solid';
+import toast from 'react-hot-toast';
 
 interface DappSupportProps {
     appData: Dapp;
@@ -19,6 +20,7 @@ const DappSupport: React.FC<DappSupportProps> = ({ appData }) => {
         startTransition(async () => {
             try {
                 await DAppService.flagDappAsInappropriate(appData.appId)
+                toast.success('Dapp flagged successfully');
             } catch (error) {
                 console.error(error);
             }

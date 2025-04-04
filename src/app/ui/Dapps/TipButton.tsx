@@ -202,15 +202,20 @@ export function TokenBalance({ activeToken, tokenBalance, setTokenBalance }:
     useEffect(() => {
         startTransition(
             async () => {
-                if (activeToken) {
-                    const fetchedTokenBalance = await TokenService.fetchTokenBalance(activeToken.tokenId);
+                try {
+                    if (activeToken) {
+                        const fetchedTokenBalance = await TokenService.fetchTokenBalance(activeToken.tokenId);
 
-                    if (activeToken && fetchedTokenBalance) {
-                        const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
+                        if (activeToken && fetchedTokenBalance) {
+                            const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
 
-                        setTokenBalance(Number(tokenValue.toFixed(2)))
+                            setTokenBalance(Number(tokenValue.toFixed(2)))
+                        }
                     }
+                } catch (error) {
+                    console.error("Failed to fetch Token Balance: ", error)
                 }
+
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeToken]);

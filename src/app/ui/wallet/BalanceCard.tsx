@@ -20,15 +20,20 @@ export default function BalanceCard({ tokens, fetchingTokens, activeToken, setAc
   useEffect(() => {
     startTransition(
       async () => {
-        if (activeToken) {
-          const fetchedTokenBalance = await TokenService.fetchTokenBalance(activeToken.tokenId);
+        try {
+          if (activeToken) {
+            const fetchedTokenBalance = await TokenService.fetchTokenBalance(activeToken.tokenId);
 
-          if (activeToken && fetchedTokenBalance) {
-            const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
+            if (activeToken && fetchedTokenBalance) {
+              const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
 
-            setTokenBalance(Number(tokenValue.toFixed(findPrecision(activeToken.tokenDenomination))) + 1)
+              setTokenBalance(Number(tokenValue.toFixed(findPrecision(activeToken.tokenDenomination))) + 1)
+            }
           }
+        } catch (error) {
+          console.error("Failed to fetch Token Balance: ", error);
         }
+
       })
   }, [activeToken, rank]);
 
