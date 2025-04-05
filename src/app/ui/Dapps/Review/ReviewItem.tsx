@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext'
 import { Voters } from '@/types/voter'
 import { Reply } from '@/types/reply'
 import ProfileImage from '../../ProfilePic'
+import { TipHistoryDialog } from '../TipHistoryButton'
 
 export function ReviewItem({ appId, review }: { appId: string, review: Review }) {
     const { user } = useAuth();
@@ -65,31 +66,35 @@ export function ReviewItem({ appId, review }: { appId: string, review: Review })
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"
                 >
-                    <div className="flex items-start gap-4 mb-4">
-                        <ProfileImage
-                            imgUrl={review.profileUrl}
-                            alt={review.username}
-                            className='h-10 w-10' />
+                    <div className="flex justify-between mb-4">
+                        <div className="flex items-start gap-4">
+                            <ProfileImage
+                                imgUrl={review.profileUrl}
+                                alt={review.username}
+                                className='h-10 w-10' />
 
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                                <h3 className="font-medium text-gray-900 dark:text-white">{review.username}</h3>
-                                <div className="flex items-center">
-                                    {[...Array(5)].map((_, i) => (
-                                        <StarIcon
-                                            key={i}
-                                            className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
-                                        />
-                                    ))}
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-medium text-gray-900 dark:text-white">{review.username}</h3>
+                                    <div className="flex items-center">
+                                        {[...Array(5)].map((_, i) => (
+                                            <StarIcon
+                                                key={i}
+                                                className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                                {user?.walletAddress === review.user && (
-
-                                    <DappReviewEditForm review={review} appId={appId} />
-                                )}
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {new Date(Number(review.createdTime)).toLocaleDateString()}
+                                </p>
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {new Date(Number(review.createdTime)).toLocaleDateString()}
-                            </p>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            {user?.walletAddress === review.user && (
+                                <DappReviewEditForm review={review} appId={appId} />
+                            )}
+                            <TipHistoryDialog appId={appId} userId={review.user} taskId={review.reviewId} />
                         </div>
                     </div>
 
@@ -101,7 +106,7 @@ export function ReviewItem({ appId, review }: { appId: string, review: Review })
                             <span>{Object.values(review.replies)?.length || 0}</span>
                         </div>
 
-                        <TipForm recipientWallet={review.username} />
+                        <TipForm recipientWallet={review.username} appId={appId} tipId={review.reviewId} />
                         <HelpfulButton
                             helpfulVotes={voters.foundHelpful?.count || 0}
                             isPending={isPending} handleVote={handleVote} />

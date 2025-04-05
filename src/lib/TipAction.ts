@@ -15,7 +15,7 @@ export const tipSchema = z.object({
     amount: z.number().gt(0, 'Tip amount must be greater than 0'),
 });
 
-export async function sendTip(userBalance: number, tokenData: AppTokenData | null, recipientWallet: string, prevState: TipState, formData: FormData) {
+export async function sendTip(appId: string, tipId: string, userBalance: number, tokenData: AppTokenData | null, recipientWallet: string, prevState: TipState, formData: FormData) {
     if (!tokenData) {
         return {
             message: 'Invalid tokenId selected!',
@@ -23,7 +23,7 @@ export async function sendTip(userBalance: number, tokenData: AppTokenData | nul
     }
 
     const validatedFields = tipSchema.safeParse({
-        amount: Number(formData.get('amount')) * Number(tokenData.tokenDenomination),
+        amount: Number(formData.get('amount')),
     });
 
     if (!recipientWallet) {
@@ -42,14 +42,29 @@ export async function sendTip(userBalance: number, tokenData: AppTokenData | nul
     try {
         const { amount } = validatedFields.data;
 
-        if (amount > userBalance * Number(tokenData.tokenDenomination)) {
+        const realAmount = amount * Number(tokenData.tokenDenomination);
+
+        // Check if the amount is valid
+        if (realAmount > userBalance * Number(tokenData.tokenDenomination)) {
             return {
                 errors: { amount: [`You have only ${userBalance} ${tokenData.tokenTicker} Tokens`] },
                 message: 'Form has errors. Failed to Tip.',
             };
         }
 
-        await TokenService.transferToken(tokenData.tokenId, recipientWallet, amount);
+        // Check if the recipient wallet is valid
+        if (!recipientWallet || recipientWallet.length < 42) {
+            return {
+                errors: { amount: ['Invalid recipient wallet address'] },
+                message: 'Form has errors. Failed to Tip.',
+            };
+        }
+
+        // Transfer Token
+        await TokenService.transferToken(tokenData.tokenId, recipientWallet, amount * Number(tokenData.tokenDenomination));
+
+        // Save Token
+        await TokenService.saveTipTransaction(appId, recipientWallet, tipId, amount);
 
         return { message: 'success' };
 

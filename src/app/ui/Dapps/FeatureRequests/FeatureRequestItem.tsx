@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Voters } from "@/types/voter";
 import { DetailedHelpfulButton } from "../../MyDapps/DetailedHelpfulButton";
 import { FeatureRequestRepliesList } from "../../MyDapps/FeatureRequests/FeatureRequestReplyList";
+import { TipHistoryDialog } from "../TipHistoryButton";
 
 type RequestType = 'feature' | 'bug';
 
@@ -81,18 +82,22 @@ export function FeatureRequestItem({ request, appId, requestType }: FeatureReque
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <h3 className="font-medium dark:text-white">{request.title}</h3>
-                            {user?.walletAddress === request.user && (
-                                <DappFeatureRequestEditForm
-                                    request={request}
-                                    appId={appId}
-                                    requestType={requestType}
-                                />
-                            )}
+                            <div className="flex items-center gap-2">
+                                {user?.walletAddress === request.user && (
+                                    <DappFeatureRequestEditForm
+                                        request={request}
+                                        appId={appId}
+                                        requestType={requestType}
+                                    />
+                                )}
+                                <TipHistoryDialog appId={appId} userId={request.user} taskId={request.requestId} />
+                            </div>
+
                         </div>
                         <p className="text-gray-600 dark:text-gray-300 mt-1">{request.description}</p>
                     </div>
                     <div className="mt-2 text-sm flex items-center gap-4 text-gray-500 dark:text-gray-400">
-                        <TipForm recipientWallet={request.user} />
+                        <TipForm recipientWallet={request.user} appId={appId} tipId={request.requestId} />
                         <DetailedHelpfulButton
                             helpfulVotes={voters.foundHelpful.count}
                             unhelpfulVotes={voters.foundUnhelpful.count}

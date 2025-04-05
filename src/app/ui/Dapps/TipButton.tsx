@@ -27,7 +27,7 @@ export function TipButton({ onClick }: { onClick: () => void }) {
     );
 }
 
-export function TipForm({ recipientWallet }: { recipientWallet: string }) {
+export function TipForm({ appId, tipId, recipientWallet, }: { appId: string, tipId: string, recipientWallet: string }) {
     const [tokens, setTokens] = useState<AppTokenData[]>([]);
     const [activeToken, setActiveToken] = useState<AppTokenData | null>(null);
     const [tokenBalance, setTokenBalance] = useState<number>(0);
@@ -56,7 +56,7 @@ export function TipForm({ recipientWallet }: { recipientWallet: string }) {
         async (prevState: TipState, _formData: FormData) => {
             try {
                 // Call createDapp to submit the data to the server
-                const newState = await sendTip(tokenBalance, activeToken, recipientWallet, prevState, _formData);
+                const newState = await sendTip(appId, tipId, tokenBalance, activeToken, recipientWallet, prevState, _formData);
 
                 if (newState.message === 'success') {
                     // Close modal and show success message
@@ -81,7 +81,7 @@ export function TipForm({ recipientWallet }: { recipientWallet: string }) {
 
             <ModalDialog isOpen={isOpen} onClose={() => setIsOpen(false)}>
                 <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-                    Add New Airdrop
+                    Tip Form
                 </h2>
                 {/* Token Card selection */}
                 <div className="mb-6">
@@ -162,7 +162,6 @@ export function TipForm({ recipientWallet }: { recipientWallet: string }) {
         </>
     )
 }
-
 
 interface TokenCardProps {
     name: string;

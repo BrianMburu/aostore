@@ -1,6 +1,6 @@
 import * as z from 'zod';
 import { DAppService } from '@/services/ao/dappService';
-import { AppData, AppTokenData, CreateDapp, Dapp, ProjectType, projectTypes, Protocol } from '@/types/dapp';
+import { AppTokenData, CreateDapp, Dapp, projectTypes } from '@/types/dapp';
 import { User } from '@/types/user';
 import { calculateDenominationAmount, normalizeArweaveLogo } from '@/utils/ao';
 import { TokenService } from '@/services/ao/tokenService';
@@ -27,8 +27,8 @@ export const dappSchema = z.object({
     appIconUrl: z.string().url('Invalid URL format for App Icon URL'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
     websiteUrl: z.string().min(1, 'Website Url is required').url('Invalid URL format for Website URL'),
-    twitterUrl: z.string().min(1, 'Twitter Url is required').url('Invalid URL format for Twitter URL'),
-    discordUrl: z.string().min(1, 'Discord Url is required').url('Invalid URL format for Discord URL'),
+    twitterUrl: z.string().min(1, 'Twitter Url is required'),//.url('Invalid URL format for Twitter URL'),
+    discordUrl: z.string().min(1, 'Discord Url is required'),//.url('Invalid URL format for Discord URL'),
     coverUrl: z.string().min(1, 'Cover Url is required').url('Invalid URL format for Cover URL'),
     protocol: z.enum(Protocols, {
         errorMap: () => ({ message: 'Protocol is required' }),
@@ -124,36 +124,6 @@ export async function updateDapp(appId: string, user: User, prevState: DappState
         return { message: 'AO Error: failed to Update DApp.' };
     }
 }
-
-export const createTemporaryDApp = (formData: FormData): AppData => {
-    const tempId = `temp-${Date.now()}`;
-    const data = {
-        appId: tempId,
-        appName: formData.get('appName') as string,
-        appIconUrl: formData.get('appIconUrl') as string,
-        description: formData.get('description') as string,
-        websiteUrl: formData.get('websiteUrl') as string,
-        twitterUrl: formData.get('twitterUrl') as string,
-        discordUrl: formData.get('discordUrl') as string,
-        coverUrl: formData.get('coverUrl') as string,
-        protocol: formData.get('protocol') as Protocol,
-        projectType: formData.get('projectType') as ProjectType,
-        companyName: formData.get('companyName') as string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bannerUrls: formData.get('bannerUrls')?.toString().split(',').map(url => url.trim()) as Record<string, any>,
-    };
-
-    return {
-        ...data,
-        company: data.companyName,
-        ratings: 0,
-        createdTime: Date.now(),
-        downvotes: {},
-        upvotes: {},
-        reviews: [],
-        totalRatings: 0
-    };
-};
 
 export type DappTokenState = {
     message?: string | null;

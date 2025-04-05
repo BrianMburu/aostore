@@ -96,7 +96,7 @@ export function FeatureRequestItem({ request, appId, requestType }: FeatureReque
                     </div>
                     <div className="flex flex-col">
                         <div className="mt-2 text-sm flex items-center gap-4 text-gray-500 dark:text-gray-400">
-                            <TipForm recipientWallet={request.user} />
+                            <TipForm recipientWallet={request.user} appId={appId} tipId={request.requestId} />
                             <DetailedHelpfulButton
                                 helpfulVotes={voters.foundHelpful.count}
                                 unhelpfulVotes={voters.foundUnhelpful.count}

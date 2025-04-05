@@ -195,7 +195,7 @@ export function ReviewItem({ appId, review }: { appId: string, review: Review })
                 unhelpfulVotes={voters.foundUnhelpful?.count || 0}
                 isPending={isPending} handleVote={handleVote}
               />
-              <TipForm recipientWallet={review.user} />
+              <TipForm recipientWallet={review.user} appId={appId} tipId={review.reviewId} />
               <ReplyButton onClick={handleReplyClick} />
             </div>
             {showReplyForm && <ReviewReplyForm reviewId={review.reviewId} appId={appId} />}

@@ -5,7 +5,7 @@ import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import { Tip } from "@/types/tip";
 import {
     PROCESS_ID_BUG_REPORT_TABLE, PROCESS_ID_DAPPS, PROCESS_ID_DEV_FORUM_TABLE,
-    PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FEATURE_REQUEST_TABLE, PROCESS_ID_FLAG_TABLE, PROCESS_ID_REVIEW_TABLE
+    PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FEATURE_REQUEST_TABLE, PROCESS_ID_FLAG_TABLE, PROCESS_ID_REVIEW_TABLE,
 } from "@/config/ao";
 import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
 // services/dapps.ts
@@ -19,7 +19,7 @@ export interface DAppsFilterParams {
     fv_page?: string
 }
 
-const processes: Record<string, string> = {
+export const processes: Record<string, string> = {
     reviews: PROCESS_ID_REVIEW_TABLE,
     bugReport: PROCESS_ID_BUG_REPORT_TABLE,
     developerForum: PROCESS_ID_DEV_FORUM_TABLE,

@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export interface Project {
-    projectName: string;
-    companyName: string;
-    projectType: ProjectType;
-    ratings: number;
-    appId: string;
-    appIconUrl: string;
-    websiteUrl: string;
-    protocol: Protocol;
-}
+// export interface Project {
+//     projectName: string;
+//     companyName: string;
+//     projectType: ProjectType;
+//     ratings: number;
+//     appId: string;
+//     appIconUrl: string;
+//     websiteUrl: string;
+//     protocol: Protocol;
+// }
 
 export interface DappList {
     appId: string;
@@ -69,50 +69,54 @@ export type ProjectType = typeof projectTypes[number];
 
 export type Verified = 'verified' | 'unverified';
 
-export interface AppData {
-    appId: string;
-    appName: string;
-    companyName: string;
-    websiteUrl: string;
-    projectType: ProjectType;
-    appIconUrl: string;
-    coverUrl: string;
-    company: string;
-    description: string;
-    ratings: number;
-    bannerUrls: Record<string, any>;
-    createdTime: number;
-    updatedAt?: number;
-    discordUrl: string;
-    downvotes: Record<string, any>;
-    protocol: Protocol;
-    reviews: Record<string, any>;
-    twitterUrl: string;
-    upvotes: Record<string, any>;
-    totalRatings: number;
-    verified?: Verified;
-    token?: AppTokenData;
-}
-
-export interface AppDataMini {
-    projectName: string;
-    projectType: ProjectType;
-    appIconUrl: string;
-    coverUrl: string;
-    company: string;
-    companyName: string;
-    ratings: number;
-    appId: string;
-    createdTime: number;
-    protocol: string;
-    totalRatings: number;
-    token?: AppTokenData;
-}
+// export interface AppData {
+//     appId: string;
+//     appName: string;
+//     companyName: string;
+//     websiteUrl: string;
+//     projectType: ProjectType;
+//     appIconUrl: string;
+//     coverUrl: string;
+//     company: string;
+//     description: string;
+//     ratings: number;
+//     bannerUrls: Record<string, any>;
+//     createdTime: number;
+//     updatedAt?: number;
+//     discordUrl: string;
+//     downvotes: Record<string, any>;
+//     protocol: Protocol;
+//     reviews: Record<string, any>;
+//     twitterUrl: string;
+//     upvotes: Record<string, any>;
+//     totalRatings: number;
+//     verified?: Verified;
+//     token?: AppTokenData;
+// }
 
 export interface AppTokenData {
     tokenId: string;
     tokenName: string;
     tokenTicker: string;
     tokenDenomination: number;
+    logo: string;
+}
+
+export interface AppTransactionData {
+    user: string;
+    amount: number;
+    points: number;
+    transactionType: string;
+    transactionId: string;
+    timestamp: number;
+}
+export interface AppTipTransactionData {
+    user: string;
+    amount: number;
+    transactionType: string;
+    transactionId: string;
+    timestamp: number;
+    tipped: boolean;
+    appName: string;
     logo: string;
 }

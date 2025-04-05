@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useState, useTransition } from "react";
 import { Voters } from "@/types/voter";
 import { DetailedHelpfulButton } from "../MyDapps/DetailedHelpfulButton";
+import { TipHistoryDialog } from "../Dapps/TipHistoryButton";
 
 export default function ForumQuestion({ post, appId, postId, refreshPost }: { post: ForumPost, postId: string, appId: string, refreshPost: () => void }) {
     const { user } = useAuth()
@@ -76,7 +77,10 @@ export default function ForumQuestion({ post, appId, postId, refreshPost }: { po
                     </span>
                 </div>
 
-                {user && user.walletAddress === post.user && <ForumEditQuestionForm appId={appId} post={post} onEdit={refreshPost} />}
+                <div className="flex items-center gap-2">
+                    {user && user.walletAddress === post.user && <ForumEditQuestionForm appId={appId} post={post} onEdit={refreshPost} />}
+                    <TipHistoryDialog appId={appId} userId={post.user} taskId={post.devForumId} />
+                </div>
 
             </div>
 
@@ -95,7 +99,7 @@ export default function ForumQuestion({ post, appId, postId, refreshPost }: { po
                 >
                     <ShareIcon className="h-5 w-5" />
                 </button>
-                <TipForm recipientWallet={post.user} />
+                <TipForm recipientWallet={post.user} appId={appId} tipId={post.devForumId} />
             </div>
         </div>
     )
