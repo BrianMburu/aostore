@@ -43,7 +43,7 @@ export function TaskReplyItem({ reply }: { reply: TaskReply }) {
             {reply.completedTasks && (
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                     <div className="flex items-center justify-between text-sm">
-                        <div>
+                        <div className='dark:text-gray-300'>
                             <span className="font-medium">Completed:</span>
                             <span className="ml-2">{reply.completedTasks.amount} to be rewarded</span>
                         </div>

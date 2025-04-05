@@ -46,7 +46,7 @@ export function TaskDetails({ task, appId, refreshTask }: { task: Task, appId: s
                     <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-1">Reward per Task</div>
                     <div className="flex items-center gap-2">
                         <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
-                        <span className="text-2xl font-bold">{task.amountPerTask.toLocaleString()}</span>
+                        <span className="text-2xl dark:text-gray-300 font-bold">{task.amountPerTask.toLocaleString()}</span>
                         <span className="text-gray-500 dark:text-gray-400 text-sm">{task.tokenDenomination}</span>
                     </div>
                 </div>
@@ -55,7 +55,7 @@ export function TaskDetails({ task, appId, refreshTask }: { task: Task, appId: s
                     <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-1">Total Tasks</div>
                     <div className="flex items-center gap-2">
                         <UsersIcon className="h-6 w-6 text-blue-600" />
-                        <span className="text-2xl font-bold">{task.taskerCount}</span>
+                        <span className="text-2xl dark:text-gray-300 font-bold">{task.taskerCount}</span>
                     </div>
                 </div>
 

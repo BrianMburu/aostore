@@ -54,7 +54,7 @@ export function MyDappsAirDropCard({ airdrop }: { airdrop: Airdrop }) {
                 </div>
             </div>
             <div className="mt-6 flex items-center justify-between">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[airdrop.status] as statusType}`}>
+                <span className={`px-3 py-1 rounded-full text-sm  font-medium ${statusColors[airdrop.status.toLowerCase() as statusType]}`}>
                     {airdrop.status.toUpperCase()}
                 </span>
                 <Link

@@ -190,7 +190,7 @@ export default function AirdropDetails({ appId, airdropId }: { appId: string, ai
                             <input
                                 type="text"
                                 placeholder="Enter wallet address"
-                                className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800"
+                                className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-gray-400"
                                 value={walletInput}
                                 onChange={(e) => setWalletInput(e.target.value)}
                             />
