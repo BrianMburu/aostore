@@ -23,7 +23,7 @@ export default function TransactionHistory({ accessPage, searchParams }: { acces
                 try {
                     // Fetch transactions from the server
                     const { data: fetchedTransactions, total } = await TokenService.fetchTransactions(accessPage, searchParams);
-                    console.log("Fetched Transactions => ", fetchedTransactions);
+                    // console.log("Fetched Transactions => ", fetchedTransactions);
                     setTransactions(fetchedTransactions);
                     setTotalItems(total);
                 } catch (error) {
