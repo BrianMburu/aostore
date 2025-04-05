@@ -53,7 +53,7 @@ export async function sendTip(appId: string, tipId: string, userBalance: number,
         }
 
         // Check if the recipient wallet is valid
-        if (!recipientWallet || recipientWallet.length < 42) {
+        if (!recipientWallet) {
             return {
                 errors: { amount: ['Invalid recipient wallet address'] },
                 message: 'Form has errors. Failed to Tip.',
