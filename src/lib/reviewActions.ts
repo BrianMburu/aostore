@@ -1,11 +1,13 @@
 import * as z from 'zod';
-import { Reply, Review } from '@/types/review';
+import { Review } from '@/types/review';
 import { ReviewService } from '@/services/ao/reviewService';
-import { UserDetails } from '@othent/kms';
+import { Rank } from '@/types/rank';
+import { User } from '@/types/user';
+import { Reply } from '@/types/reply';
 
 export type ReviewState = {
     errors?: {
-        comment?: string[],
+        description?: string[],
         rating?: string[]
     },
     review?: Review | null
@@ -15,7 +17,7 @@ export type ReviewState = {
 
 // Define your review schema with Zod.
 export const reviewSchema = z.object({
-    comment: z.string().min(10, 'Comment must be at least 10 characters').max(1000, "Comment must have a max of 1000 characters"),
+    description: z.string().min(10, 'Comment description must be at least 10 characters').max(1000, "Comment description must have a max of 1000 characters"),
     rating: z.number().min(1, 'Rating must be at least 1').max(5, 'Rating cannot be more than 5'),
 });
 
@@ -23,9 +25,9 @@ export type ReviewFormData = z.infer<typeof reviewSchema>;
 
 // Action function that uses the reviewSchema for validation,
 // simulates a delay, and returns the new review on success.
-export async function sendReview(appId: string, user: UserDetails | null, prevState: ReviewState, formData: FormData) {
+export async function sendReview(appId: string, user: User | null, rank: Rank, prevState: ReviewState, formData: FormData) {
     const validatedFields = reviewSchema.safeParse({
-        comment: formData.get('comment'),
+        description: formData.get('description'),
         rating: Number(formData.get('rating')),
     });
     if (!validatedFields.success) {
@@ -36,21 +38,11 @@ export async function sendReview(appId: string, user: UserDetails | null, prevSt
     }
 
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
         if (!user) {
             return { message: 'Invalid Session: User not Found!' }
         }
 
-        const reviewData: Partial<Review> = {
-            ...validatedFields.data,
-            userId: user.walletAddress,
-            profileUrl: 'https://picsum.photos/40',
-            username: user.nickname
-        };
-
-        const newReview = await ReviewService.createReview(appId, reviewData);
+        const newReview = await ReviewService.createReview(appId, user, rank, validatedFields.data);
 
         return { message: 'success', review: newReview };
 
@@ -59,11 +51,12 @@ export async function sendReview(appId: string, user: UserDetails | null, prevSt
     }
 }
 
-export async function updateReview(reviewId: string, prevState: ReviewState, formData: FormData) {
+export async function updateReview(appId: string, reviewId: string, rank: Rank, prevState: ReviewState, formData: FormData) {
     const validatedFields = reviewSchema.safeParse({
-        comment: formData.get('comment'),
+        description: formData.get('description'),
         rating: Number(formData.get('rating')),
     });
+
     if (!validatedFields.success) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
@@ -71,17 +64,8 @@ export async function updateReview(reviewId: string, prevState: ReviewState, for
         };
     }
 
-    const UpdatedReviewData = validatedFields.data;
-
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const updatedReviewData = {
-            ...UpdatedReviewData
-        };
-
-        const updatedReview = await ReviewService.updateReview(reviewId, updatedReviewData);
+        const updatedReview = await ReviewService.updateReview(appId, reviewId, rank, validatedFields.data);
 
         return { message: 'success', review: updatedReview };
 
@@ -92,20 +76,24 @@ export async function updateReview(reviewId: string, prevState: ReviewState, for
 
 export type ReplyState = {
     errors?: {
-        comment?: string[],
+        description?: string[],
     },
     reply?: Reply | null
     message?: string | null
 }
 
 export const replySchema = z.object({
-    comment: z.string().min(10, 'Comment must be at least 10 characters').max(500, "Comment must have a max of 500 characters"),
+    description: z.string().min(10, 'Comment must be at least 10 characters').max(500, "Comment must have a max of 500 characters"),
 });
 
-export async function sendReply(reviewId: string, user: UserDetails, prevState: ReplyState, formData: FormData) {
+export async function sendReply(appId: string, reviewId: string, user: User | null, rank: Rank, prevState: ReplyState, formData: FormData) {
     const validatedFields = replySchema.safeParse({
-        comment: formData.get('comment'),
+        description: formData.get('description'),
     });
+
+    if (!user) {
+        return { message: 'Invalid Session: User not Found!' }
+    }
 
     if (!validatedFields.success) {
         return {
@@ -115,17 +103,7 @@ export async function sendReply(reviewId: string, user: UserDetails, prevState: 
     }
 
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const replyData: Partial<Reply> = {
-            ...validatedFields.data,
-            profileUrl: user.picture,
-            user: user.walletAddress,
-            username: user.nickname
-        }
-
-        const reply = await ReviewService.submitReply(reviewId, replyData);
+        const reply = await ReviewService.submitReply(appId, reviewId, user, rank, validatedFields.data);
 
         return { message: 'success', reply: reply };
 
@@ -134,9 +112,9 @@ export async function sendReply(reviewId: string, user: UserDetails, prevState: 
     }
 }
 
-export async function updateReply(replyId: string, prevState: ReplyState, formData: FormData) {
+export async function updateReply(appId: string, reviewId: string, replyId: string, rank: Rank, prevState: ReplyState, formData: FormData) {
     const validatedFields = replySchema.safeParse({
-        comment: formData.get('comment'),
+        description: formData.get('description'),
     });
 
     if (!validatedFields.success) {
@@ -147,15 +125,12 @@ export async function updateReply(replyId: string, prevState: ReplyState, formDa
     }
 
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const reply = await ReviewService.updateReply(replyId, validatedFields.data);
+        const reply = await ReviewService.updateReply(appId, reviewId, replyId, rank, validatedFields.data);
 
         return { message: 'success', reply: reply };
 
     } catch (error) {
-        console.log(error);
+        console.error(error);
 
         return { message: 'AO Error: failed to send reply.' };
     }

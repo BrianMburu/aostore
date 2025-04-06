@@ -4,54 +4,82 @@ import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { AnimatedList } from "../../animations/AnimatedList";
 import { AnimatedListItem } from "../../animations/AnimatedListItem";
 import InfinityScrollControls from "../../InfinityScrollControls";
-import { notFound, useSearchParams } from "next/navigation";
 import { FeatureRequestItem } from "./FeatureRequestItem";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { FeatureRequestsListSkeleton } from "./skeletons/FeatureRequestSkeleton";
-import { FeatureBugParams, SupportService } from "@/services/ao/supportServices";
+import { SupportService } from "@/services/ao/supportServices";
 import { BugReport, FeatureRequest } from "@/types/support";
+import { EmptyState } from "../../EmptyState";
+import { useAuth } from "@/context/AuthContext";
 
 interface FeatureRequestList {
     appId: string,
-    searchParams: { type?: string; search?: string }
+    searchParams: { type?: string; search?: string, page?: string }
 }
 
-export function FeatureRequestList({ appId }: FeatureRequestList) {
-    const searchParams = useSearchParams()
+export function FeatureRequestList({ appId, searchParams }: FeatureRequestList) {
     const [requests, setRequests] = useState<(BugReport | FeatureRequest)[]>([]);
     const [total, setTotal] = useState(0);
-    const [fetching, startTransition] = useTransition();
+    const [isFetching, setIsFetching] = useState(true);
+    const { isConnected } = useAuth()
 
     useEffect(() => {
-        const filterParams: FeatureBugParams = {
-            search: searchParams.get("search") || "",
-            page: searchParams.get("page") || "",
-            type: searchParams.get("type") || ""
-        }
+        const fetchRequests = async () => {
+            setIsFetching(true);
+            try {
+                let requestData = [];
+                let totalRequests = 0;
 
-        startTransition(async () => {
-            const { data, total } = await SupportService.getFeatureRequests(appId, filterParams, true);
+                const type = searchParams.type;
+                if (type === "feature" || !type) {
+                    const { data, total } = await SupportService.getFeatureRequests(appId, searchParams, true);
+                    requestData = data
+                    totalRequests = total
+                } else {
+                    const { data, total } = await SupportService.getBugReports(appId, searchParams, true);
+                    requestData = data
+                    totalRequests = total
+                }
+                if (requestData.length) {
+                    setRequests(requestData);
+                    setTotal(totalRequests);
+                }
 
-            if (!data) return notFound();
+            } catch (error) {
+                console.error(error);
 
-            if (data !== null) {
-                setRequests(data);
-                setTotal(total);
+            } finally {
+                setIsFetching(false);
             }
-        });
-    }, [appId, searchParams]);
+        };
+        fetchRequests();
+    }, [isConnected, appId, searchParams]);
 
-    if (fetching) return <FeatureRequestsListSkeleton />;
+    if (isFetching) return <FeatureRequestsListSkeleton />;
+
+    if (!isFetching && requests.length === 0) {
+        return (
+            <EmptyState
+                title="No Dapps Found"
+                description="We couldn't find any requests from the results."
+                interactive
+                className="my-12"
+            />
+        )
+    }
 
     return (
         <div className="space-y-4">
             <AnimatedList>
                 <div className="space-y-4">
                     {requests.map((request) => (
-                        <AnimatedListItem key={request.id}>
-                            <FeatureRequestItem request={request} />
+                        <AnimatedListItem key={request.requestId}>
+                            <FeatureRequestItem
+                                request={request}
+                                appId={appId}
+                                requestType={(searchParams.type === 'feature' || searchParams.type === 'bug') ? searchParams.type : 'feature'}
+                            />
                         </AnimatedListItem>
-
                     ))}
                 </div>
             </AnimatedList>

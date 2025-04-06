@@ -33,8 +33,8 @@ export async function generateHourlyData(hours: number, metric: string) {
     }))
 }
 
-export async function fetchAnalytics(appId: string) {
-    console.log("fetchAnalytics", appId)
+export async function fetchAnalytics() {
+    // console.log("fetchAnalytics", appId)
     const data = {
         userAcquisition: await generateDailyData(1000, 'favorites'),
         popularity: await generateHourlyData(24, 'likes'),

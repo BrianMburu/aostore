@@ -5,9 +5,10 @@ import { AuthProvider } from "@/context/AuthContext";
 import Header from "./ui/Header/Header";
 import Footer from "./ui/Footer/Footer";
 import AppToaster from "./ui/Toaster";
-import { SessionRefreshOverlay } from './ui/SessionRefreshOverlay';
+// import { SessionRefreshOverlay } from './ui/SessionRefreshOverlay';
 
 import "./globals.css";
+import { RankProvider } from "@/context/RankContext";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -37,11 +38,13 @@ export default function RootLayout({
             >
                 <ThemeProvider>
                     <AuthProvider>
-                        <Header />
-                        <div className="flex-1">{children}</div>
-                        <Footer />
-                        <AppToaster />
-                        <SessionRefreshOverlay />
+                        <RankProvider>
+                            <Header />
+                            <div className="flex-1">{children}</div>
+                            <Footer />
+                            <AppToaster />
+                            {/* <SessionRefreshOverlay /> */}
+                        </RankProvider>
                     </AuthProvider>
                 </ThemeProvider>
             </body>

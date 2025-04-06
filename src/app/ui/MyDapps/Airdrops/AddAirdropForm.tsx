@@ -27,7 +27,7 @@ export const AddAirDropForm = () => {
     const { user } = useAuth()
 
     const [isOpen, setIsOpen] = useState(false);
-    const initialState: AirDropState = { message: null, errors: {} };
+    const initialState: AirDropState = { message: null, errors: {}, airdrop: null };
 
     const clearFilters = (filterNames: string[]) => {
         filterNames.map(
@@ -47,7 +47,7 @@ export const AddAirDropForm = () => {
                 // Call createDapp to submit the data to the server
                 const newState = await createAirDrop(user?.walletAddress || '', appId, prevState, _formData);
 
-                if (newState.message === 'success' && newState.airdrop) {
+                if (newState.message === 'success') {
                     // Close modal and show success message
                     setIsOpen(false);
 
@@ -63,7 +63,6 @@ export const AddAirDropForm = () => {
                 toast.error("Failed to submit Airdrop. Please try again.");
                 return prevState
             }
-
 
         }, initialState)
 
@@ -97,18 +96,22 @@ export const AddAirDropForm = () => {
                             ))}
                     </div>
 
-                    {/* Airdrop TokenId */}
+                    {/* Airdrop airdropsReceivers */}
                     <div>
-                        <label htmlFor="tokenId" className="text-gray-900 dark:text-white">
-                            Token ID
+                        <label htmlFor="airdropsReceivers" className="text-gray-900 dark:text-white">
+                            Which users to receive your airdrop
                         </label>
-                        <input
-                            id="tokenId"
-                            name="tokenId"
+                        <select
+                            name="airdropsReceivers"
+                            defaultValue="FavoriteTable"
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
-                        />
-                        {state?.errors?.tokenId &&
-                            state.errors.tokenId.map((error: string) => (
+                        >
+                            <option value="FavoriteTable">Users who have favorite your app</option>
+                            <option value="ReviewsTable">Users who have reviewed your Dapp </option>
+                        </select>
+
+                        {state?.errors?.airdropsReceivers &&
+                            state.errors.airdropsReceivers.map((error: string) => (
                                 <p className="mt-2 text-sm text-red-500" key={error}>
                                     {error}
                                 </p>
@@ -135,6 +138,26 @@ export const AddAirDropForm = () => {
                             ))}
                     </div>
 
+                    {/* Airdrop minAosPoints */}
+                    <div>
+                        <label htmlFor="minAosPoints" className="text-gray-900 dark:text-white">
+                            AOS points threshold to award users
+                        </label>
+                        <input
+                            id="minAosPoints"
+                            name="minAosPoints"
+                            type="number"
+                            step={0.01}
+                            className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
+                        />
+                        {state?.errors?.minAosPoints &&
+                            state.errors.minAosPoints.map((error: string) => (
+                                <p className="mt-2 text-sm text-red-500" key={error}>
+                                    {error}
+                                </p>
+                            ))}
+                    </div>
+
                     {/* Description */}
                     <div>
                         <label htmlFor="description" className="text-gray-900 dark:text-white">
@@ -154,15 +177,15 @@ export const AddAirDropForm = () => {
                             ))}
                     </div>
 
-                    {/* Expiry Time with Timepicker and Timezone Picker */}
+                    {/* Start Time with Timepicker and Timezone Picker */}
                     <div>
-                        <label htmlFor="expiryTime" className="text-gray-900 dark:text-white">
-                            Expiry Time
+                        <label htmlFor="startTime" className="text-gray-900 dark:text-white">
+                            Start Time
                         </label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <input
-                                id="expiryTime"
-                                name="expiryTime"
+                                id="startTime"
+                                name="startTime"
                                 type="datetime-local"
                                 className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                             />
@@ -178,14 +201,29 @@ export const AddAirDropForm = () => {
                                 ))}
                             </select>
                         </div>
-                        {state?.errors?.expiryTime &&
-                            state.errors.expiryTime.map((error: string) => (
+                        {state?.errors?.startTime &&
+                            state.errors.startTime.map((error: string) => (
                                 <p className="mt-2 text-sm text-red-500" key={error}>
                                     {error}
                                 </p>
                             ))}
-                        {state?.errors?.timezone &&
-                            state.errors.timezone.map((error: string) => (
+                    </div>
+
+                    {/* Expiry Time with Timepicker and Timezone Picker */}
+                    <div>
+                        <label htmlFor="endTime" className="text-gray-900 dark:text-white">
+                            Expiry Time
+                        </label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input
+                                id="endTime"
+                                name="endTime"
+                                type="datetime-local"
+                                className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
+                            />
+                        </div>
+                        {state?.errors?.endTime &&
+                            state.errors.endTime.map((error: string) => (
                                 <p className="mt-2 text-sm text-red-500" key={error}>
                                     {error}
                                 </p>

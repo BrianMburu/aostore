@@ -1,24 +1,23 @@
 'use client'
 
-import { useState } from 'react';
-import { AppData } from "@/types/dapp";
+import { useContext, useState } from 'react';
 import { DAppsListLimit } from "./DappListLimit";
 import { Suspense } from "react";
 import DappSupport from "./Support/DappSupport";
 import DappCardsSkeleton from "./Skeletons/DappCardsSkeleton";
 import { AirdropsListLimit } from "../AirDrops/AirdropListLimit";
 import { AirdropsSkeletonVertical } from "../AirDrops/skeletons/AirdropsSkeleton";
+import { AppDataContext, AppLoadingContext } from '@/app/dapps/[appId]/layout';
+import { ContentSkeleton } from './Skeletons/ContentSkeleton';
 
-const developerInfo = {
-    name: "AO Dev Team",
-    contact: "dev@aosocial.com",
-    website: "https://ao.dev",
-    forum: "https://forum.ao.dev"
-};
-
-
-export function DappInfo({ appData }: { appData: AppData }) {
+export function DappInfo() {
+    const appData = useContext(AppDataContext);
+    const fetching = useContext(AppLoadingContext);
     const [showFullDescription, setShowFullDescription] = useState(false);
+
+    if (!appData || fetching) {
+        return <ContentSkeleton />;
+    }
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -48,10 +47,11 @@ export function DappInfo({ appData }: { appData: AppData }) {
                         </p>
                     </div>
                 </div>
+
                 {/* // Add new sections in the Details tab */}
                 <div className="mt-12 space-y-12">
                     {/* Support Section */}
-                    <DappSupport developerInfo={developerInfo} />
+                    <DappSupport appData={appData} />
 
                     {/* Similar DApps Section */}
                     <section>
@@ -76,7 +76,7 @@ export function DappInfo({ appData }: { appData: AppData }) {
             <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Events & Offers</h2>
                 <Suspense fallback={<AirdropsSkeletonVertical n={4} />}>
-                    <AirdropsListLimit params={{ appId: appData.appId }} />
+                    <AirdropsListLimit appId={appData.appId} params={{ appId: appData.appId }} />
                 </Suspense>
             </div>
         </div>

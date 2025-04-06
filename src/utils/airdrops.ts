@@ -25,3 +25,29 @@ export function getTimeZones(): string[] {
         "Africa/Nairobi"
     ];
 }
+
+
+
+/**
+ * Validates whether a given URL string is in a proper format.
+ *
+ * @param url - The URL string to validate. Can be undefined.
+ * @returns A boolean indicating whether the URL is valid (`true`) or not (`false`).
+ *
+ * The function checks if the URL matches a specific pattern that includes:
+ * - An optional protocol (`http` or `https`).
+ * - A valid domain name with at least one dot and a valid top-level domain (TLD).
+ * - An optional port number.
+ * - An optional path.
+ *
+ * Example usage:
+ * ```typescript
+ * checkValidUrl("https://example.com"); // true
+ * checkValidUrl("invalid-url"); // false
+ * ```
+ */
+export function checkValidUrl(url: string | undefined): boolean {
+    if (!url) return false;
+    const pattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/[^\s]*)?$/;
+    return pattern.test(url);
+}

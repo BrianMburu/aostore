@@ -1,46 +1,73 @@
 'use client'
 
-import { AppAirdropData } from "@/types/airDrop";
+import { Airdrop, statusType } from "@/types/airDrop";
 import { useEffect, useState, useTransition } from "react";
 import { AidropsFilterParams, AirdropService } from "@/services/ao/airdropService";
 import { AirdropsSkeletonVertical } from "./skeletons/AirdropsSkeleton";
 import { motion } from "framer-motion";
-import GiftIcon from "@heroicons/react/24/outline/GiftIcon";
+import { GiftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import ChevronRightIcon from "@heroicons/react/24/outline/ChevronRightIcon";
+import { EmptyState } from "../EmptyState";
+import { useAuth } from "@/context/AuthContext";
 
-export function AirdropsListLimit({ params }: { params: AidropsFilterParams }) {
-    const [airdrops, setAirdrops] = useState<AppAirdropData[]>([]);
+export function AirdropsListLimit({ params, appId }: { appId: string, params: AidropsFilterParams }) {
+    const [airdrops, setAirdrops] = useState<Airdrop[]>([]);
 
     const [fetching, StartTransition] = useTransition();
+    const { isConnected, isLoading } = useAuth();
 
     useEffect(() => {
         StartTransition(
             async () => {
-                const { data: airdrops, } = await AirdropService.fetchAirdropsLimit(params, 4)
-                setAirdrops(airdrops)
+                try {
+                    if (!isLoading && isConnected) {
+                        const { data, } = await AirdropService.fetchAirdropsLimit(appId, params, 4)
+
+                        if (data) {
+                            setAirdrops(data);
+                        }
+                    } else {
+                        setAirdrops([]);
+                    }
+                } catch (error) {
+                    setAirdrops([]);
+                    console.error(error)
+                }
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [params.appId])
-    return (
-        <>
-            {fetching ? <AirdropsSkeletonVertical n={4} /> :
-                <div className="grid grid-cols-1 gap-6 mb-8">
-                    {airdrops.map(airdrop => (
-                        <AirdropCardCustom
-                            key={airdrop.airdropId}
-                            airdrop={airdrop}
-                        />
-                    ))}
-                </div>
-            }
-        </>
+    }, [isConnected, params.appId]);
 
+    if (fetching) {
+        return <AirdropsSkeletonVertical n={8} />
+    }
+
+    if (!fetching && airdrops.length == 0) {
+        return (
+            <EmptyState
+                title="No Airdrops Found"
+                description="No new Airdrops have been launched by this Project."
+                icon={GiftIcon}
+                interactive
+                className="my-8"
+            />
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-1 gap-6 mb-8">
+            {airdrops.map(airdrop => (
+                <AirdropCardCustom
+                    key={airdrop.airdropId}
+                    airdrop={airdrop}
+                />
+            ))}
+        </div>
     )
 }
 
-export function AirdropCardCustom({ airdrop }: { airdrop: AppAirdropData }) {
+export function AirdropCardCustom({ airdrop }: { airdrop: Airdrop }) {
     const timeFormatter = new Intl.DateTimeFormat('en-US', {
         month: 'long',
         day: 'numeric',
@@ -48,12 +75,13 @@ export function AirdropCardCustom({ airdrop }: { airdrop: AppAirdropData }) {
         hour: '2-digit',
         minute: '2-digit'
     });
-    const statusColors = {
-        active: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
-        claimed: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+
+    const statusColors: Record<statusType, string> = {
+        ongoing: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
         pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
-        expired: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+        completed: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
     };
+
     return (
         <motion.div
             key={airdrop.airdropId}
@@ -73,13 +101,13 @@ export function AirdropCardCustom({ airdrop }: { airdrop: AppAirdropData }) {
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-300">Published</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {timeFormatter.format(airdrop.publishTime)}
+                        {timeFormatter.format(airdrop.startTime)}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-300">Expires</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {timeFormatter.format(airdrop.expiryTime)}
+                        {timeFormatter.format(airdrop.endTime)}
                     </span>
                 </div>
             </div>

@@ -1,11 +1,11 @@
 // components/my-dapps/DAppCard.tsx
 'use client';
-import { AppData } from '@/types/dapp';
+import { DappList } from '@/types/dapp';
 import Image from 'next/image';
 import clsx from 'clsx';
 import Link from 'next/link';
 
-export const DAppCard = ({ dapp, isOptimistic }: { dapp: AppData, isOptimistic: boolean }) => {
+export const DAppCard = ({ dapp, isOptimistic }: { dapp: DappList, isOptimistic: boolean }) => {
     const timeFormatter = new Intl.DateTimeFormat('en-US', {
         month: 'short',
         day: 'numeric',

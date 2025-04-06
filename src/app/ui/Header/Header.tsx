@@ -13,6 +13,7 @@ import Image from "next/image";
 import { AnimatedButton } from "../animations/AnimatedButton";
 import Loader from "../Loader";
 import { ProfileIconSkeleton } from "./skeletons/ProfileIconSkeleton";
+// import { NotificationIconSkeleton } from "./NotificationIcon";
 
 // import  {Bars3Icon} from '@heroicons/react/24/outline';
 
@@ -33,7 +34,7 @@ const Header: React.FC = () => {
     const navigation: NavLink[] = [
         // { href: '/games', label: 'Games' },
         { href: "/dapps", label: "Dapps" },
-        { href: "/airdrops", label: "Airdrops" },
+        // { href: "/airdrops", label: "Airdrops" },
         { href: "/about", label: "About" },
         // { href: '/decentralized', label: 'Decentralized' },
         // { href: '/dao', label: 'DAO Verified' },
@@ -110,6 +111,7 @@ const Header: React.FC = () => {
 
                     {/* Right Section - Wallet and Connect */}
                     <div className="flex items-center space-x-4">
+                        {/* <NotificationIconSkeleton /> */}
                         {
                             verifyingSession ?
                                 <ProfileIconSkeleton />

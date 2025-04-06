@@ -1,6 +1,6 @@
 'use client'
 
-import { useOptimistic, useTransition } from "react";
+import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { DetailedHelpfulButton } from "../DetailedHelpfulButton";
 import { TipForm } from "../../Dapps/TipButton";
@@ -8,54 +8,73 @@ import { SupportService } from "@/services/ao/supportServices";
 import { BugReport, FeatureRequest } from "@/types/support";
 import { DappFeatureRequestEditForm } from "../../Dapps/FeatureRequests/DappFREditForm";
 import { useAuth } from "@/context/AuthContext";
+import { Voters } from "@/types/voter";
+import { ReplyButton } from "../Reviews/ReviewsList";
+import { FeatureRequestReplyForm } from "./FeatureRequestReplyForm";
+import { FeatureRequestRepliesList } from "./FeatureRequestReplyList";
 
+type RequestType = 'feature' | 'bug';
 
-export function FeatureRequestItem({ request }: { request: (BugReport | FeatureRequest) }) {
+interface FeatureRequestItemProps {
+    request: BugReport | FeatureRequest;
+    appId: string;
+    requestType: RequestType;
+}
+
+export function FeatureRequestItem({ request, appId, requestType }: FeatureRequestItemProps) {
     const { user } = useAuth();
     const [isPending, startTransition] = useTransition();
-    const [optimisticState, setOptimisticState] = useOptimistic(
-        request,
-        (current, action: 'helpful' | 'unhelpful') => ({
-            ...current,
-            helpfulVotes: current.helpfulVotes + (action === 'helpful' ? 1 : 0),
-            unhelpfulVotes: current.unhelpfulVotes + (action === 'unhelpful' ? 1 : 0),
-        })
-    )
+    const [voters, setVoters] = useState<Voters>(request.voters);
+    const [showReplyForm, setShowReplyForm] = useState(false);
+
 
     const handleVote = async (action: 'helpful' | 'unhelpful') => {
-        startTransition(async () => {
-            try {
-                // Optimistically update the count
-                setOptimisticState(action);
+        // Store previous state for potential rollback
+        const previousVoters = { ...voters };
 
-                let response;
-                let data;
-
-                if (action == 'helpful') {
-                    response = await SupportService.markFeatureRequestHelpful(request.id);
-                    data = await response.json();
-                } else {
-                    response = await SupportService.markFeatureRequestUnhelpful(request.id);
-                    data = await response.json();
-                }
-
-                if (data.success) {
-                    toast.success(`Request Marked as ${action == 'helpful' ? 'helpful' : 'unhelpful'}.`);
-                } else {
-
-                    // Revert the optimistic update if the operation failed
-                    setOptimisticState(action === 'helpful' ? 'unhelpful' : 'helpful')
-                    toast.error(`Failed to vote ${action == 'helpful' ? 'helpful' : 'unhelpful'}.`);
-                }
-            } catch (error) {
-                // Revert the optimistic update in case of an error
-                setOptimisticState(action === 'helpful' ? 'unhelpful' : 'helpful')
-                toast.error(`An error occurred while voting ${action == 'helpful' ? 'helpful' : 'unhelpful'}.`);
-                console.error('Voting failed:', error);
-
+        // Optimistically update the count in a shallow way (keeping the existing structure)
+        setVoters({
+            ...voters,
+            foundHelpful: {
+                ...voters.foundHelpful,
+                count: voters.foundHelpful.count + (action === 'helpful' ? 1 : 0)
+            },
+            foundUnhelpful: {
+                ...voters.foundUnhelpful,
+                count: voters.foundUnhelpful.count + (action === 'unhelpful' ? 1 : 0)
             }
         });
-    }
+
+        startTransition(async () => {
+            try {
+                let data;
+                if (requestType === 'feature') {
+                    data = action === 'helpful'
+                        ? await SupportService.markFeatureRequestHelpful(appId, request.requestId)
+                        : await SupportService.markFeatureRequestUnhelpful(appId, request.requestId);
+                } else if (requestType === 'bug') {
+                    data = action === 'helpful'
+                        ? await SupportService.markBugReportHelpful(appId, request.requestId)
+                        : await SupportService.markBugReportUnhelpful(appId, request.requestId);
+                } else {
+                    throw new Error("Invalid request type");
+                }
+
+                if (data) {
+                    toast.success(`Request marked as ${action}.`);
+                } else {
+                    // If the API call did not return data, revert the optimistic update
+                    setVoters(previousVoters);
+                    toast.error(`Failed to mark as ${action}.`);
+                }
+            } catch (error) {
+                // On error, revert the optimistic update
+                setVoters(previousVoters);
+                toast.error(`An error occurred while marking as ${action}.`);
+                console.error('Voting failed:', error);
+            }
+        });
+    };
 
     return (
         <div className="border rounded-lg p-4 dark:border-gray-700">
@@ -65,23 +84,36 @@ export function FeatureRequestItem({ request }: { request: (BugReport | FeatureR
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <h3 className="font-medium dark:text-white">{request.title}</h3>
-                            {user && user.walletAddress == request.userId && <DappFeatureRequestEditForm request={request} />}
+                            {user?.walletAddress === request.user && (
+                                <DappFeatureRequestEditForm
+                                    request={request}
+                                    appId={appId}
+                                    requestType={requestType}
+                                />
+                            )}
                         </div>
-
                         <p className="text-gray-600 dark:text-gray-300 mt-1">{request.description}</p>
                     </div>
-
-                    <div className="mt-2 text-sm flex items-center gap-4 text-gray-500 dark:text-gray-400">
-                        <TipForm recipientWallet={request.userId} />
-                        <DetailedHelpfulButton
-                            helpfulVotes={optimisticState.helpfulVotes} unhelpfulVotes={optimisticState.unhelpfulVotes}
-                            isPending={isPending} handleVote={handleVote}
-                        />
-                        {new Date(request.timestamp).toLocaleDateString()}
-
+                    <div className="flex flex-col">
+                        <div className="mt-2 text-sm flex items-center gap-4 text-gray-500 dark:text-gray-400">
+                            <TipForm recipientWallet={request.user} appId={appId} tipId={request.requestId} />
+                            <DetailedHelpfulButton
+                                helpfulVotes={voters.foundHelpful.count}
+                                unhelpfulVotes={voters.foundUnhelpful.count}
+                                isPending={isPending}
+                                handleVote={handleVote}
+                            />
+                            {new Date(Number(request.createdTime)).toLocaleDateString()}
+                            <ReplyButton onClick={() => setShowReplyForm(!showReplyForm)} />
+                        </div>
+                        {showReplyForm && <FeatureRequestReplyForm
+                            appId={appId} requestId={request.requestId} requestType={requestType} />}
                     </div>
+                    <FeatureRequestRepliesList appId={appId} requestId={request.requestId}
+                        replies={Object.values(request.replies)} requestType={requestType}
+                    />
                 </div>
             </div>
         </div>
-    )
+    );
 }

@@ -5,7 +5,7 @@ import { Suspense } from "react";
 
 interface Props {
     params: Promise<{ appId: string }>;
-    searchParams: Promise<{ type?: string; search?: string }>;
+    searchParams: Promise<{ type?: string; search?: string, page?: string }>;
 }
 // app/mydapps/[appId]/feature-requests/page.tsx
 export default async function FeatureRequestsPage(props: Props) {

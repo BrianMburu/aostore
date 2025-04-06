@@ -7,18 +7,23 @@ import toast from "react-hot-toast";
 import { AnimatedButton } from "../../animations/AnimatedButton";
 import Loader from "../../Loader";
 import { motion } from "framer-motion";
+import { useRank } from "@/context/RankContext";
+import { useRouter } from "next/navigation";
 
-export function ForumAnswerForm({ postId }: { postId: string }) {
+export function ForumAnswerForm({ postId, appId }: { postId: string, appId: string }) {
     const { user } = useAuth();
+    const { rank } = useRank();
+    const router = useRouter();
 
     const initialState: ForumReplyState = { message: null, errors: {}, reply: null }
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ForumReplyState, _formData: FormData) => {
             try {
-                const newState = await sendAnswer(postId, user?.walletAddress || null, prevState, _formData);
+                const newState = await sendAnswer(appId, postId, user, rank, prevState, _formData);
 
                 if (newState.message === 'success' && newState.reply) {
+                    router.refresh()
                     toast.success("Reply posted successfully!");
                 }
 
@@ -40,13 +45,13 @@ export function ForumAnswerForm({ postId }: { postId: string }) {
             <form action={formAction} className="space-y-2 max-w-lg">
                 <div>
                     <textarea
-                        name="content"
+                        name="description"
                         placeholder="Write a reply..."
                         className="w-full p-2 rounded-lg dark:bg-gray-700 dark:text-gray-300"
                         rows={2}
                     />
-                    {state?.errors?.content &&
-                        state.errors.content.map((error: string) => (
+                    {state?.errors?.description &&
+                        state.errors.description.map((error: string) => (
                             <p className="mt-2 text-sm text-red-500" key={error}>
                                 {error}
                             </p>

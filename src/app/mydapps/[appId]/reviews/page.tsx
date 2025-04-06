@@ -1,6 +1,5 @@
 import { ReviewsList } from '@/app/ui/MyDapps/Reviews/ReviewsList'
 import ReviewsFilters from '@/app/ui/MyDapps/Reviews/ReviewFilters';
-import { ReviewService } from '@/services/ao/reviewService';
 
 interface Props {
     params: Promise<{ appId: string }>;
@@ -11,7 +10,6 @@ export default async function ReviewsPage(props: Props) {
     const currParams = await props.params;
     const appId = currParams.appId as string;
     const searchParams = await props.searchParams;
-    const { data, total } = await ReviewService.getReviews(appId, searchParams, true);
 
     return (
         <div className="space-y-8">
@@ -20,7 +18,7 @@ export default async function ReviewsPage(props: Props) {
                 <ReviewsFilters />
             </div>
 
-            <ReviewsList reviews={data} totalItems={total} />
+            <ReviewsList appId={appId} searchParams={searchParams} />
         </div>
     )
 }

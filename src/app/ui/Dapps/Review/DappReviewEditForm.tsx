@@ -10,26 +10,53 @@ import { StarIcon } from "lucide-react"
 import ModalDialog from "../../MyDapps/ModalDialog"
 import { EditButton } from "../../EditButton"
 import { AnimatedButton } from "../../animations/AnimatedButton"
+import { useRank } from "@/context/RankContext"
+import { useRouter } from "next/navigation"
 
+const initialState: ReviewState = { message: null, errors: {}, review: null };
 
-export function DappReviewEditForm({ review }: { review: Review }) {
+export function DappReviewEditForm({ appId, review }: { appId: string, review: Review }) {
     const [isOpen, setIsOpen] = useState(false)
-    const initialState: ReviewState = { message: null, errors: {}, review: null };
+
+    const { rank } = useRank();
+    const router = useRouter();
+
+    // Local state for the request details to support optimistic updates
+    const [localReview, setLocalReview] = useState<Review>(review);
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: ReviewState, _formData: FormData) => {
-            const newState = await updateReview(review.reviewId, prevState, _formData)
+            // Capture form values for the optimistic update
+            const newTitle = _formData.get("title") as string;
+            const newDescription = _formData.get("description") as string;
+            const previousRequest = { ...localReview };
 
-            if (newState.message === 'success' && newState.review) {
-                setIsOpen(false);
-                toast.success('Review updated successfully!');
+            // Optimistically update local request state
+            const updatedRequest = { ...localReview, title: newTitle, description: newDescription };
+            setLocalReview(updatedRequest);
+
+            try {
+                const newState = await updateReview(appId, review.reviewId, rank, prevState, _formData);
+
+                // If the server returns an updated request, update localReview accordingly.
+                if (newState.message === 'success') {
+                    toast.success(`Review submitted successfully!`);
+
+                    // setLocalReview(newState.review);
+                    router.refresh();
+                }
+
+                return newState;
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalReview(previousRequest);
+                toast.error(`Review submission failed.`);
+                console.error("Edit request failed:", error);
+                return initialState;
             }
-
-            return newState
-        }
-
-        , initialState);
-    const [selectedRating, setSelectedRating] = useState(review.rating);
+        },
+        initialState
+    );
 
     return (
         <>
@@ -50,8 +77,8 @@ export function DappReviewEditForm({ review }: { review: Review }) {
                                 <button
                                     type="button"
                                     key={rating}
-                                    onClick={() => setSelectedRating(rating)}
-                                    className={`h-8 w-8 ${rating <= selectedRating ? 'text-yellow-400' : 'text-gray-300'
+                                    onClick={() => setLocalReview(prev => ({ ...prev, rating }))}
+                                    className={`h-8 w-8 ${rating <= localReview.rating ? 'text-yellow-400' : 'text-gray-300'
                                         }`}
                                 >
                                     <StarIcon />
@@ -60,7 +87,7 @@ export function DappReviewEditForm({ review }: { review: Review }) {
                             <input
                                 type="hidden"
                                 name="rating"
-                                value={selectedRating}
+                                value={localReview.rating}
                                 aria-describedby='dapp-rating-error'
                             />
                             <span id='dapp-rating-error' aria-live="polite" aria-atomic="true">
@@ -73,18 +100,17 @@ export function DappReviewEditForm({ review }: { review: Review }) {
                             </span>
                         </div>
 
-
                         <textarea
-                            name="comment"
+                            name="description"
                             className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
                             placeholder="Share your experience..."
                             rows={4}
-                            defaultValue={review.comment}
+                            defaultValue={localReview.description}
                             aria-describedby='dapp-comment-error'
                         />
                         <span id='dapp-comment-error' aria-live="polite" aria-atomic="true">
-                            {state?.errors?.comment &&
-                                state.errors.comment.map((error: string) => (
+                            {state?.errors?.description &&
+                                state.errors.description.map((error: string) => (
                                     <p className="mt-2 text-sm text-red-500" key={error}>
                                         {error}
                                     </p>

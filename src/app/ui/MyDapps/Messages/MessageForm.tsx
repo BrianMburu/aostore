@@ -1,9 +1,10 @@
 // app/mydapps/[appId]/messages/page.tsx
 'use client'
+
 import { MessageState, sendMessage } from '@/lib/messageActions'
 import { messageTypes } from '@/types/message'
-import { useParams } from "next/navigation";
-import { useActionState } from 'react'
+import { useParams, useRouter } from "next/navigation";
+import { useActionState, useState } from 'react'
 import Loader from '../../Loader'
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -14,22 +15,45 @@ export default function MessagesForm() {
     const appId = params.appId as string;
 
     const initialState: MessageState = { message: null, errors: {}, messageData: null }
+    const router = useRouter();
+
+    const initialFormData = { message: "", messageType: "", title: "", link: "" }
+    // Local state for the request details to support optimistic updates
+    const [localRequest, setLocalRequest] = useState<{ message: string, messageType: string, title: string, link?: string }>(
+        initialFormData);
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: MessageState, _formData: FormData) => {
+            const formValues = Object.fromEntries(_formData.entries());
+
+            // Capture form values for the optimistic update
+            const previousRequest = { ...localRequest };
+
+            // Optimistically update local request state
+            const updatedRequest = { ...localRequest, ...formValues };
+            setLocalRequest(updatedRequest);
+
             try {
                 const newState = await sendMessage(appId, prevState, _formData);
 
-                if (newState.message === 'success' && newState.messageData) {
+                // If the server returns an updated request, update localRequest accordingly.
+                if (newState.message === 'success') {
+                    router.refresh();
                     toast.success("Message sent successfully!");
+                    setLocalRequest(initialFormData);
                 }
-                return newState
-            } catch {
-                toast.error("Failed to send Message. Please try again.");
-                return initialState
-            }
 
-        }, initialState)
+                return newState;
+            } catch (error) {
+                // Revert optimistic update on error
+                setLocalRequest(previousRequest);
+                toast.error("Failed to send Message. Please try again.");
+                console.error("Create reply failed:", error);
+                return initialState;
+            }
+        },
+        initialState
+    );
 
     return (
         <motion.div
@@ -42,7 +66,8 @@ export default function MessagesForm() {
             <form action={formAction} className="space-y-4">
                 <div>
                     <select
-                        name="type"
+                        name="messageType"
+                        defaultValue={localRequest.messageType}
                         className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
                         <option value="">Message Type</option>
@@ -52,8 +77,8 @@ export default function MessagesForm() {
                             </option>
                         ))}
                     </select>
-                    {state?.errors?.type &&
-                        state.errors.type.map((error: string) => (
+                    {state?.errors?.messageType &&
+                        state.errors.messageType.map((error: string) => (
                             <p className="mt-2 text-sm text-red-500" key={error}>
                                 {error}
                             </p>
@@ -64,6 +89,7 @@ export default function MessagesForm() {
                     <input
                         name='title'
                         placeholder="Message title"
+                        defaultValue={localRequest.title}
                         className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                     {state?.errors?.title &&
@@ -76,19 +102,33 @@ export default function MessagesForm() {
 
                 <div>
                     <textarea
-                        name='content'
+                        name='message'
                         rows={4}
+                        defaultValue={localRequest.message}
                         className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         placeholder="Message content..."
                     />
-                    {state?.errors?.content &&
-                        state.errors.content.map((error: string) => (
+                    {state?.errors?.message &&
+                        state.errors.message.map((error: string) => (
                             <p className="mt-2 text-sm text-red-500" key={error}>
                                 {error}
                             </p>
                         ))}
                 </div>
-
+                <div>
+                    <input
+                        name='link'
+                        placeholder="Enter reference link"
+                        defaultValue={localRequest.link}
+                        className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    />
+                    {state?.errors?.link &&
+                        state.errors.link.map((error: string) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                                {error}
+                            </p>
+                        ))}
+                </div>
 
                 <button
                     type="submit"
