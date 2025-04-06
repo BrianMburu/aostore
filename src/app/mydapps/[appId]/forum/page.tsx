@@ -1,17 +1,15 @@
 
 import { ForumFilters } from "@/app/ui/MyDapps/Forum/ForumFilters";
 import { QuestionsList } from "@/app/ui/MyDapps/Forum/QuestionsList"
-import { ForumService } from "@/services/ao/forumService";
-
+import { ForumFilterParams } from "@/services/ao/forumService";
 interface Props {
     params: Promise<{ appId: string }>;
-    searchParams: Promise<{ topic?: string; search?: string }>;
+    searchParams: Promise<ForumFilterParams>;
 }
 export default async function ForumPage(props: Props) {
     const currParams = await props.params;
     const appId = currParams.appId
     const searchParams = await props.searchParams
-    const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
 
     return (
         <div className="space-y-8">
@@ -20,7 +18,7 @@ export default async function ForumPage(props: Props) {
                 <ForumFilters />
             </div>
 
-            <QuestionsList questions={posts} totalItems={total} />
+            <QuestionsList appId={appId} searchParams={searchParams} />
         </div>
     )
 }

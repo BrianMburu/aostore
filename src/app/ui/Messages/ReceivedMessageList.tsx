@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
 import { aoMessageService, MessageFilterParams } from "@/services/ao/messageService";
@@ -9,22 +8,23 @@ import { Message } from "@/types/message";
 import InfinityScrollControls from "../InfinityScrollControls";
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { MessageCard } from "./MessageCard";
+import MessageListSkeleton from "./skeletons/MessageListSkeleton";
+import { useAuth } from "@/context/AuthContext";
+import { EmptyState } from "../EmptyState";
+import { MessageCircle } from "lucide-react";
 
-export function ReceivedMessageList() {
+export function ReceivedMessageList({ searchParams }: { searchParams: MessageFilterParams }) {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [totalItems, setTotalItems] = useState(1);
-
-    const searchParams = useSearchParams();
+    const [totalItems, setTotalItems] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const { isConnected, isLoading: isAuthLoading } = useAuth()
 
     useEffect(() => {
         const loadMessages = async () => {
-            const filterParams: MessageFilterParams = {
-                search: searchParams.get('search') || "",
-                type: searchParams.get('type') || "",
-                page: searchParams.get('page') || "",
-            }
             try {
-                const { messages, total } = await aoMessageService.getReceivedMessages(filterParams, true);
+                setIsLoading(true);
+
+                const { messages, total } = await aoMessageService.getReceivedMessages(searchParams, true);
 
                 if (messages) {
                     setMessages(messages);
@@ -33,23 +33,40 @@ export function ReceivedMessageList() {
             } catch (error) {
                 toast.error('Failed to load messages with error: ' + error);
                 console.error('Failed to load messages:', error);
-
+            } finally {
+                setIsLoading(false);
             }
         };
 
         loadMessages();
-    }, [searchParams]);
+    }, [isConnected, isAuthLoading, searchParams]);
+
+    if (isAuthLoading || isLoading) {
+        return <MessageListSkeleton n={4} />
+    }
+
+    if (!isLoading && messages.length === 0) {
+        return (
+            <EmptyState
+                title="No Messages found"
+                icon={MessageCircle}
+                description="We found no messages in your inbox"
+                interactive
+                className="my-8"
+            />
+        )
+    }
 
     return (
         <div>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="bg-white dark:bg-gray-800 shadow rounded-lg"
+                className="space-y-4 shadow rounded-lg"
             >
                 <AnimatePresence>
                     {messages.map((message) => (
-                        <MessageCard key={message.id} message={message} />
+                        <MessageCard key={message.messageId} message={message} />
                     ))}
                 </AnimatePresence>
             </motion.div>

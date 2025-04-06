@@ -3,10 +3,14 @@ import { MessageFilters } from '@/app/ui/Messages/MessageFilter'
 import MessagesForm from '@/app/ui/MyDapps/Messages/MessageForm'
 import { MessagesList } from '@/app/ui/MyDapps/Messages/MessagesList'
 import SentMessageListSkeleton from '@/app/ui/MyDapps/Messages/skeletons/SentMessageListSkeleton'
+import { MessageFilterParams } from '@/services/ao/messageService'
 import { Suspense } from 'react'
-
-export default async function MessagesPage() {
-
+interface Props {
+    params: Promise<{ appId: string }>;
+    searchParams: Promise<MessageFilterParams>;
+}
+export default async function MessagesPage(props: Props) {
+    const searchParams = await props.searchParams;
     return (
         <div className="space-y-8">
             {/* Message Form */}
@@ -20,7 +24,7 @@ export default async function MessagesPage() {
 
             {/* Messages List */}
             <Suspense fallback={<SentMessageListSkeleton n={5} />}>
-                <MessagesList />
+                <MessagesList searchParams={searchParams} />
             </Suspense>
 
 

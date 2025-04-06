@@ -1,24 +1,30 @@
+import { Reply } from "./reply";
+import { Voters } from "./voter";
+
 export interface FeatureRequest {
-    id: string
-    type: 'feature'
-    title: string
-    description: string
-    timestamp: number
-    userId: string
-    helpfulVotes: number;
-    unhelpfulVotes: number;
-    appId: string
+    requestId: string;
+    type: 'feature';
+    title: string;
+    description: string;
+    status: 'open' | 'closed'
+    createdTime: number;
+    user: string;
+    username: string;
+    profileUrl: string;
+    replies: Record<string, Reply>;
+    voters: Voters;
 }
 
 export interface BugReport {
-    id: string
-    type: 'bug'
-    title: string
-    description: string
-    status: 'open' | 'in-progress' | 'resolved'
-    timestamp: number
-    userId: string
-    helpfulVotes: number;
-    unhelpfulVotes: number;
-    appId: string
+    requestId: string;
+    type: 'bug';
+    title: string;
+    description: string;
+    status: 'open' | 'closed'
+    createdTime: number;
+    user: string;
+    username: string;
+    profileUrl: string;
+    replies: Record<string, Reply>;
+    voters: Voters;
 }

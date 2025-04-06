@@ -6,13 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
-        search: '',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
+        hostname: '**',
         port: '',
         pathname: '**',
       }

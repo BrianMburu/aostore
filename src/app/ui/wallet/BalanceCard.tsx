@@ -1,46 +1,82 @@
-// app/wallet/BalanceCard.tsx
+// ui/wallet/BalanceCard.tsx
 'use client'
 
-import { useAuth } from '@/context/AuthContext'
-import NetworkSelector from './NetworkSelector'
+import { TokenService } from "@/services/ao/tokenService";
+import { AppTokenData } from "@/types/dapp"
+import { useEffect, useState, useTransition } from "react"
+import { Skeleton } from "../skeleton";
+import { findPrecision } from "@/utils/ao";
+import { useRank } from "@/context/RankContext";
 
-export default function BalanceCard() {
-  const { user } = useAuth()
-  const balances = {
-    ETH: 4.892,
-    DAPP: 1500,
-    USDC: 5000
-  }
+export default function BalanceCard({ tokens, fetchingTokens, activeToken, setActiveToken }:
+  {
+    tokens: AppTokenData[], fetchingTokens: boolean, activeToken: AppTokenData | undefined,
+    setActiveToken: React.Dispatch<React.SetStateAction<AppTokenData | undefined>>
+  }) {
+  const [tokenBalance, setTokenBalance] = useState<number>(0.00);
+  const [fetching, startTransition] = useTransition();
+  const { rank } = useRank();
+
+  useEffect(() => {
+    startTransition(
+      async () => {
+        try {
+          if (activeToken) {
+            const fetchedTokenBalance = await TokenService.fetchTokenBalance(activeToken.tokenId);
+
+            if (activeToken && fetchedTokenBalance) {
+              const tokenValue = Number(fetchedTokenBalance) / Number(activeToken.tokenDenomination);
+
+              setTokenBalance(Number(tokenValue.toFixed(findPrecision(activeToken.tokenDenomination))) + 1)
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch Token Balance: ", error);
+        }
+
+      })
+  }, [activeToken, rank]);
 
   return (
-    <div className="bg-indigo-50 dark:bg-gray-800 rounded-xl p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div className="mb-4 md:mb-0">
-          <h2 className="text-2xl font-bold dark:text-white">Wallet Balance</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            {user?.walletAddress?.slice(0, 6)}...{user?.walletAddress?.slice(-4)}
-          </p>
-        </div>
-        <NetworkSelector />
-      </div>
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium text-gray-500 dark:text-gray-400">Current Balance</h2>
+        <div className="flex items-center gap-3">
+          {fetching ? <Skeleton className="h-5 w-10 animate-pulse" /> :
+            <span className="text-3xl font-bold dark:text-white">{tokenBalance.toLocaleString("en-US")}</span>
+          }
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-        {Object.entries(balances).map(([token, amount]) => (
-          <div
-            key={token}
-            className="bg-white dark:bg-gray-700 p-4 rounded-lg"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-medium dark:text-white">{token}</span>
-              <span className="text-indigo-600 dark:text-indigo-400">
-                ${(amount * 1.2).toLocaleString()}
-              </span>
-            </div>
-            <div className="text-2xl font-bold mt-2 dark:text-white">
-              {amount.toLocaleString()}
-            </div>
-          </div>
-        ))}
+          {
+            fetchingTokens ? (
+              <Skeleton className="h-8 w-20 animate-pulse rounded-full" />
+            ) : (
+              <select
+                value={activeToken?.tokenTicker}
+                onChange={(e) => {
+                  const selectedToken = tokens.find(token => token?.tokenTicker === e.target.value);
+                  if (selectedToken) {
+                    setActiveToken(selectedToken);
+                  }
+                }}
+                className="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-3 py-1 rounded-full text-sm"
+              >
+                <option value="">Select Token</option>
+                {tokens.length > 0 && tokens.some(token => token.tokenTicker) &&
+                  tokens.map((token) =>
+                    token.tokenTicker && (
+                      <option key={token.tokenId} value={token.tokenTicker}>
+                        {token.tokenTicker}
+                      </option>
+                    )
+                  )
+                }
+              </select>
+            )
+          }
+          {/* <span className="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-3 py-1 rounded-full text-sm">
+            AOS
+          </span> */}
+        </div>
       </div>
     </div>
   )

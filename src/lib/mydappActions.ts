@@ -1,11 +1,14 @@
 import * as z from 'zod';
 import { DAppService } from '@/services/ao/dappService';
-import { AppData, AppTokenData, ProjectType, projectTypes, Protocol } from '@/types/dapp';
+import { AppTokenData, CreateDapp, Dapp, projectTypes } from '@/types/dapp';
+import { User } from '@/types/user';
+import { calculateDenominationAmount, normalizeArweaveLogo } from '@/utils/ao';
+import { TokenService } from '@/services/ao/tokenService';
 
-export type State = {
+export type DappState = {
     message?: string | null;
     errors?: { [key: string]: string[] },
-    dapp?: AppData
+    dapp?: Dapp
 };
 
 // Helper function to create a URL validator with custom error messages
@@ -20,13 +23,13 @@ const Protocols = ["aocomputer", "arweave"] as const;
 
 
 export const dappSchema = z.object({
-    appName: z.string().min(3, 'Name must be at least 3 characters'),
+    appName: z.string().min(2, 'Name must be at least 2 characters'),
     appIconUrl: z.string().url('Invalid URL format for App Icon URL'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
-    websiteUrl: z.string().url('Invalid URL format for Website URL'),
-    twitterUrl: z.string().url('Invalid URL format for Twitter URL'),
-    discordUrl: z.string().url('Invalid URL format for Discord URL'),
-    coverUrl: z.string().url('Invalid URL format for Cover URL'),
+    websiteUrl: z.string().min(1, 'Website Url is required').url('Invalid URL format for Website URL'),
+    twitterUrl: z.string().min(1, 'Twitter Url is required'),//.url('Invalid URL format for Twitter URL'),
+    discordUrl: z.string().min(1, 'Discord Url is required'),//.url('Invalid URL format for Discord URL'),
+    coverUrl: z.string().min(1, 'Cover Url is required').url('Invalid URL format for Cover URL'),
     protocol: z.enum(Protocols, {
         errorMap: () => ({ message: 'Protocol is required' }),
     }),
@@ -34,12 +37,16 @@ export const dappSchema = z.object({
         errorMap: () => ({ message: "Please select a valid project type" })
     }),
     companyName: z.string().min(1, 'Company Name is required'),
-    bannerUrls: z.array(z.string()).nonempty('Banner URLs is required'),
+    bannerUrls: z.array(z.string().url('Invalid URL format for Banner URL')).nonempty('Banner URLs is required'),
 });
 
 export type FormValues = z.infer<typeof dappSchema>;
 
-export async function createDapp(prevState: State, formData: FormData) {
+export async function createDapp(user: User | null, prevState: DappState, formData: FormData) {
+    if (!user) {
+        return { message: 'Invalid Session: User not Found!' }
+    }
+
     const data = {
         appName: formData.get('appName'),
         appIconUrl: formData.get('appIconUrl'),
@@ -63,19 +70,22 @@ export async function createDapp(prevState: State, formData: FormData) {
         };
     }
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const dappData: CreateDapp = {
+            ...validatedFields.data,
+            username: user.username,
+            profileUrl: user.avatar || ""
+        }
 
-        const dapp = await DAppService.createDApp(validatedFields.data);
+        await DAppService.createDApp(dappData);
 
-        return { message: 'success', dapp: dapp };
+        return { message: 'success' };
 
     } catch {
         return { message: 'AO Error: failed to submit DApp.' };
     }
 }
 
-export async function updateDapp(appId: string, prevState: State, formData: FormData) {
+export async function updateDapp(appId: string, user: User, prevState: DappState, formData: FormData) {
     const data = {
         appName: formData.get('appName'),
         appIconUrl: formData.get('appIconUrl'),
@@ -100,47 +110,20 @@ export async function updateDapp(appId: string, prevState: State, formData: Form
         };
     }
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const dappData: CreateDapp = {
+            ...validatedFields.data,
+            username: user.username,
+            profileUrl: user.avatar || "",
+        }
 
-        const dapp = await DAppService.updateDApp(appId, validatedFields.data);
+        const dapp = await DAppService.updateDApp(appId, dappData);
 
         return { message: 'success', dapp: dapp };
 
     } catch {
-        return { message: 'AO Error: failed to Save DApp.' };
+        return { message: 'AO Error: failed to Update DApp.' };
     }
 }
-
-export const createTemporaryDApp = (formData: FormData): AppData => {
-    const tempId = `temp-${Date.now()}`;
-    const data = {
-        appId: tempId,
-        appName: formData.get('appName') as string,
-        appIconUrl: formData.get('appIconUrl') as string,
-        description: formData.get('description') as string,
-        websiteUrl: formData.get('websiteUrl') as string,
-        twitterUrl: formData.get('twitterUrl') as string,
-        discordUrl: formData.get('discordUrl') as string,
-        coverUrl: formData.get('coverUrl') as string,
-        protocol: formData.get('protocol') as Protocol,
-        projectType: formData.get('projectType') as ProjectType,
-        companyName: formData.get('companyName') as string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bannerUrls: formData.get('bannerUrls')?.toString().split(',').map(url => url.trim()) as Record<string, any>,
-    };
-
-    return {
-        ...data,
-        company: data.companyName,
-        ratings: 0,
-        createdTime: Date.now(),
-        downvotes: {},
-        upvotes: {},
-        reviews: [],
-        totalRatings: 0
-    };
-};
 
 export type DappTokenState = {
     message?: string | null;
@@ -149,20 +132,20 @@ export type DappTokenState = {
 };
 
 export const dappTokenSchema = z.object({
-    tokenId: z.string().max(50, 'Id must have a maximum of 50 characters'),
+    tokenId: z.string().min(1, "Token ID is required").max(50, 'Id must have a maximum of 50 characters'),
     tokenName: z.string().min(3, 'Name must be at least 3 characters'),
-    tokenSymbol: z.string().min(3, 'Symbol must be at least 3 characters'),
+    tokenTicker: z.string().min(3, 'Ticker must be at least 3 characters'),
     tokenDenomination: z.number().min(1, 'Denomination must be at least 1'),
-    tokenLogoUrl: z.string().url('Invalid URL format for Token Logo URL'),
+    logo: z.string().min(1, 'Logo ID is required').url('Invalid URL, only enter the logo ID.'),
 })
 
 export async function addDappToken(appId: string, prevState: DappTokenState, formData: FormData) {
     const data = {
         tokenId: formData.get('tokenId') as string,
         tokenName: formData.get('tokenName') as string,
-        tokenSymbol: formData.get('tokenSymbol') as string,
-        tokenDenomination: Number(formData.get('tokenDenomination')) as number,
-        tokenLogoUrl: formData.get('tokenLogoUrl') as string,
+        tokenTicker: formData.get('tokenTicker') as string,
+        tokenDenomination: calculateDenominationAmount(Number(formData.get('tokenDenomination'))),
+        logo: normalizeArweaveLogo(formData.get('logo') as string)
     }
 
     const validatedFields = dappTokenSchema.safeParse(data);
@@ -174,15 +157,12 @@ export async function addDappToken(appId: string, prevState: DappTokenState, for
         };
     }
     try {
-        // Simulate a network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const dappToken = await TokenService.addDappToken(appId, validatedFields.data);
 
-        // const dapp = await DAppService.addDappToken(appId, validatedFields.data);
+        return { message: 'success', dappToken: dappToken };
 
-        return { message: 'success', dappToken: validatedFields.data };
-
-    } catch {
-        return { message: 'AO Error: failed to add DApp Token.' };
+    } catch (error) {
+        return { message: `AO Error: failed to add DApp Token. ${error}` };
     }
 
 }
@@ -194,7 +174,7 @@ export type DappChangeOwnerState = {
 };
 
 export const dappChangeOwnerSchema = z.object({
-    newOwnerId: z.string().max(50, 'Id must have a maximum of 50 characters')
+    newOwnerId: z.string().min(1, "New Owner ID is required").max(50, 'Id must have a maximum of 50 characters')
 })
 
 export async function changeDappOwner(appId: string, prevState: DappChangeOwnerState, formData: FormData) {
@@ -210,16 +190,86 @@ export async function changeDappOwner(appId: string, prevState: DappChangeOwnerS
             message: 'Form has errors. Failed to change DApp Owner.',
         };
     }
+
     try {
         // Simulate a network delay
         await new Promise((resolve) => setTimeout(resolve, 1000));
+        const newOwnerId = validatedFields.data.newOwnerId
 
-        // const dapp = await DAppService.addDappToken(appId, validatedFields.data);
+        await DAppService.changeDappOwner(appId, newOwnerId);
 
         return { message: 'success', newOwnerId: validatedFields.data.newOwnerId };
 
-    } catch {
-        return { message: 'AO Error: failed to add DApp Token.' };
+    } catch (error) {
+        return { message: `AO Error: failed to add DApp Token. ${error}` };
+    }
+
+}
+
+export type DappModeratorState = {
+    message?: string | null;
+    errors?: { [key: string]: string[] },
+    mods?: string[]
+};
+
+export const dappAddModsSchema = z.object({
+    mods: z.array(z.string().min(8, "Minimum 8 characters")).nonempty('Atleast one mod is required')
+});
+
+export async function addModerators(appId: string, accessPage: string, prevState: DappModeratorState, formData: FormData) {
+    const data = {
+        mods: formData.get('mods')?.toString().split(',').map(url => url.trim()),
+    }
+
+    const validatedFields = dappAddModsSchema.safeParse(data);
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has errors. Failed to change add moderators.',
+        };
+    }
+
+    try {
+        const mods = validatedFields.data.mods
+
+        const newMods = await DAppService.addMods(appId, mods, accessPage);
+
+        return { message: 'success', mods: newMods };
+
+    } catch (error) {
+        return { message: `AO Error: failed to add Moderator. ${error}` };
+    }
+
+}
+
+export const dappDeleteModsSchema = z.object({
+    modId: z.string().min(8, "Minimum 8 characters")
+});
+
+export async function deleteModerator(appId: string, accessPage: string, prevState: DappModeratorState, formData: FormData) {
+    const data = {
+        modId: formData.get('modId'),
+    }
+
+    const validatedFields = dappDeleteModsSchema.safeParse(data);
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Form has errors. Failed to Delete Moderator.',
+        };
+    }
+
+    try {
+        const modId = validatedFields.data.modId
+
+        await DAppService.removeMod(appId, modId, accessPage);
+
+        return { message: 'success' };
+
+    } catch (error) {
+        return { message: `AO Error: failed to add Delete moderator. ${error}` };
     }
 
 }

@@ -12,7 +12,8 @@ export const tabs = [
     { name: 'Forum', href: '/forum' },
     { name: 'Feature Requests', href: '/feature-requests' },
     { name: 'Analytics', href: '/analytics' },
-    { name: 'Airdrops', href: '/airdrops' }
+    { name: 'Airdrops', href: '/airdrops' },
+    { name: 'Tasks', href: '/tasks' },
 ];
 
 export function DesktopTabs() {

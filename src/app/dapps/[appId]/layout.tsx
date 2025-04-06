@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useEffect, useState, useTransition } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { MobileTabs, DesktopTabs } from '@/app/ui/Dapps/Tabs';
 import Link from 'next/link';
 import ChevronLeftIcon from '@heroicons/react/24/outline/ChevronLeftIcon';
@@ -8,12 +8,13 @@ import DappHeader from '@/app/ui/Dapps/DappHeader';
 import DappBanner from '@/app/ui/Dapps/DappBanner';
 import { notFound, useParams } from 'next/navigation';
 import { DAppService } from '@/services/ao/dappService';
-import { AppData } from '@/types/dapp';
+import { Dapp } from '@/types/dapp';
 // import { AnimatePresence, motion } from 'framer-motion';
 import { HeaderSkeleton } from '@/app/ui/Dapps/Skeletons/HeaderSkeleton';
 import { BannerSkeleton } from '@/app/ui/Dapps/Skeletons/BannerSkeleton';
+import { useAuth } from '@/context/AuthContext';
 
-export const AppDataContext = createContext<AppData | null>(null);
+export const AppDataContext = createContext<Dapp | null>(null);
 export const AppLoadingContext = createContext<boolean>(false);
 
 export default function MyDAppsLayout({
@@ -21,19 +22,27 @@ export default function MyDAppsLayout({
 }: {
     children: React.ReactNode
 }) {
-    const [appData, setAppData] = useState<AppData | null>(null);
-    const [fetching, startTransition] = useTransition();
+    const [appData, setAppData] = useState<Dapp | null>(null);
+    const [fetching, setIsFetching] = useState<boolean>(true);
     const params = useParams();
-    // const pathname = usePathname();
     const appId = params.appId as string;
+    const { isConnected } = useAuth()
 
     useEffect(() => {
-        startTransition(async () => {
-            const dapp = await DAppService.getDApp(appId);
-            if (!dapp) notFound()
-            setAppData(dapp);
-        });
-    }, [appId]);
+        const fetchData = async () => {
+            try {
+                const dapp = await DAppService.getDApp(appId);
+                if (!dapp) notFound();
+                setAppData(dapp);
+
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setIsFetching(false)
+            }
+        };
+        fetchData()
+    }, [appId, isConnected]);
 
     return (
         <AppLoadingContext.Provider value={fetching}>
@@ -52,7 +61,7 @@ export default function MyDAppsLayout({
                         {!appData ? <HeaderSkeleton /> : <DappHeader appData={appData} />}
 
                         {/* Banner Carousel with conditional rendering */}
-                        {!appData ? <BannerSkeleton /> : <DappBanner mainBannerImageUrls={appData.bannerUrls.main} />}
+                        {!appData ? <BannerSkeleton /> : <DappBanner mainBannerImageUrls={Object.values(appData.bannerUrls)} />}
 
                         {/* Navigation Tabs */}
                         {/* Mobile Tabs */}

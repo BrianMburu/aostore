@@ -1,13 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { AppData } from '@/types/dapp';
+import { Dapp } from '@/types/dapp';
 
 export function DeleteConfirmationModal({
     dapp,
     onDelete
 }: {
-    dapp: AppData;
+    dapp: Dapp;
     onDelete: () => Promise<void>;
 }) {
     const [isOpen, setIsOpen] = useState(false);

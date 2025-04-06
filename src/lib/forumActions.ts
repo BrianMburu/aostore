@@ -1,6 +1,9 @@
 import * as z from 'zod';
-import { ForumPost, ForumReply, updateOptions } from '@/types/forum';
+import { ForumPost, updateOptions } from '@/types/forum';
 import { ForumService } from '@/services/ao/forumService';
+import { User } from '@/types/user';
+import { Rank } from '@/types/rank';
+import { Reply } from '@/types/reply';
 
 const categories = updateOptions.map(opt => opt.value) as [string, ...string[]];
 
@@ -14,26 +17,26 @@ const ForumQuestionFormSchema = z.object({
             return { message: ctx.defaultError };
         },
     }),
-    content: z.string().min(10, 'Question description must be at least 10 characters.'),
-})
+    description: z.string().min(10, 'Question description must be at least 10 characters.'),
+});
 
 export type ForumPostState = {
     errors?: {
         title?: string[],
         topic?: string[],
-        content?: string[]
+        description?: string[]
     },
     post?: ForumPost | null,
     message?: string | null
 }
 
-export async function postForumQuestion(appId: string, userId: string | null, prevState: ForumPostState, formData: FormData) {
+export async function postForumQuestion(appId: string, user: User | null, rank: Rank, prevState: ForumPostState, formData: FormData) {
     const validatedFields = ForumQuestionFormSchema.safeParse({
         title: formData.get('title'),
         topic: formData.get('topic'),
-        content: formData.get('content'),
+        description: formData.get('description'),
+    });
 
-    })
     if (!validatedFields.success) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
@@ -41,12 +44,12 @@ export async function postForumQuestion(appId: string, userId: string | null, pr
         };
     }
 
-    if (!userId) {
+    if (!user) {
         return { message: 'Invalid Session: User not Found!' }
     }
 
     try {
-        const newPost = await ForumService.createForumPost(appId, userId, validatedFields.data)
+        const newPost = await ForumService.createForumPost(appId, user, rank, validatedFields.data)
 
         return { message: "success", post: newPost }
 
@@ -55,11 +58,11 @@ export async function postForumQuestion(appId: string, userId: string | null, pr
     }
 }
 
-export async function editForumQuestion(postId: string, prevState: ForumPostState, formData: FormData) {
+export async function editForumQuestion(appId: string, postId: string, rank: Rank, prevState: ForumPostState, formData: FormData) {
     const validatedFields = ForumQuestionFormSchema.safeParse({
         title: formData.get('title'),
         topic: formData.get('topic'),
-        content: formData.get('content'),
+        description: formData.get('description'),
 
     })
     if (!validatedFields.success) {
@@ -69,14 +72,9 @@ export async function editForumQuestion(postId: string, prevState: ForumPostStat
         };
     }
 
-    const { title, topic, content } = validatedFields.data;
-
-
     try {
-        // To Do add functionality to send request to backend
-        console.log('Data:', { title, topic, content })
 
-        const NewForumPost = await ForumService.editForumPost(postId, validatedFields.data)
+        const NewForumPost = await ForumService.editForumPost(appId, postId, rank, validatedFields.data)
         return { message: "success", post: NewForumPost }
 
     } catch {
@@ -86,22 +84,22 @@ export async function editForumQuestion(postId: string, prevState: ForumPostStat
 
 export type ForumReplyState = {
     errors?: {
-        content?: string[],
+        description?: string[],
     },
-    reply?: ForumReply | null
+    reply?: Reply | null
     message?: string | null
 }
 
 export const replySchema = z.object({
-    content: z.string().min(10, 'Answer must be at least 10 characters').max(1000, "Answer must have a max of 1000 characters"),
+    description: z.string().min(10, 'Answer must be at least 10 characters').max(1000, "Answer must have a max of 1000 characters"),
 });
 
-export async function sendAnswer(postId: string, userId: string | null, prevState: ForumReplyState, formData: FormData) {
+export async function sendAnswer(appId: string, postId: string, user: User | null, rank: Rank, prevState: ForumReplyState, formData: FormData) {
     const validatedFields = replySchema.safeParse({
-        content: formData.get('content'),
+        description: formData.get('description'),
     });
 
-    if (!userId) {
+    if (!user) {
         return { message: 'Invalid Session: User not Found!' }
     }
 
@@ -116,7 +114,7 @@ export async function sendAnswer(postId: string, userId: string | null, prevStat
         // Simulate a network delay
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const reply = await ForumService.submitReply(postId, userId, validatedFields.data);
+        const reply = await ForumService.submitReply(appId, postId, user, rank, validatedFields.data);
 
         return { message: 'success', reply: reply };
 
@@ -125,10 +123,14 @@ export async function sendAnswer(postId: string, userId: string | null, prevStat
     }
 }
 
-export async function editAnswer(replyId: string, prevState: ForumReplyState, formData: FormData) {
+export async function editAnswer(appId: string, postId: string, replyId: string, user: User | null, rank: Rank, prevState: ForumReplyState, formData: FormData) {
     const validatedFields = replySchema.safeParse({
-        content: formData.get('content'),
+        description: formData.get('description'),
     });
+
+    if (!user) {
+        return { message: 'Invalid Session: User not Found!' }
+    }
 
     if (!validatedFields.success) {
         return {
@@ -138,7 +140,7 @@ export async function editAnswer(replyId: string, prevState: ForumReplyState, fo
     }
 
     try {
-        const reply = await ForumService.editReply(replyId, validatedFields.data);
+        const reply = await ForumService.editReply(appId, postId, replyId, user, rank, validatedFields.data);
 
         return { message: 'success', reply: reply };
 

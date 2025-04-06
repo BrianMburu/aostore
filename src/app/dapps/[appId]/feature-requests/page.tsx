@@ -1,5 +1,5 @@
+import { FeatureRequestList } from "@/app/ui/Dapps/FeatureRequests/FeatureRequestList";
 import { FeatureRequestFilter } from "@/app/ui/MyDapps/FeatureRequests/FeatureRequestFilter";
-import { FeatureRequestList } from "@/app/ui/MyDapps/FeatureRequests/FeatureRequestList";
 import { FeatureRequestsListSkeleton } from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
 import { Suspense } from "react";
 

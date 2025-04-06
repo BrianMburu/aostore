@@ -13,8 +13,8 @@ import {
 import { Wallet } from 'lucide-react';
 
 import toast from 'react-hot-toast';
-import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
+import ProfileImage from '../ProfilePic';
 
 interface ProfileDropdownProps {
     address: string;
@@ -49,7 +49,7 @@ export function ProfileDropdown({ address, onDisconnect, isDisconnecting }: Prof
         <Menu as="div" className="relative ml-3">
             <div>
                 <MenuButton className="relative flex rounded-full bg-gray-100 dark:bg-gray-700 p-1.5 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                    <Image src={user!.picture} alt="User avatar" className="rounded-full" width={32} height={32} />
+                    <ProfileImage imgUrl={user?.avatar || ''} alt={user?.username || ""} className={'h-8 w-8'} />
                 </MenuButton>
             </div>
 

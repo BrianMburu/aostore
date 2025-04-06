@@ -57,9 +57,20 @@ export function EmptyState({
         }
     }, [progress]);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function isValidComponent(Component: any): boolean {
+        return (
+            typeof Component === 'function' ||
+            (typeof Component === 'object' && Component !== null && Component.$$typeof != null)
+        );
+    }
+
+
     const IconComponent = () => {
         if (Illustration) return <Illustration className="h-40 w-40" />;
-        if (typeof icon === 'function') return React.createElement(icon, { className: "h-16 w-16" });
+        if (icon && isValidComponent(icon)) {
+            return React.createElement(icon, { className: "h-16 w-16" });
+        }
 
         switch (icon) {
             case 'inbox': return <InboxIcon className="h-16 w-16" />;

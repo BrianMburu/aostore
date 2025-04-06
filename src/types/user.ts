@@ -3,7 +3,7 @@ import { Message } from './message';
 export interface User {
     username: string;
     walletAddress: string;
-    avatar: string;
+    avatar?: string;
     messages?: Message[] | [];
 }
 
