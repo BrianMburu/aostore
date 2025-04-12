@@ -6,13 +6,15 @@ import { postForumQuestion, ForumPostState } from '@/lib/forumActions';
 import { updateOptions } from '@/types/forum';
 import Loader from '../Loader';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { AnimatedButton } from '../animations/AnimatedButton';
 import { useRank } from '@/context/RankContext';
 
 const initialState: ForumPostState = { message: null, errors: {}, post: null }
 
-export default function ForumQuestionForm({ appId }: { appId: string }) {
+export default function ForumQuestionForm() {
+    const appId = useParams().appId as string;
+
     const { user } = useAuth();
     const { rank } = useRank();
     const router = useRouter()

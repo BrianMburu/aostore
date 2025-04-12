@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/context/ThemeContext";
+import { SiteSettingsProvider } from "@/context/SettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
 import Header from "./ui/Header/Header";
 import Footer from "./ui/Footer/Footer";
@@ -36,7 +36,7 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900`}
             >
-                <ThemeProvider>
+                <SiteSettingsProvider>
                     <AuthProvider>
                         <RankProvider>
                             <Header />
@@ -46,7 +46,7 @@ export default function RootLayout({
                             {/* <SessionRefreshOverlay /> */}
                         </RankProvider>
                     </AuthProvider>
-                </ThemeProvider>
+                </SiteSettingsProvider>
             </body>
         </html>
     );

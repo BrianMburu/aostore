@@ -44,9 +44,9 @@ export function MyTaskReplyItem({ reply, appId, taskId }: { appId: string, taskI
             {reply.completedTasks && (
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                        <div>
-                            <span className="font-medium">Completed:</span>
-                            <span className="ml-2">{reply.completedTasks.amount} to be rewarded</span>
+                        <div className='dark:text-gray-300'>
+                            <span className="font-bold">Completed:</span>
+                            <span className="ml-2">{reply.completedTasks.amount} to be rewarded.</span>
                         </div>
                         <div className="text-gray-500 dark:text-gray-400">
                             {formatActivityTime(Number(reply.completedTasks.completedTime))}

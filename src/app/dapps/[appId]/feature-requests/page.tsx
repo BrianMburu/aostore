@@ -3,15 +3,7 @@ import { FeatureRequestFilter } from "@/app/ui/MyDapps/FeatureRequests/FeatureRe
 import { FeatureRequestsListSkeleton } from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
 import { Suspense } from "react";
 
-interface Props {
-    params: Promise<{ appId: string }>;
-    searchParams: Promise<{ type?: string; search?: string }>;
-}
-export default async function DappFeatureRequestsPage(props: Props) {
-    const currParams = await props.params;
-    const appId = currParams.appId as string;
-    const searchParams = await props.searchParams;
-
+export default function DappFeatureRequestsPage() {
     return (
         <div className="max-w-7xl mx-auto">
             <div className="space-y-8">
@@ -21,7 +13,7 @@ export default async function DappFeatureRequestsPage(props: Props) {
                 </div>
 
                 <Suspense fallback={<FeatureRequestsListSkeleton />}>
-                    <FeatureRequestList appId={appId} searchParams={await searchParams} />
+                    <FeatureRequestList />
                 </Suspense>
 
             </div>

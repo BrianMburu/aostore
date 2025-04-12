@@ -3,17 +3,8 @@ import { FeatureRequestList } from "@/app/ui/MyDapps/FeatureRequests/FeatureRequ
 import { FeatureRequestsListSkeleton } from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
 import { Suspense } from "react";
 
-interface Props {
-    params: Promise<{ appId: string }>;
-    searchParams: Promise<{ type?: string; search?: string, page?: string }>;
-}
 // app/mydapps/[appId]/feature-requests/page.tsx
-export default async function FeatureRequestsPage(props: Props) {
-    const currParams = await props.params;
-
-    const searchParams = await props.searchParams;
-    const appId = currParams.appId as string;
-
+export default function FeatureRequestsPage() {
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
@@ -22,7 +13,7 @@ export default async function FeatureRequestsPage(props: Props) {
             </div>
 
             <Suspense fallback={<FeatureRequestsListSkeleton />}>
-                <FeatureRequestList appId={appId} searchParams={searchParams} />
+                <FeatureRequestList />
             </Suspense>
         </div>
     )

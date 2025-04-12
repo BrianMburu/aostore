@@ -4,9 +4,12 @@ import { BarChart } from '@tremor/react'
 import { ChartSkeleton } from '../../Analytics/skeletons/ChartSkeleton';
 import { useEffect, useState, useTransition } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useParams } from 'next/navigation';
 
 
-export function DappRatingsChart({ appId, title }: { appId: string, title: string }) {
+export function DappRatingsChart({ title }: { title: string }) {
+    const appId = useParams().appId as string;
+
     const [ratingsData, setRatingsData] = useState<{ name: string; value: number; }[]>([]);
     const [isLoading, startTransition] = useTransition();
 

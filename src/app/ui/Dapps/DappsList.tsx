@@ -9,8 +9,12 @@ import { useAuth } from '@/context/AuthContext'
 import { DappList } from '@/types/dapp'
 import DappCardsSkeleton from './Skeletons/DappCardsSkeleton'
 import { EmptyState } from '../EmptyState'
+import { useSearchParams } from 'next/navigation'
 
-export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams }) {
+export function DAppsList() {
+    const searchParams = useSearchParams();
+    const filterParams = Object.fromEntries(searchParams.entries()) as DAppsFilterParams;
+
     const [dapps, setDapps] = useState<DappList[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 

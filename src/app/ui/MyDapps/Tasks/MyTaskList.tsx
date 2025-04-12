@@ -10,9 +10,13 @@ import { Task } from "@/types/task";
 import { TaskItemMini } from "./TaskItemMini";
 import { MyTaskListSkeleton } from "./skeletons/MyTaskListSkeleton";
 import { AddTaskForm } from "./CreateTaskForm";
+import { useParams, useSearchParams } from "next/navigation";
 
 
-export function MyTasksList({ appId, searchParams }: { appId: string, searchParams: TaskFilterParams }) {
+export function MyTasksList() {
+    const appId = useParams().appId as string;
+    const searchParams = useSearchParams();
+
     const [tasks, setTasks] = useState<Task[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 
@@ -20,12 +24,12 @@ export function MyTasksList({ appId, searchParams }: { appId: string, searchPara
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as TaskFilterParams;
         startTransition(
             async () => {
                 try {
                     if (!isAuthLoading && isConnected) {
-                        // const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
-                        const { tasks, total } = await TaskService.fetchTasks(appId, searchParams, true);
+                        const { tasks, total } = await TaskService.fetchTasks(appId, filterParams, true);
                         if (tasks) {
                             setTasks(tasks);
                             setTotalItems(total)
@@ -41,8 +45,7 @@ export function MyTasksList({ appId, searchParams }: { appId: string, searchPara
                 }
             })
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, searchParams])
+    }, [appId, isConnected, isAuthLoading, searchParams])
 
     if (isLoading) {
         return <MyTaskListSkeleton n={6} />

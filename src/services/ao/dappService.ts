@@ -289,7 +289,7 @@ export const DAppService = {
         });
 
         // Pagination
-        const page = 1;
+        const page = Number(params?.fv_page) || 1;
         const itemsPerPage = 8; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort the filtered data

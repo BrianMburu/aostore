@@ -7,21 +7,26 @@ import { TaskItem } from "./TaskItem";
 import { EmptyState } from "../../EmptyState";
 import { TaskFilterParams, TaskService } from "@/services/ao/taskService";
 import { Task } from "@/types/task";
+import { useSearchParams } from "next/navigation";
 
 
-export function TasksListSuggested({ appId, searchParams }: { appId: string, searchParams: TaskFilterParams }) {
+export function TasksListSuggested({ appId }: { appId: string }) {
+    const searchParams = useSearchParams();
+
     const [tasks, setTasks] = useState<Task[]>([]);
 
     const [isLoading, startTransition] = useTransition();
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as TaskFilterParams;
+
         startTransition(
             async () => {
                 try {
                     if (!isAuthLoading && isConnected) {
                         // const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
-                        const { tasks } = await TaskService.fetchTasks(appId, searchParams, true);
+                        const { tasks } = await TaskService.fetchTasks(appId, filterParams, true);
 
                         if (tasks) {
                             setTasks(tasks);

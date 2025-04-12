@@ -9,8 +9,13 @@ import { useAuth } from "@/context/AuthContext";
 import { AidropsFilterParams, AirdropService } from "@/services/ao/airdropService";
 import { AirdropsSkeleton } from "./skeletons/AirdropsSkeleton";
 import { EmptyState } from "../EmptyState";
+import { useParams, useSearchParams } from "next/navigation";
 
-export function AirdropsList({ appId, searchParams }: { appId: string, searchParams: AidropsFilterParams }) {
+export function AirdropsList() {
+    const appId = useParams().appId as string;
+    const searchParams = useSearchParams();
+
+
     const [airdrops, setAirdrops] = useState<Airdrop[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 
@@ -18,11 +23,13 @@ export function AirdropsList({ appId, searchParams }: { appId: string, searchPar
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as AidropsFilterParams;
+
         startTransition(
             async () => {
                 try {
                     if (!isAuthLoading && isConnected) {
-                        const { data, total } = await AirdropService.fetchAirdrops(appId, searchParams, true);
+                        const { data, total } = await AirdropService.fetchAirdrops(appId, filterParams, true);
 
                         if (data) {
                             setAirdrops(data);

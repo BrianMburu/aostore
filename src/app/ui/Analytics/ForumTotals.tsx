@@ -5,9 +5,12 @@ import { useEffect, useState, useTransition } from "react";
 import { TotalCardSkeleton } from "./skeletons/TotalCardSkeleton";
 import { TotalCard } from "./TotalCard";
 import { useAuth } from "@/context/AuthContext";
+import { useParams } from "next/navigation";
 
 
-export default function ForumTotals({ appId }: { appId: string }) {
+export default function ForumTotals() {
+    const appId = useParams().appId as string;
+
     const [totalForums, setTotalForums] = useState(0);
     const [isLoading, startTransition] = useTransition();
 

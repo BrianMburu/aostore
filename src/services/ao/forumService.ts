@@ -8,6 +8,7 @@ import { User } from '@/types/user';
 import { HelpfulData } from '@/types/voter';
 import { cleanAoJson, fetchAOmessages } from '@/utils/ao';
 export interface ForumFilterParams {
+    sort?: string;
     topic?: string;
     search?: string;
     page?: string;
@@ -61,8 +62,15 @@ export const ForumService = {
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort and slice the data for the current page
-        const sortedData = filtered
-            .sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
+        const sortedData = filtered.sort((a, b) => {
+            if (!params.sort || params.sort === 'latest') {
+                return new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime();
+            }
+            if (params.sort === 'top') {
+                return b.voters.foundHelpful.count - a.voters.foundHelpful.count;
+            }
+            return 0; // Default case if no sorting criteria matches
+        });
 
         const posts = useInfiniteScroll
             ? sortedData.slice(0, page * itemsPerPage)

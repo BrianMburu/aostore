@@ -5,44 +5,57 @@ import { AnimatedList } from "../../animations/AnimatedList";
 import { AnimatedListItem } from "../../animations/AnimatedListItem";
 import InfinityScrollControls from "../../InfinityScrollControls";
 import { FeatureRequestItem } from "./FeatureRequestItem";
-import { useEffect, useState } from "react";
-import { SupportService } from "@/services/ao/supportServices";
+import { useCallback, useEffect, useState } from "react";
+import { FeatureBugParams, SupportService } from "@/services/ao/supportServices";
 import { BugReport, FeatureRequest } from "@/types/support";
 import { EmptyState } from "../../EmptyState";
 import { useAuth } from "@/context/AuthContext";
 import { FeatureRequestsListSkeleton } from "../../MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
+import { useParams, useSearchParams } from "next/navigation";
 
-interface FeatureRequestList {
-    appId: string,
-    searchParams: { type?: string; search?: string, page?: string }
-}
+export function FeatureRequestList() {
+    const appId = useParams().appId as string;
+    const searchParams = useSearchParams();
 
-export function FeatureRequestList({ appId, searchParams }: FeatureRequestList) {
     const [requests, setRequests] = useState<(BugReport | FeatureRequest)[]>([]);
     const [total, setTotal] = useState(0);
     const [isFetching, setIsFetching] = useState(true);
-    const { isConnected } = useAuth()
+    const { isConnected, isLoading: isAuthLoading } = useAuth();
 
+    const fetchfilterParams = useCallback(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as FeatureBugParams;
+        return filterParams
+    }, [searchParams])
+
+    const filterParams = fetchfilterParams();
     useEffect(() => {
+
         const fetchRequests = async () => {
             setIsFetching(true);
+            const filterParams = fetchfilterParams();
             try {
-                let requestData = [];
-                let totalRequests = 0;
+                if (!isAuthLoading && isConnected) {
+                    let requestData = [];
+                    let totalRequests = 0;
+                    const type = filterParams.type;
 
-                const type = searchParams.type;
-                if (type === "feature" || !type) {
-                    const { data, total } = await SupportService.getFeatureRequests(appId, searchParams, true);
-                    requestData = data
-                    totalRequests = total
+                    if (type === "feature" || !type) {
+                        const { data, total } = await SupportService.getFeatureRequests(appId, filterParams, true);
+                        requestData = data
+                        totalRequests = total
+                    } else {
+                        const { data, total } = await SupportService.getBugReports(appId, filterParams, true);
+                        requestData = data
+                        totalRequests = total
+                    }
+
+                    if (requestData) {
+                        setRequests(requestData);
+                        setTotal(totalRequests);
+                    }
                 } else {
-                    const { data, total } = await SupportService.getBugReports(appId, searchParams, true);
-                    requestData = data
-                    totalRequests = total
-                }
-                if (requestData.length) {
-                    setRequests(requestData);
-                    setTotal(totalRequests);
+                    setRequests([]);
+                    setTotal(0)
                 }
 
             } catch (error) {
@@ -53,7 +66,7 @@ export function FeatureRequestList({ appId, searchParams }: FeatureRequestList) 
             }
         };
         fetchRequests();
-    }, [isConnected, appId, searchParams]);
+    }, [isConnected, isAuthLoading, appId, fetchfilterParams]);
 
     if (isFetching) return <FeatureRequestsListSkeleton />;
 
@@ -77,7 +90,7 @@ export function FeatureRequestList({ appId, searchParams }: FeatureRequestList) 
                             <FeatureRequestItem
                                 request={request}
                                 appId={appId}
-                                requestType={(searchParams.type === 'feature' || searchParams.type === 'bug') ? searchParams.type : 'feature'}
+                                requestType={(filterParams.type === 'feature' || filterParams.type === 'bug') ? filterParams.type : 'feature'}
                             />
                         </AnimatedListItem>
                     ))}

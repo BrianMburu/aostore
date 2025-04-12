@@ -9,22 +9,28 @@ import { useAuth } from "@/context/AuthContext";
 import { ForumFilterParams, ForumService } from "@/services/ao/forumService";
 import { EmptyState } from "../EmptyState";
 import { ForumPostsSkeleton } from "./skeletons/ForumPostSkeleton";
+import { useParams, useSearchParams } from "next/navigation";
 
 
 // QuestionsList component
-export function ForumQuestionsList({ appId, searchParams }: { appId: string, searchParams: ForumFilterParams }) {
+export function ForumQuestionsList() {
+    const appId = useParams().appId as string;
+    const searchParams = useSearchParams();
+
     const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 
     const [isLoading, startTransition] = useTransition();
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
+    const filterParams = Object.fromEntries(searchParams.entries()) as ForumFilterParams;
+
     useEffect(() => {
         startTransition(
             async () => {
                 try {
                     if (!isAuthLoading && isConnected) {
-                        const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
+                        const { posts, total } = await ForumService.fetchForumPosts(appId, filterParams, true);
 
                         if (posts) {
                             setForumPosts(posts);
@@ -42,7 +48,7 @@ export function ForumQuestionsList({ appId, searchParams }: { appId: string, sea
             })
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, searchParams])
+    }, [appId, isAuthLoading, isConnected, filterParams.page, filterParams.topic, filterParams.search, filterParams.sort])
 
     if (isLoading) {
         return <ForumPostsSkeleton n={6} />

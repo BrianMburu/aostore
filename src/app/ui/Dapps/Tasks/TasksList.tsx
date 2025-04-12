@@ -9,9 +9,13 @@ import { EmptyState } from "../../EmptyState";
 import InfinityScrollControls from "../../InfinityScrollControls";
 import { TaskFilterParams, TaskService } from "@/services/ao/taskService";
 import { Task } from "@/types/task";
+import { useParams, useSearchParams } from "next/navigation";
 
 
-export function TasksList({ appId, searchParams }: { appId: string, searchParams: TaskFilterParams }) {
+export function TasksList() {
+    const appId = useParams().appId as string;
+    const searchParams = useSearchParams();
+
     const [tasks, setTasks] = useState<Task[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 
@@ -19,12 +23,14 @@ export function TasksList({ appId, searchParams }: { appId: string, searchParams
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as TaskFilterParams;
+
         startTransition(
             async () => {
                 try {
                     if (!isAuthLoading && isConnected) {
                         // const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
-                        const { tasks, total } = await TaskService.fetchTasks(appId, searchParams, true);
+                        const { tasks, total } = await TaskService.fetchTasks(appId, filterParams, true);
 
                         if (tasks) {
                             setTasks(tasks);

@@ -9,12 +9,14 @@ import { motion } from 'framer-motion';
 import Loader from '../../Loader';
 import { ReviewState, sendReview } from '@/lib/reviewActions';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useRank } from '@/context/RankContext';
 
 const initialState: ReviewState = { message: null, errors: {}, review: null };
 
-export default function DappReviewForm({ appId }: { appId: string }) {
+export default function DappReviewForm() {
+    const appId = useParams().appId as string;
+
     const { user } = useAuth();
     const { rank } = useRank();
 

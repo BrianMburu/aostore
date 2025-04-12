@@ -6,7 +6,7 @@ import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import StarIcon from '@heroicons/react/24/outline/StarIcon';
 import toast from 'react-hot-toast'
-
+import { useParams, useSearchParams } from 'next/navigation'
 
 import { ReviewReplyForm } from './ReviewReplyForm'
 import { Review } from '@/types/review'
@@ -27,25 +27,35 @@ import ReviewListSkeleton from './skeletons/ReviewListSkeleton'
 import { EmptyState } from '../../EmptyState'
 
 // ReviewsList component
-export function ReviewsList({ appId, searchParams }: { appId: string, searchParams: ReviewFilterParams; }) {
+export function ReviewsList() {
+  const appId = useParams().appId as string;
+  const searchParams = useSearchParams();
+
   const [reviews, setReviews] = useState<Review[]>([]);
   const [total, setTotal] = useState(0);
   const [fetching, startTransition] = useTransition();
-  const { isConnected } = useAuth()
+  const { isConnected, isLoading: isAuthLoading } = useAuth()
 
   useEffect(() => {
     startTransition(async () => {
+      const filterParams = Object.fromEntries(searchParams.entries()) as ReviewFilterParams;
+
       try {
-        const { data, total } = await ReviewService.getReviews(appId, searchParams, true);
-        if (data !== null) {
-          setReviews(data);
-          setTotal(total);
+        if (!isAuthLoading && isConnected) {
+          const { data, total } = await ReviewService.getReviews(appId, filterParams, true);
+          if (data !== null) {
+            setReviews(data);
+            setTotal(total);
+          }
+        } else {
+          setReviews([]);
+          setTotal(0);
         }
       } catch (error) {
         console.error(error)
       }
     });
-  }, [isConnected, appId, searchParams]);
+  }, [isConnected, isAuthLoading, appId, searchParams]);
 
   if (fetching) return <ReviewListSkeleton n={6} />;
 

@@ -4,11 +4,25 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 
 import { projectTypes } from '@/types/dapp';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import useDebounce from '@/hooks/useDebounce';
 
 export function DAppFilter() {
     const searchParams = useSearchParams()
     const pathname = usePathname()
     const { replace } = useRouter()
+
+    // Initialize filter state from URL params.
+    const initialFilter = searchParams.get('search') || ''
+    const [filterInput, setFilterInput] = useState(initialFilter)
+    // Wait for 500ms of inactivity before applying the filter.
+    const debouncedFilter = useDebounce(filterInput, 500)
+
+    // When the debounced filter changes, update the URL params.
+    useEffect(() => {
+        handleFilter('search', debouncedFilter)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedFilter])
 
     const handleFilter = (name: string, value: string) => {
         const params = new URLSearchParams(searchParams);
@@ -55,8 +69,8 @@ export function DAppFilter() {
                             type="text"
                             placeholder="Search DApps..."
                             className="w-full pl-10 pr-4 py-2 border rounded-full bg-white dark:bg-gray-700 text-gray-300"
-                            defaultValue={searchParams.get('search')?.toString()}
-                            onChange={(e) => handleFilter('search', e.target.value)}
+                            value={filterInput}
+                            onChange={(e) => setFilterInput(e.target.value)}
                         />
                         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
                     </div>

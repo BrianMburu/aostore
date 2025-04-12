@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 
 import { DappList } from '@/types/dapp'
 import { DAppCard } from './DappCard'
@@ -12,18 +12,23 @@ import DappCardsSkeleton from './skeletons/DappsCardsSkeleton'
 import { EmptyState } from '../EmptyState'
 import { DAppService, DAppsFilterParams } from '@/services/ao/dappService'
 import { useAuth } from '@/context/AuthContext'
+import { useSearchParams } from 'next/navigation'
 
-export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams }) {
+export function DAppsList() {
+    const searchParams = useSearchParams();
+
     const [dapps, setDapps] = useState<DappList[]>([]);
     const [totalItems, setTotalItems] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
-    const fetchDapps = async () => {
+    const fetchDapps = useCallback(async () => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as DAppsFilterParams;
+
         try {
             setIsLoading(true)
             if (!isAuthLoading && isConnected) {
-                const { data, total } = await DAppService.getMyDApps(filterParams, true);
+                const { data, total } = await DAppService.getMyDApps(filterParams);
 
                 if (data) {
                     setDapps(data);
@@ -40,13 +45,11 @@ export function DAppsList({ filterParams }: { filterParams: DAppsFilterParams })
         } finally {
             setIsLoading(false)
         }
-
-    }
+    }, [isAuthLoading, isConnected, searchParams])
 
     useEffect(() => {
         fetchDapps();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, filterParams]);
+    }, [fetchDapps]);
 
     const refreshDapps = () => {
         fetchDapps(); // Trigger a re-fetch of the DApp list

@@ -5,8 +5,11 @@ import { AnalyticsService } from '@/services/ao/analyticsService';
 import { AreaChart } from '@tremor/react'
 import { useAuth } from '@/context/AuthContext';
 import { ChartSkeleton } from '../../Analytics/skeletons/ChartSkeleton';
+import { useParams } from 'next/navigation';
 
-export function DappUserAcquisitionChart({ appId, title }: { appId: string, title: string }) {
+export function DappUserAcquisitionChart({ title }: { title: string }) {
+    const appId = useParams().appId as string;
+
     const [userData, setUserData] = useState<{ date: string; users: number; }[]>([]);
     const [isLoading, startTransition] = useTransition();
 

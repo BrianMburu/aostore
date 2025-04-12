@@ -1,16 +1,7 @@
 import { ReviewsList } from '@/app/ui/MyDapps/Reviews/ReviewsList'
 import ReviewsFilters from '@/app/ui/MyDapps/Reviews/ReviewFilters';
 
-interface Props {
-    params: Promise<{ appId: string }>;
-    searchParams: Promise<{ sort?: string; filter?: string, page?: string }>;
-}
-export default async function ReviewsPage(props: Props) {
-
-    const currParams = await props.params;
-    const appId = currParams.appId as string;
-    const searchParams = await props.searchParams;
-
+export default function ReviewsPage() {
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
@@ -18,7 +9,7 @@ export default async function ReviewsPage(props: Props) {
                 <ReviewsFilters />
             </div>
 
-            <ReviewsList appId={appId} searchParams={searchParams} />
+            <ReviewsList />
         </div>
     )
 }

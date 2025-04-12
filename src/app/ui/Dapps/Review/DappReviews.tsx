@@ -10,9 +10,12 @@ import { useEffect, useState, useTransition } from 'react';
 import { Review } from '@/types/review';
 import ReviewsListSkeleton from './skeletons/ReviewsListSkeleton';
 import { EmptyState } from '../../EmptyState';
+import { useParams, useSearchParams } from 'next/navigation';
 
-export default function DappReviews({ appId, searchParams }:
-    { searchParams: ReviewFilterParams, appId: string }) {
+export default function DappReviews() {
+    const appId = useParams().appId as string;
+    const searchParams = useSearchParams();
+
     const { user } = useAuth();
     const [reviews, setReviews] = useState<Review[]>([]);
     const [total, setTotal] = useState(0);
@@ -20,9 +23,11 @@ export default function DappReviews({ appId, searchParams }:
     const { isConnected } = useAuth();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as ReviewFilterParams;
+
         startTransition(async () => {
             try {
-                const { data, total } = await ReviewService.getReviews(appId, searchParams, true);
+                const { data, total } = await ReviewService.getReviews(appId, filterParams, true);
                 if (data !== null) {
                     setReviews(data);
                     setTotal(total);
