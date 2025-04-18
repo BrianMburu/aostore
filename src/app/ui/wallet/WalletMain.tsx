@@ -5,12 +5,12 @@ import BalanceCard from "./BalanceCard";
 import TransactionHistory from "./TransactionHistory";
 import { SwapModal, TransferModal } from "./Modals";
 import { AppTokenData } from "@/types/dapp";
-import { TokenService, TransactionsFilterParams } from "@/services/ao/tokenService";
+import { TokenService } from "@/services/ao/tokenService";
 import { useAuth } from "@/context/AuthContext";
 import { TransactionHistoryFilters } from "./TransactionHistoryFilters";
 import TipTransactionHistory from "./TipTransactionHistory";
 
-export function WalletMain({ searchParams }: { searchParams: TransactionsFilterParams }) {
+export function WalletMain() {
     const [tokens, setTokens] = useState<AppTokenData[]>([]);
     const [activeToken, setActiveToken] = useState<AppTokenData>();
     const [activeTab, setActiveTab] = useState(0);
@@ -104,8 +104,8 @@ export function WalletMain({ searchParams }: { searchParams: TransactionsFilterP
                     </div>
                 </div>
 
-                {activeTab === 0 && <TransactionHistory accessPage={accessPage} searchParams={searchParams} />}
-                {activeTab === 1 && <TipTransactionHistory searchParams={searchParams} />}
+                {activeTab === 0 && <TransactionHistory accessPage={accessPage} />}
+                {activeTab === 1 && <TipTransactionHistory />}
 
 
 

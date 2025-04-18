@@ -2,6 +2,18 @@ import { FeatureRequestFilter } from "@/app/ui/MyDapps/FeatureRequests/FeatureRe
 import { FeatureRequestList } from "@/app/ui/MyDapps/FeatureRequests/FeatureRequestList";
 import { FeatureRequestsListSkeleton } from "@/app/ui/MyDapps/FeatureRequests/skeletons/FeatureRequestSkeleton";
 import { Suspense } from "react";
+import { fetchAllPages } from '@/helpers/idsPaginator';
+import { DAppService } from '@/services/ao/dappService';
+
+export async function generateStaticParams() {
+    try {
+        const appIds = await fetchAllPages((page) => DAppService.getAllDappIds(page));
+        return appIds;
+    } catch (error) {
+        console.error('Error generating static params:', error);
+        return [];
+    }
+}
 
 // app/mydapps/[appId]/feature-requests/page.tsx
 export default function FeatureRequestsPage() {

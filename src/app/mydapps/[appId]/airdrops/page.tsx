@@ -4,7 +4,18 @@ import { MyDappsAirDropFilter } from '@/app/ui/MyDapps/Airdrops/MyDappsAirDropsF
 import { Suspense } from 'react';
 import { AirdropsSkeleton } from '@/app/ui/AirDrops/skeletons/AirdropsSkeleton';
 import { AddAirDropForm } from '@/app/ui/MyDapps/Airdrops/AddAirdropForm';
+import { fetchAllPages } from '@/helpers/idsPaginator';
+import { DAppService } from '@/services/ao/dappService';
 
+export async function generateStaticParams() {
+    try {
+        const appIds = await fetchAllPages((page) => DAppService.getAllDappIds(page));
+        return appIds;
+    } catch (error) {
+        console.error('Error generating static params:', error);
+        return [];
+    }
+}
 
 export default function MyDAppsPage() {
     return (

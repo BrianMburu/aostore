@@ -1,6 +1,59 @@
-import { createDataItemSigner, message, result } from "@permaweb/aoconnect";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { createDataItemSigner, dryrun, message, result } from "@permaweb/aoconnect";
+// import { readFileSync } from "node:fs";
+// import { resolve } from "node:path";
 
-export async function fetchAOmessages(
+let fs: typeof import("node:fs");
+let path: typeof import("node:path");
+
+if (typeof window === "undefined") {
+    fs = await import("node:fs");
+    path = await import("node:path");
+}
+
+const wallet = typeof window === "undefined"
+    // ? JSON.parse(process.env.SERVER_WALLET_JWK!)
+    ? JSON.parse(fs!.readFileSync(path!.resolve("/home/brian/Documents/projects/aostore/wallet.json")).toString())
+    : null;
+
+// Server-side implementation
+export async function fetchAOmessagesServer(
+    tags: { name: string; value: string }[],
+    process: string
+) {
+    try {
+        console.log("my Wallet: ", wallet)
+        console.log("Window:=>", typeof window)
+
+        const fetchDappsMessages = await message({
+            process,
+            tags,
+            signer: createDataItemSigner(wallet),
+        });
+        const { Messages, Error: error } = await result({
+            message: fetchDappsMessages,
+            process
+        })
+
+        // const { Messages, Error: error } = await dryrun({
+        //     tags,
+        //     process,
+        // });
+
+        console.log("Messages:=>", Messages)
+
+        if (error) {
+            console.error("Error => ", error);
+            throw new Error("Error fetching AO messages");
+        }
+        return Messages;
+    } catch (error) {
+        console.error("AO Server Error:", error);
+        throw new Error(`Failed to fetch AO messages: ${error}`);
+    }
+}
+
+export async function fetchAOmessagesClient(
     tags: { name: string; value: string }[],
     process: string
 ) {
@@ -9,13 +62,13 @@ export async function fetchAOmessages(
     // console.log("Process => ", process);
 
     const fetchDappsMessages = await message({
-        process: process,
-        tags: tags,
+        process,
+        tags,
         signer: createDataItemSigner(window.arweaveWallet),
     });
     const { Messages, Error: error } = await result({
         message: fetchDappsMessages,
-        process: process
+        process
     })
 
     if (error) {
@@ -25,6 +78,11 @@ export async function fetchAOmessages(
 
     return Messages
 }
+
+// Unified export that auto-detects environment
+export const fetchAOmessages = typeof window === "undefined"
+    ? fetchAOmessagesServer
+    : fetchAOmessagesClient;
 
 export function cleanAoJson(messageData: string) {
     const cleanedData = messageData

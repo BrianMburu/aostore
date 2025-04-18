@@ -7,8 +7,8 @@ import DappSupport from "./Support/DappSupport";
 import DappCardsSkeleton from "./Skeletons/DappCardsSkeleton";
 import { AirdropsListLimit } from "../AirDrops/AirdropListLimit";
 import { AirdropsSkeletonVertical } from "../AirDrops/skeletons/AirdropsSkeleton";
-import { AppDataContext, AppLoadingContext } from '@/app/dapps/[appId]/layout';
 import { ContentSkeleton } from './Skeletons/ContentSkeleton';
+import { AppDataContext, AppLoadingContext } from '@/context/DappContexts';
 
 export function DappInfo() {
     const appData = useContext(AppDataContext);

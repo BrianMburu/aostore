@@ -10,6 +10,7 @@ import Link from "next/link";
 import ChevronRightIcon from "@heroicons/react/24/outline/ChevronRightIcon";
 import { EmptyState } from "../EmptyState";
 import { useAuth } from "@/context/AuthContext";
+import ProfileImage from "../ProfilePic";
 
 export function AirdropsListLimit({ params, appId }: { appId: string, params: AidropsFilterParams }) {
     const [airdrops, setAirdrops] = useState<Airdrop[]>([]);
@@ -61,13 +62,14 @@ export function AirdropsListLimit({ params, appId }: { appId: string, params: Ai
                 <AirdropCardCustom
                     key={airdrop.airdropId}
                     airdrop={airdrop}
+                    appId={appId}
                 />
             ))}
         </div>
     )
 }
 
-export function AirdropCardCustom({ airdrop }: { airdrop: Airdrop }) {
+export function AirdropCardCustom({ airdrop, appId }: { airdrop: Airdrop, appId: string }) {
     const timeFormatter = new Intl.DateTimeFormat('en-US', {
         month: 'long',
         day: 'numeric',
@@ -90,7 +92,8 @@ export function AirdropCardCustom({ airdrop }: { airdrop: Airdrop }) {
             className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"
         >
             <div className="flex items-center gap-3 mb-3">
-                <GiftIcon className="h-6 w-6 text-purple-500" />
+                <ProfileImage imgUrl={airdrop.appIconUrl} alt={airdrop.title} className="h-6 w-6" />
+                {/* <GiftIcon className="h-6 w-6 text-purple-500" /> */}
                 <h3 className="text-lg font-semibold dark:text-white">{airdrop.title}</h3>
             </div>
             <div className="space-y-2">
@@ -112,11 +115,11 @@ export function AirdropCardCustom({ airdrop }: { airdrop: Airdrop }) {
                 </div>
             </div>
             <div className="mt-6 flex items-center justify-between">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[airdrop.status]}`}>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[airdrop.status.toLowerCase() as statusType]}`}>
                     {airdrop.status.toUpperCase()}
                 </span>
                 <Link
-                    href={`/airdrops/${airdrop.airdropId}`}
+                    href={`/dapps/${appId}/airdrops/${airdrop.airdropId}`}
                     className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center"
                 >
                     Details <ChevronRightIcon className="h-4 w-4 ml-1" />

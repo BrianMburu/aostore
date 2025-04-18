@@ -1,6 +1,7 @@
 'use client'
 
-import { createContext, useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { AppDataContext, AppLoadingContext } from '@/context/DappContexts';
 import { MobileTabs, DesktopTabs } from '@/app/ui/Dapps/Tabs';
 import Link from 'next/link';
 import ChevronLeftIcon from '@heroicons/react/24/outline/ChevronLeftIcon';
@@ -9,24 +10,20 @@ import DappBanner from '@/app/ui/Dapps/DappBanner';
 import { notFound, useParams } from 'next/navigation';
 import { DAppService } from '@/services/ao/dappService';
 import { Dapp } from '@/types/dapp';
-// import { AnimatePresence, motion } from 'framer-motion';
 import { HeaderSkeleton } from '@/app/ui/Dapps/Skeletons/HeaderSkeleton';
 import { BannerSkeleton } from '@/app/ui/Dapps/Skeletons/BannerSkeleton';
 import { useAuth } from '@/context/AuthContext';
 
-export const AppDataContext = createContext<Dapp | null>(null);
-export const AppLoadingContext = createContext<boolean>(false);
-
 export default function MyDAppsLayout({
     children,
 }: {
-    children: React.ReactNode
+    children: React.ReactNode;
 }) {
     const [appData, setAppData] = useState<Dapp | null>(null);
     const [fetching, setIsFetching] = useState<boolean>(true);
     const params = useParams();
     const appId = params.appId as string;
-    const { isConnected } = useAuth()
+    const { isConnected } = useAuth();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,14 +31,13 @@ export default function MyDAppsLayout({
                 const dapp = await DAppService.getDApp(appId);
                 if (!dapp) notFound();
                 setAppData(dapp);
-
             } catch (error) {
                 console.error(error);
             } finally {
-                setIsFetching(false)
+                setIsFetching(false);
             }
         };
-        fetchData()
+        fetchData();
     }, [appId, isConnected]);
 
     return (
@@ -50,7 +46,10 @@ export default function MyDAppsLayout({
                 <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                     <header className="bg-white dark:bg-gray-800 shadow-sm">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <Link href="/dapps" className="flex items-center text-indigo-600 dark:text-indigo-400">
+                            <Link
+                                href="/dapps"
+                                className="flex items-center text-indigo-600 dark:text-indigo-400"
+                            >
                                 <ChevronLeftIcon className="h-5 w-5 mr-1" />
                                 Back to DApps
                             </Link>
@@ -61,22 +60,22 @@ export default function MyDAppsLayout({
                         {!appData ? <HeaderSkeleton /> : <DappHeader appData={appData} />}
 
                         {/* Banner Carousel with conditional rendering */}
-                        {!appData ? <BannerSkeleton /> : <DappBanner mainBannerImageUrls={Object.values(appData.bannerUrls)} />}
+                        {!appData ? (
+                            <BannerSkeleton />
+                        ) : (
+                            <DappBanner mainBannerImageUrls={Object.values(appData.bannerUrls)} />
+                        )}
 
                         {/* Navigation Tabs */}
-                        {/* Mobile Tabs */}
                         <div className="sm:hidden">
                             <MobileTabs />
                         </div>
-                        {/* Desktop Tabs */}
                         <div className="hidden sm:block">
                             <DesktopTabs />
                         </div>
 
-                        {/* Main Content with Loading State */}
-                        <div className="py-8">
-                            {children}
-                        </div>
+                        {/* Main Content */}
+                        <div className="py-8">{children}</div>
                     </div>
                 </div>
             </AppDataContext.Provider>

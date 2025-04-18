@@ -1,4 +1,25 @@
 import AirdropDetails from '@/app/ui/AirDrops/AirDropDetails';
+import { fetchAllPages } from '@/helpers/idsPaginator';
+import { AirdropService } from '@/services/ao/airdropService';
+import { DAppService } from '@/services/ao/dappService';
+
+
+// Usage in generateStaticParams
+export async function generateStaticParams() {
+    try {
+        const [appIds, airdropIds] = await Promise.all([
+            fetchAllPages((page) => DAppService.getAllDappIds(page)),
+            fetchAllPages((page) => AirdropService.getAllAirdropIds(page)),
+        ]);
+
+        return appIds.flatMap((appId) =>
+            airdropIds.map((airdropId) => ({ ...appId, ...airdropId }))
+        );
+    } catch (error) {
+        console.error('Error generating static params:', error);
+        return [];
+    }
+}
 
 export default function AirdropDetailsPage() {
     return (

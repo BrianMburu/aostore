@@ -15,6 +15,47 @@ export interface ForumFilterParams {
 }
 
 export const ForumService = {
+    getAllForumIds: async (page = 1, limit = 10): Promise<{ data: { postId: string }[], pagination: { total: number, page: number, totalPages: number } }> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetDevForumIds" },
+                { name: "page", value: page.toString() },
+                { name: "limit", value: limit.toString() }
+            ], PROCESS_ID_DEV_FORUM_TABLE);
+
+            if (!messages?.length) throw new Error("No messages returned from ao");
+
+            const lastMessage = messages[messages.length - 1];
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            const messageData = JSON.parse(cleanedData);
+            let postIds: { postId: string }[] = []
+
+            if (messageData?.code == 200 && messageData.data) {
+                postIds = Object.values(messageData.data as string[]).map((postId) => ({ postId }))
+
+            } else {
+                throw new Error(messageData.message)
+            }
+
+            return {
+                data: postIds,
+                pagination: {
+                    total: messageData.total,
+                    page: messageData.page,
+                    totalPages: Math.ceil(messageData.total / limit)
+                }
+            };
+
+        } catch (error) {
+            console.error(error);
+            if (error instanceof Error) {
+                throw new Error(`Failed to get Forum Posts: ${error.message}`);
+            } else {
+                throw new Error("Failed to get Forum Posts: An unknown error occurred.");
+            }
+        }
+    },
+
     async fetchForumPosts(appId: string, params: ForumFilterParams, useInfiniteScroll: boolean = false): Promise<{ posts: ForumPost[], total: number }> {
         let forumPosts: ForumPost[] = [];
         try {

@@ -2,6 +2,18 @@ import { Suspense } from 'react';
 import { TaskFilters } from '@/app/ui/Dapps/Tasks/TaskFilters';
 import { MyTasksList } from '@/app/ui/MyDapps/Tasks/MyTaskList';
 import { MyTaskListSkeleton } from '@/app/ui/MyDapps/Tasks/skeletons/MyTaskListSkeleton';
+import { fetchAllPages } from '@/helpers/idsPaginator';
+import { DAppService } from '@/services/ao/dappService';
+
+export async function generateStaticParams() {
+    try {
+        const appIds = await fetchAllPages((page) => DAppService.getAllDappIds(page));
+        return appIds;
+    } catch (error) {
+        console.error('Error generating static params:', error);
+        return [];
+    }
+}
 
 export default function ForumPage() {
     return (
