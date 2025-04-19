@@ -12,7 +12,7 @@ export async function generateStaticParams() {
         return appIds;
     } catch (error) {
         console.error('Error generating static params:', error);
-        return [];
+        return [{ appId: "TX1" }];
     }
 }
 
@@ -23,8 +23,9 @@ export default function ForumPage() {
             <ForumQuestionForm />
 
             {/* Filters */}
-            <ForumFilters />
-
+            <Suspense fallback={<div>Loading...</div>}>
+                <ForumFilters />
+            </Suspense>
             {/* Posts List */}
             <Suspense fallback={<ForumPostsSkeleton />}>
                 <ForumQuestionsList />

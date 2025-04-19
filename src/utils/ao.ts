@@ -1,8 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createDataItemSigner, dryrun, message, result } from "@permaweb/aoconnect";
 
-// const wallet = typeof window === "undefined"
-//     ? JSON.parse(process.env.SERVER_WALLET_JWK!)
-//     : null;
+const wallet = typeof window === "undefined"
+    ? JSON.parse(process.env.SERVER_WALLET_JWK!)
+    : null;
 
 // Server-side implementation
 export async function fetchAOmessagesServer(
@@ -10,10 +11,23 @@ export async function fetchAOmessagesServer(
     process: string
 ) {
     try {
-        const { Messages, Error: error } = await dryrun({
-            tags,
+        // console.log("my Wallet: ", wallet)
+        // console.log("Window:=>", typeof window)
+
+        const fetchDappsMessages = await message({
             process,
+            tags,
+            signer: createDataItemSigner(wallet),
         });
+        const { Messages, Error: error } = await result({
+            message: fetchDappsMessages,
+            process
+        })
+
+        // const { Messages, Error: error } = await dryrun({
+        //     tags,
+        //     process,
+        // });
 
         if (error) {
             console.error("Error => ", error);

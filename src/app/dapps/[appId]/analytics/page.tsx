@@ -15,7 +15,7 @@ export async function generateStaticParams() {
         return appIds;
     } catch (error) {
         console.error('Error generating static params:', error);
-        return [];
+        return [{ appId: "TX1" }];
     }
 }
 

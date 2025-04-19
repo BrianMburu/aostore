@@ -11,7 +11,7 @@ export async function generateStaticParams() {
         return appIds;
     } catch (error) {
         console.error('Error generating static params:', error);
-        return [];
+        return [{ appId: "TX1" }];
     }
 }
 
@@ -19,10 +19,13 @@ export default function DappFeatureRequestsPage() {
     return (
         <div className="max-w-7xl mx-auto">
             <div className="space-y-8">
-                <div className="flex flex-col md:flex-row justify-between items-center">
-                    <h2 className="text-xl mb-4 md:mb-0 font-bold dark:text-white">Feature Requests & Bugs</h2>
-                    <FeatureRequestFilter />
-                </div>
+                <Suspense fallback={<div>Loading...</div>}>
+                    <div className="flex flex-col md:flex-row justify-between items-center">
+                        <h2 className="text-xl mb-4 md:mb-0 font-bold dark:text-white">Feature Requests & Bugs</h2>
+
+                        <FeatureRequestFilter />
+                    </div>
+                </Suspense>
 
                 <Suspense fallback={<FeatureRequestsListSkeleton />}>
                     <FeatureRequestList />
@@ -30,6 +33,5 @@ export default function DappFeatureRequestsPage() {
 
             </div>
         </div>
-
     )
 }
