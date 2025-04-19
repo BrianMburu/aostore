@@ -26,7 +26,7 @@ export function DesktopTabs() {
                     <Link
                         key={tab.name}
                         href={`/dapps/${params.appId}${tab.href}`}
-                        className={`px-1 py-4 border-b-2 font-medium text-sm ${pathname === `/dapps/${params.appId}${tab.href}`
+                        className={`px-1 py-4 border-b-2 font-medium text-sm ${pathname === `/dapps/${params.appId}${tab.href}/`
                             ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'
                             }`}
@@ -70,7 +70,7 @@ export function MobileTabs() {
                                 {({ }) => (
                                     <Link
                                         href={`/dapps/${params.appId}${tab.href}`}
-                                        className={`block px-4 py-2 text-sm ${pathname === `/dapps/${params.appId}${tab.href}`
+                                        className={`block px-4 py-2 text-sm ${pathname === `/dapps/${params.appId}${tab.href}/`
                                             ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200'
                                             : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                                             }`}

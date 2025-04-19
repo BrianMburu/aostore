@@ -3,18 +3,18 @@ import { createDataItemSigner, dryrun, message, result } from "@permaweb/aoconne
 // import { readFileSync } from "node:fs";
 // import { resolve } from "node:path";
 
-let fs: typeof import("node:fs");
-let path: typeof import("node:path");
+// let fs: typeof import("node:fs");
+// let path: typeof import("node:path");
 
-if (typeof window === "undefined") {
-    fs = await import("node:fs");
-    path = await import("node:path");
-}
+// if (typeof window === "undefined") {
+//     fs = await import("node:fs");
+//     path = await import("node:path");
+// }
 
-const wallet = typeof window === "undefined"
-    // ? JSON.parse(process.env.SERVER_WALLET_JWK!)
-    ? JSON.parse(fs!.readFileSync(path!.resolve("/home/brian/Documents/projects/aostore/wallet.json")).toString())
-    : null;
+// const wallet = typeof window === "undefined"
+//     ? JSON.parse(process.env.SERVER_WALLET_JWK!)
+//     // ? JSON.parse(fs!.readFileSync(path!.resolve("/home/brian/Documents/projects/aostore/wallet.json")).toString())
+//     : null;
 
 // Server-side implementation
 export async function fetchAOmessagesServer(
@@ -22,25 +22,25 @@ export async function fetchAOmessagesServer(
     process: string
 ) {
     try {
-        console.log("my Wallet: ", wallet)
-        console.log("Window:=>", typeof window)
+        // console.log("my Wallet: ", wallet)
+        // console.log("Window:=>", typeof window)
 
-        const fetchDappsMessages = await message({
-            process,
-            tags,
-            signer: createDataItemSigner(wallet),
-        });
-        const { Messages, Error: error } = await result({
-            message: fetchDappsMessages,
-            process
-        })
-
-        // const { Messages, Error: error } = await dryrun({
-        //     tags,
+        // const fetchDappsMessages = await message({
         //     process,
+        //     tags,
+        //     signer: createDataItemSigner(wallet),
         // });
+        // const { Messages, Error: error } = await result({
+        //     message: fetchDappsMessages,
+        //     process
+        // })
 
-        console.log("Messages:=>", Messages)
+        const { Messages, Error: error } = await dryrun({
+            tags,
+            process,
+        });
+
+        // console.log("Messages:=>", Messages)
 
         if (error) {
             console.error("Error => ", error);

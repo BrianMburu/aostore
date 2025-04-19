@@ -3,7 +3,6 @@ import { fetchAllPages } from '@/helpers/idsPaginator';
 import { AirdropService } from '@/services/ao/airdropService';
 import { DAppService } from '@/services/ao/dappService';
 
-// Usage in generateStaticParams
 export async function generateStaticParams() {
     try {
         const [appIds, airdropIds] = await Promise.all([

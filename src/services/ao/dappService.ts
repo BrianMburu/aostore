@@ -76,7 +76,7 @@ export const DAppService = {
             if (!messages?.length) throw new Error("No messages returned from ao");
 
             const lastMessage = messages[messages.length - 1];
-            console.log("Last Message Decode:=> ", lastMessage)
+            // console.log("Last Message Decode:=> ", lastMessage)
             const cleanedData = cleanAoJson(lastMessage.Data);
             const messageData = JSON.parse(cleanedData);
 
