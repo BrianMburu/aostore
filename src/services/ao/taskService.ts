@@ -18,6 +18,47 @@ export interface TaskReplyParams {
 }
 
 export const TaskService = {
+    getAllTasksIds: async (page = 1, limit = 10): Promise<{ data: { taskId: string }[], pagination: { total: number, page: number, totalPages: number } }> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetTasksIds" },
+                { name: "page", value: page.toString() },
+                { name: "limit", value: limit.toString() }
+            ], PROCESS_ID_TASKS_TABLE);
+
+            if (!messages?.length) throw new Error("No messages returned from ao");
+
+            const lastMessage = messages[messages.length - 1];
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            const messageData = JSON.parse(cleanedData);
+
+            let taskIds: { taskId: string }[] = []
+
+            if (messageData?.code == 200 && messageData.data) {
+                taskIds = messageData.data.map((taskId: { taskId: string }) => ({ taskId }))
+
+            } else {
+                throw new Error(messageData.message)
+            }
+            return {
+                data: taskIds,
+                pagination: {
+                    total: messageData.total,
+                    page: messageData.page,
+                    totalPages: Math.ceil(messageData.total / limit)
+                }
+            };
+
+        } catch (error) {
+            console.error(error);
+            if (error instanceof Error) {
+                throw new Error(`Failed to fetch tasks: ${error.message}`);
+            } else {
+                throw new Error("Failed to fetch tasks: An unknown error occurred.");
+            }
+        }
+    },
+
     async fetchTasks(appId: string, params: TaskFilterParams, useInfiniteScroll: boolean = false): Promise<{ tasks: Task[], total: number }> {
         let fetchedTasks: Task[] = [];
         try {

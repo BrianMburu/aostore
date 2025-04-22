@@ -1,6 +1,7 @@
 'use client'
 import { motion } from 'framer-motion';
 import { AirDropsFilter } from "./AirdropsFilter";
+import { Suspense } from 'react';
 
 export function AirdropHeader() {
     return (
@@ -13,7 +14,10 @@ export function AirdropHeader() {
                 🚀 Active Airdrops
             </motion.h1>
 
-            <AirDropsFilter />
+            <Suspense>
+                <AirDropsFilter />
+            </Suspense>
+
         </div>
     )
 }

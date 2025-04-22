@@ -11,15 +11,13 @@ import ModalDialog from "../../MyDapps/ModalDialog"
 import { EditButton } from "../../EditButton"
 import { AnimatedButton } from "../../animations/AnimatedButton"
 import { useRank } from "@/context/RankContext"
-import { useRouter } from "next/navigation"
 
 const initialState: ReviewState = { message: null, errors: {}, review: null };
 
-export function DappReviewEditForm({ appId, review }: { appId: string, review: Review }) {
+export function DappReviewEditForm({ appId, review, refreshReviews }: { appId: string, review: Review, refreshReviews: () => void }) {
     const [isOpen, setIsOpen] = useState(false)
 
     const { rank } = useRank();
-    const router = useRouter();
 
     // Local state for the request details to support optimistic updates
     const [localReview, setLocalReview] = useState<Review>(review);
@@ -43,7 +41,8 @@ export function DappReviewEditForm({ appId, review }: { appId: string, review: R
                     toast.success(`Review submitted successfully!`);
 
                     // setLocalReview(newState.review);
-                    router.refresh();
+                    setIsOpen(false)
+                    refreshReviews()
                 }
 
                 return newState;

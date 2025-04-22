@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useEffect } from 'react'
+import React, { useState, useTransition, useEffect, Suspense } from 'react'
 
 import { ForumPost } from "@/types/forum"
 import { DEFAULT_PAGE_SIZE } from "@/config/page"
@@ -10,16 +10,20 @@ import { AnimatedButton } from '../../animations/AnimatedButton'
 import { ForumAnswerForm } from './ForumAnswerForm'
 import { AnimatedList } from '../../animations/AnimatedList'
 import { AnimatedListItem } from '../../animations/AnimatedListItem'
-import { ForumService } from '@/services/ao/forumService'
+import { ForumFilterParams, ForumService } from '@/services/ao/forumService'
 import toast from 'react-hot-toast'
 import { EmptyState } from '../../EmptyState'
 import ForumCardsSkeleton from './skeletons/ForumCardsSkeleton'
 import { useAuth } from '@/context/AuthContext'
 import { HelpfulButton } from '../../Dapps/HelpfulButton'
 import { Voters } from '@/types/voter'
+import { useSearchParams } from 'next/navigation'
 
 // QuestionsList component
-export function QuestionsList({ appId, searchParams }: { appId: string, searchParams: { topic?: string; search?: string } }) {
+export function QuestionsList() {
+    const searchParams = useSearchParams();
+    const appId = searchParams.get('appId') as string || "";
+
     const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 
@@ -27,11 +31,13 @@ export function QuestionsList({ appId, searchParams }: { appId: string, searchPa
     const { isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as ForumFilterParams;
+
         startTransition(
             async () => {
                 try {
                     if (!isAuthLoading && isConnected) {
-                        const { posts, total } = await ForumService.fetchForumPosts(appId, searchParams, true);
+                        const { posts, total } = await ForumService.fetchForumPosts(appId, filterParams, true);
 
                         if (posts) {
                             setForumPosts(posts);
@@ -48,8 +54,7 @@ export function QuestionsList({ appId, searchParams }: { appId: string, searchPa
                 }
             })
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, searchParams])
+    }, [appId, isAuthLoading, isConnected, searchParams])
 
     if (isLoading) {
         return <ForumCardsSkeleton n={6} />
@@ -80,9 +85,12 @@ export function QuestionsList({ appId, searchParams }: { appId: string, searchPa
 
 
             {forumPosts &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

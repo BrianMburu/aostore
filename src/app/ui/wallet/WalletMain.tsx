@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import BalanceCard from "./BalanceCard";
 import TransactionHistory from "./TransactionHistory";
 import { SwapModal, TransferModal } from "./Modals";
 import { AppTokenData } from "@/types/dapp";
-import { TokenService, TransactionsFilterParams } from "@/services/ao/tokenService";
+import { TokenService } from "@/services/ao/tokenService";
 import { useAuth } from "@/context/AuthContext";
 import { TransactionHistoryFilters } from "./TransactionHistoryFilters";
 import TipTransactionHistory from "./TipTransactionHistory";
+import TransactionHistorySkeleton from "./skeletons/TransactionHistorySkeleton";
 
-export function WalletMain({ searchParams }: { searchParams: TransactionsFilterParams }) {
+export function WalletMain() {
     const [tokens, setTokens] = useState<AppTokenData[]>([]);
     const [activeToken, setActiveToken] = useState<AppTokenData>();
     const [activeTab, setActiveTab] = useState(0);
@@ -83,7 +84,9 @@ export function WalletMain({ searchParams }: { searchParams: TransactionsFilterP
                         </div>
 
                         <div className="flex gap-4 mb-2">
-                            <TransactionHistoryFilters />
+                            <Suspense fallback={<div className="w-32 h-6 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />}>
+                                <TransactionHistoryFilters />
+                            </Suspense >
                             {activeTab === 0 && (
                                 <select
                                     value={accessPage}
@@ -104,11 +107,16 @@ export function WalletMain({ searchParams }: { searchParams: TransactionsFilterP
                     </div>
                 </div>
 
-                {activeTab === 0 && <TransactionHistory accessPage={accessPage} searchParams={searchParams} />}
-                {activeTab === 1 && <TipTransactionHistory searchParams={searchParams} />}
-
-
-
+                {activeTab === 0 &&
+                    <Suspense fallback={<TransactionHistorySkeleton />}>
+                        <TransactionHistory accessPage={accessPage} />
+                    </Suspense>
+                }
+                {activeTab === 1 &&
+                    <Suspense fallback={<TransactionHistorySkeleton />}>
+                        <TipTransactionHistory />
+                    </Suspense>
+                }
             </div>
 
             <TransferModal open={activeModal === 'transfer'} onClose={() => setActiveModal(undefined)} tokenData={activeToken!} />

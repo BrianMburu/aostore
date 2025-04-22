@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 
 import { DAppEditForm } from '@/app/ui/MyDapps/DappEditForm';
 import { VerificationSection, VerificationStatus } from '@/app/ui/MyDapps/VerificationStatus';
@@ -15,11 +15,12 @@ import { useAuth } from '@/context/AuthContext';
 import SettingsSkeleton from '../skeletons/SettingsSkeleton';
 import React from 'react';
 
-function SettingsComponent({ appId }: { appId: string }) {
+function SettingsComponent() {
+    const appId = useSearchParams().get('appId') as string || "";
+
     const [dapp, setDapp] = useState<Dapp | null>(null);
     const [isPending, setIsPending] = useState<boolean>(true)
     const { isConnected } = useAuth();
-
 
     useEffect(() => {
         const fetchData = async () => {

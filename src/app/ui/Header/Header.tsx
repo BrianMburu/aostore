@@ -13,6 +13,8 @@ import Image from "next/image";
 import { AnimatedButton } from "../animations/AnimatedButton";
 import Loader from "../Loader";
 import { ProfileIconSkeleton } from "./skeletons/ProfileIconSkeleton";
+import { NotificationIcon } from "./NotificationIcon";
+import { useSiteSettings } from "@/context/SettingsContext";
 // import { NotificationIconSkeleton } from "./NotificationIcon";
 
 // import  {Bars3Icon} from '@heroicons/react/24/outline';
@@ -27,6 +29,7 @@ const Header: React.FC = () => {
     const router = useRouter();
 
     const { user, isLoading: verifyingSession, isConnected, login, logout } = useAuth();
+    const { showNotifications } = useSiteSettings();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -78,6 +81,7 @@ const Header: React.FC = () => {
                         <AnimatedButton
                             onClick={() => router.push("/")}
                             className="flex-shrink-0"
+                            disabled={isLoading}
                         >
                             <Image
                                 className="dark:invert"
@@ -111,7 +115,8 @@ const Header: React.FC = () => {
 
                     {/* Right Section - Wallet and Connect */}
                     <div className="flex items-center space-x-4">
-                        {/* <NotificationIconSkeleton /> */}
+                        {isConnected && showNotifications && <NotificationIcon />}
+
                         {
                             verifyingSession ?
                                 <ProfileIconSkeleton />

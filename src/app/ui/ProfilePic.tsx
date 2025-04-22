@@ -1,8 +1,9 @@
 'use client'
 
 import { checkValidUrl } from "@/utils/airdrops";
-import Image from "next/image";
+// import Image from "next/image";
 import { useState } from "react";
+import NextImage from "./NextImage";
 
 export default function ProfileImage({
     imgUrl,
@@ -20,14 +21,23 @@ export default function ProfileImage({
     return (
         <div className={`relative ${className}`}>
             {!displayFallback ? (
-                <Image
+                <NextImage
                     src={imgUrl}
                     alt={alt}
                     height={40}
                     width={40}
-                    className={`rounded-full object-cover ${className}`}
+                    className={`${className}`}
+                    classNames={{ image: `rounded-full object-cover ${className}`, blur: 'rounded-full' }}
                     onError={() => setHasError(true)}
                 />
+                // <Image
+                //     src={imgUrl}
+                //     alt={alt}
+                //     height={40}
+                //     width={40}
+                //     className={`rounded-full object-cover ${className}`}
+                //     onError={() => setHasError(true)}
+                // />
             ) : (
                 <div
                     className={`flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 font-medium text-gray-600 dark:text-gray-300 ${className}`}

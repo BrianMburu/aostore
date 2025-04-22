@@ -1,6 +1,6 @@
 import { DEFAULT_PAGE_SIZE } from '@/config/page';
 import { Airdrop } from '@/types/airDrop';
-import { cleanAoJson, fetchAOmessages } from '@/utils/ao';
+import { cleanAoJson, fetchAOmessages, fetchAOmessagesServer } from '@/utils/ao';
 import { PROCESS_ID_AIRDROP_TABLE } from '@/config/ao';
 import { AppTokenData } from '@/types/dapp';
 
@@ -46,6 +46,47 @@ export const AirdropService = {
         } catch (error) {
             console.error(error);
             throw new Error(`Failed to fetch Airdrop Data, ${error}`)
+        }
+    },
+
+    getAllAirdropIds: async (page = 1, limit = 10): Promise<{ data: { airdropId: string }[], pagination: { total: number, page: number, totalPages: number } }> => {
+        try {
+            const messages = await fetchAOmessagesServer([
+                { name: "Action", value: "GetAirdropIds" },
+                { name: "page", value: page.toString() },
+                { name: "limit", value: limit.toString() }
+            ], PROCESS_ID_AIRDROP_TABLE);
+
+            if (!messages?.length) throw new Error("No messages returned from ao");
+
+            const lastMessage = messages[messages.length - 1];
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            const messageData = JSON.parse(cleanedData);
+
+            let airdropIds: { airdropId: string }[] = []
+
+            if (messageData?.code == 200 && messageData.data) {
+                airdropIds = messageData.data.map((airdropId: { airdropId: string }) => ({ airdropId }))
+
+            } else {
+                throw new Error(messageData.message)
+            }
+            return {
+                data: airdropIds,
+                pagination: {
+                    total: messageData.total,
+                    page: messageData.page,
+                    totalPages: Math.ceil(messageData.total / limit)
+                }
+            };
+
+        } catch (error) {
+            console.error(error);
+            if (error instanceof Error) {
+                throw new Error(`Failed to fetch airdrops: ${error.message}`);
+            } else {
+                throw new Error("Failed to fetch airdrops: An unknown error occurred.");
+            }
         }
     },
 

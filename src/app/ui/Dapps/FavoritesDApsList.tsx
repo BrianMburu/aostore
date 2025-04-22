@@ -6,12 +6,15 @@ import { DAppService, DAppsFilterParams } from '@/services/ao/dappService'
 import { useAuth } from '@/context/AuthContext';
 import { DappList } from '@/types/dapp';
 import PaginationControls from '../PaginationControls';
-import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import DappCardsSkeleton from './Skeletons/DappCardsSkeleton';
 import { EmptyState } from '../EmptyState';
+import { useSearchParams } from 'next/navigation';
 
 
-export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterParams }) {
+export function FavoriteDAppsList() {
+    const searchParams = useSearchParams();
+    const filterParams = Object.fromEntries(searchParams.entries()) as DAppsFilterParams;
+
     const [favoriteDapps, setFavoriteDapps] = useState<DappList[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [isFetching, StartTransition] = useTransition();
@@ -67,7 +70,7 @@ export function FavoriteDAppsList({ filterParams }: { filterParams: DAppsFilterP
             </div>
             {favoriteDapps &&
                 <PaginationControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    totalPages={Math.ceil(totalItems / 8)}
                     paramName='fv_page'
                 />}
         </div>

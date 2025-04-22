@@ -1,24 +1,29 @@
 'use client'
 
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { EmptyState } from "../../EmptyState";
 import InfinityScrollControls from "../../InfinityScrollControls";
 import { TaskFilterParams, TaskService } from "@/services/ao/taskService";
 import { TaskReply } from "@/types/task";
 import { TaskReplyItem } from "./TaskReplyItem";
+import { useSearchParams } from "next/navigation";
 
 
-export function TaskReplyList({ replies, searchParams }: { replies: TaskReply[], searchParams: TaskFilterParams }) {
+export function TaskReplyList({ replies }: { replies: TaskReply[] }) {
+    const searchParams = useSearchParams();
+
     const [taskReplies, setTaskReplies] = useState<TaskReply[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 
     const { isConnected, isLoading } = useAuth();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as TaskFilterParams;
+
         try {
-            const { replies: data, total } = TaskService.processTaskReplies(replies, searchParams, true);
+            const { replies: data, total } = TaskService.processTaskReplies(replies, filterParams, true);
             if (replies) {
                 setTaskReplies(data);
                 setTotalItems(total)
@@ -50,9 +55,12 @@ export function TaskReplyList({ replies, searchParams }: { replies: TaskReply[],
             ))}
 
             {taskReplies &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

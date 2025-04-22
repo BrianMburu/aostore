@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useActionState, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast';
 
 // import { State, createDapp, createTemporaryDApp, dappSchema } from '@/lib/mydappActions';
@@ -14,8 +14,9 @@ import { AddTaskFloatingButton } from './AddTaskFloatingButton';
 
 export const AddTaskForm = () => {
     // Get appId from URL
-    const params = useParams()
-    const appId = params.appId as string;
+    // const params = useParams()
+    // const appId = params.appId as string;
+    const appId = useSearchParams().get("appId") as string;
 
     // Get userId from session
     const [isOpen, setIsOpen] = useState(false);

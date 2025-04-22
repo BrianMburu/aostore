@@ -22,7 +22,7 @@ export function TransactionHistoryFilters() {
                 <input
                     type="text"
                     placeholder="Search transaction type..."
-                    className="pl-10 w-full pr-4 border rounded-lg bg-white dark:bg-gray-800 dark:text-white rounded p-2 text-sm"
+                    className="pl-10 w-full pr-4 border rounded-lg bg-white dark:bg-gray-800 dark:text-white p-2 text-sm"
                     onChange={(e) => handleFilter('filter', e.target.value)}
                     defaultValue={searchParams.get('filter')?.toString()}
                 />

@@ -42,7 +42,7 @@ export function TaskItemMini({ task, appId }: { task: Task; appId: string }) {
                         </div>
 
                         <Link
-                            href={`/mydapps/${appId}/tasks/${task.taskId}`}
+                            href={`/mydapps/details/tasks/details/?appId=${appId}&taskId=${task.taskId}`}
                             className="text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
                         >
                             {task.title}

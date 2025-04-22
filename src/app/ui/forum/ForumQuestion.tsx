@@ -60,7 +60,7 @@ export default function ForumQuestion({ post, appId, postId, refreshPost }: { po
     };
 
     const sharePost = async () => {
-        const url = `/dapps/${appId}/forum/${post.devForumId}`;
+        const url = `/dapps/details/forum/details/?appId=${appId}&postId=${post.devForumId}`;
         await navigator.clipboard.writeText(`${post.title}: ${window.location.origin + url}`);
         toast.success('Link copied to clipboard!');
     }
