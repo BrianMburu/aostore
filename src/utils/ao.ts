@@ -2,7 +2,7 @@
 import { createDataItemSigner, dryrun, message, result } from "@permaweb/aoconnect";
 
 const wallet = typeof window === "undefined"
-    ? JSON.parse(process.env.SERVER_WALLET_JWK!)
+    ? JSON.parse(process.env.SERVER_WALLET_JWK! || "")
     : null;
 
 // Server-side implementation
