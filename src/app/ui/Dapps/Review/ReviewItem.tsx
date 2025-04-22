@@ -14,7 +14,7 @@ import { Reply } from '@/types/reply'
 import ProfileImage from '../../ProfilePic'
 import { TipHistoryDialog } from '../TipHistoryButton'
 
-export function ReviewItem({ appId, review }: { appId: string, review: Review }) {
+export function ReviewItem({ appId, review, refreshReviews }: { appId: string, review: Review, refreshReviews: () => void }) {
     const { user } = useAuth();
     const [isPending, startTransition] = useTransition();
     const [voters, setVoters] = useState<Voters>(review.voters);
@@ -92,7 +92,7 @@ export function ReviewItem({ appId, review }: { appId: string, review: Review })
                         </div>
                         <div className='flex items-center gap-2'>
                             {user?.walletAddress === review.user && (
-                                <DappReviewEditForm review={review} appId={appId} />
+                                <DappReviewEditForm review={review} appId={appId} refreshReviews={refreshReviews} />
                             )}
                             <TipHistoryDialog appId={appId} userId={review.user} taskId={review.reviewId} />
                         </div>

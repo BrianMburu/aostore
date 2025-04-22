@@ -6,7 +6,7 @@ import { FaceFrownIcon } from '@heroicons/react/24/outline'
 
 export default function NotFoundComponent() {
     return (
-        <div className="flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
+        <div className="mt-40 flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

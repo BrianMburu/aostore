@@ -26,7 +26,7 @@ export default function ForumAnswer({ reply, postId, appId, refreshPost }:
                         {user && user.walletAddress == reply.user &&
                             <ForumEditAnswerForm reply={reply} appId={appId} postId={postId} refreshPost={refreshPost} />}
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                            {formatActivityTime(reply.createdTime)}
+                            {formatActivityTime(Number(reply.createdTime))}
                         </span>
                     </div>
 

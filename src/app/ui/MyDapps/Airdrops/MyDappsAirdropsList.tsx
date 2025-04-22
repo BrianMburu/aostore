@@ -6,16 +6,15 @@ import InfinityScrollControls from "../../InfinityScrollControls";
 import { AirdropsSkeleton } from "../../AirDrops/skeletons/AirdropsSkeleton";
 import { EmptyState } from "../../EmptyState";
 import { Airdrop } from "@/types/airDrop";
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { AidropsFilterParams, AirdropService } from "@/services/ao/airdropService";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export function MyDappsAirdropsList() {
-    const params = useParams();
-    const appId = params.appId as string;
-    const searchParams = useSearchParams();
 
+    const searchParams = useSearchParams();
+    const appId = searchParams.get('appId') as string || "";
 
     const [airdrops, setAirdrops] = useState<Airdrop[]>([]);
     const [totalItems, setTotalItems] = useState(0);
@@ -71,13 +70,16 @@ export function MyDappsAirdropsList() {
                     <MyDappsAirDropCard
                         key={airdrop.airdropId}
                         airdrop={airdrop}
+                        appId={appId}
                     />
                 ))}
             </div>
             {airdrops &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
             }
         </>
 

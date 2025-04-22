@@ -5,10 +5,11 @@ import { useEffect, useState, useTransition } from "react";
 import { TotalCardSkeleton } from "./skeletons/TotalCardSkeleton";
 import { TotalCard } from "./TotalCard";
 import { useAuth } from "@/context/AuthContext";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function ReviewTotals() {
-    const appId = useParams().appId as string;
+    // const appId = useParams().appId as string;
+    const appId = useSearchParams().get('appId') as string || "";
 
     const [totalReviews, setTotalReview] = useState(0);
     const [isLoading, startTransition] = useTransition();

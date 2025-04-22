@@ -119,7 +119,7 @@ export function AirdropCardCustom({ airdrop, appId }: { airdrop: Airdrop, appId:
                     {airdrop.status.toUpperCase()}
                 </span>
                 <Link
-                    href={`/dapps/${appId}/airdrops/${airdrop.airdropId}`}
+                    href={`/dapps/details/airdrops/details?appId=${appId}&airdropId=${airdrop.airdropId}`}
                     className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center"
                 >
                     Details <ChevronRightIcon className="h-4 w-4 ml-1" />

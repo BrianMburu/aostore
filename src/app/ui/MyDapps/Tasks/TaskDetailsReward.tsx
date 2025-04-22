@@ -1,10 +1,10 @@
 'use client'
 
 import { Task } from '@/types/task'
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useAuth } from '@/context/AuthContext'
 import { TaskService } from '@/services/ao/taskService'
-import { notFound, useParams } from 'next/navigation'
+import { notFound, useSearchParams } from 'next/navigation'
 import { TaskDetailsMini } from './TaskDetailsMini'
 import { MyTaskPageSkeleton } from './skeletons/MyTaskPageSkeleton'
 import { MyTaskReplyList } from './MyTaskReplyList'
@@ -12,8 +12,10 @@ import { BackLink } from '../../BackLink'
 import { StatusToggle } from './StatusToggle'
 
 export function TaskDetailsRewards() {
-    const appId = useParams().appId as string;
-    const taskId = useParams().taskId as string;
+    const searchParams = useSearchParams();
+
+    const appId = searchParams.get("appId") as string;
+    const taskId = searchParams.get("taskId") as string;
 
     const [task, setTask] = useState<Task | null>(null)
     const [loading, setLoading] = useState(true)
@@ -49,7 +51,7 @@ export function TaskDetailsRewards() {
     return (
         <>
             <div className="mb-8">
-                <BackLink href={`/mydapps/${appId}/tasks`} value={'Back to Tasks'} />
+                <BackLink href={`/mydapps/details/tasks/?appId=${appId}`} value={'Back to Tasks'} />
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -64,9 +66,10 @@ export function TaskDetailsRewards() {
                         </h2>
                         <StatusToggle />
                     </div>
-
-                    <MyTaskReplyList replies={Object.values(task.replies)} appId={appId}
-                        taskId={taskId} />
+                    <Suspense>
+                        <MyTaskReplyList replies={Object.values(task.replies)} appId={appId}
+                            taskId={taskId} />
+                    </Suspense>
                 </div>
             </div>
         </>

@@ -3,7 +3,7 @@
 import { Message } from "@/types/message";
 import { MessageCard } from "./MessageCard";
 import { AnimatedListItem } from "../../animations/AnimatedListItem";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { aoMessageService, MessageFilterParams } from "@/services/ao/messageService";
 import InfinityScrollControls from "../../InfinityScrollControls";
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
@@ -76,9 +76,12 @@ export function MessagesList() {
                 </AnimatedListItem>
             ))}
             {messages.length > 0 &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     );
 }

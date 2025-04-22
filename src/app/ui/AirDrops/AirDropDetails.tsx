@@ -5,7 +5,7 @@ import { AirdropService } from "@/services/ao/airdropService";
 import { Airdrop } from "@/types/airDrop";
 import { CheckBadgeIcon, ClockIcon, CurrencyDollarIcon, DocumentTextIcon, FingerPrintIcon, UserGroupIcon, UserIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import AirdropDetailsSkeleton from "./AirdropsDetailsSkeleton";
 import toast from "react-hot-toast";
@@ -14,8 +14,10 @@ import { applyPrecision } from "@/utils/ao";
 import { BackLink } from "../BackLink";
 
 export default function AirdropDetails({ isMyDapp = false }: { isMyDapp?: boolean }) {
-    const appId = useParams().appId as string;
-    const airdropId = useParams().airdropId as string;
+    // const appId = useParams().appId as string;
+    // const airdropId = useParams().airdropId as string;
+    const appId = useSearchParams().get('appId') as string || "" || "";
+    const airdropId = useSearchParams().get('airdropId') as string || "";
 
     const [showAllReceivers, setShowAllReceivers] = useState(false);
     const [airdrop, setAirdrop] = useState<Airdrop | null>(null);
@@ -72,8 +74,8 @@ export default function AirdropDetails({ isMyDapp = false }: { isMyDapp?: boolea
         <>
             <div className="mb-8">
                 <BackLink
-                    href={isMyDapp ? `/mydapps/${appId}/airdrops` :
-                        `/dapps/${appId}/airdrops`}
+                    href={isMyDapp ? `/mydapps/details/airdrops/?appId=${appId}` :
+                        `/dapps/details/airdrops/?appId=${appId}`}
                     value={'Back to Airdrops'}
                 />
             </div>

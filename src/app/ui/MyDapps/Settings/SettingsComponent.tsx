@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 
 import { DAppEditForm } from '@/app/ui/MyDapps/DappEditForm';
 import { VerificationSection, VerificationStatus } from '@/app/ui/MyDapps/VerificationStatus';
@@ -16,8 +16,8 @@ import SettingsSkeleton from '../skeletons/SettingsSkeleton';
 import React from 'react';
 
 function SettingsComponent() {
-    const params = useParams();
-    const appId = params.appId as string;
+    const appId = useSearchParams().get('appId') as string || "";
+
     const [dapp, setDapp] = useState<Dapp | null>(null);
     const [isPending, setIsPending] = useState<boolean>(true)
     const { isConnected } = useAuth();

@@ -6,7 +6,7 @@ import { FeatureRequestState, sendBugReport, sendFeatureRequest } from '@/lib/su
 import toast from 'react-hot-toast';
 import Loader from '../../Loader';
 import { useAuth } from '@/context/AuthContext';
-import { useParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { AnimatedButton } from '../../animations/AnimatedButton';
 import { useRank } from '@/context/RankContext';
 
@@ -27,8 +27,8 @@ function DappSupportForm({
 }: DappSupportFormProps) {
     const initialState: FeatureRequestState = { message: null, errors: {} };
 
-    const params = useParams();
-    const appId = params.appId as string;
+    const appId = useSearchParams().get('appId') as string || "";
+
     const { user } = useAuth();
     const { rank } = useRank();
 

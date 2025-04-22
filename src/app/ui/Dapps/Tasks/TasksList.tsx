@@ -1,7 +1,7 @@
 'use client'
 
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { TaskListSkeleton } from "./skeletons/TaskListSkeleton";
 import { TaskItem } from "./TaskItem";
@@ -9,12 +9,14 @@ import { EmptyState } from "../../EmptyState";
 import InfinityScrollControls from "../../InfinityScrollControls";
 import { TaskFilterParams, TaskService } from "@/services/ao/taskService";
 import { Task } from "@/types/task";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 
 export function TasksList() {
-    const appId = useParams().appId as string;
+    // const appId = useParams().appId as string;
     const searchParams = useSearchParams();
+    const appId = searchParams.get('appId') as string || "";
+
 
     const [tasks, setTasks] = useState<Task[]>([]);
     const [totalItems, setTotalItems] = useState(0);
@@ -72,9 +74,12 @@ export function TasksList() {
             ))}
 
             {tasks &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

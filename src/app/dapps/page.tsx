@@ -5,7 +5,7 @@ import DappCardsSkeleton from "../ui/Dapps/Skeletons/DappCardsSkeleton";
 import { FavoriteDAppsList } from "../ui/Dapps/FavoritesDApsList";
 import { DAppFilter } from "../ui/Dapps/DappFilter";
 
-export default async function DAppsPage() {
+export default function DAppsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}

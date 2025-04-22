@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { Suspense, useEffect, useState, useTransition } from 'react'
 import { useOptimisticMutation } from '@/hooks/useOptimisticMutation'
 import { HeartIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
 import StarIcon from '@heroicons/react/24/outline/StarIcon';
 import toast from 'react-hot-toast'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 import { ReviewReplyForm } from './ReviewReplyForm'
 import { Review } from '@/types/review'
@@ -28,8 +28,8 @@ import { EmptyState } from '../../EmptyState'
 
 // ReviewsList component
 export function ReviewsList() {
-  const appId = useParams().appId as string;
   const searchParams = useSearchParams();
+  const appId = searchParams.get("appId") as string || "";
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [total, setTotal] = useState(0);
@@ -76,7 +76,6 @@ export function ReviewsList() {
           {reviews.map((review) => (
             <AnimatedListItem key={review.reviewId}>
               <ReviewItem appId={appId} review={review} />
-
             </AnimatedListItem>
           ))}
         </div>
@@ -84,9 +83,12 @@ export function ReviewsList() {
 
 
       {reviews &&
-        <InfinityScrollControls
-          totalPages={Math.ceil(total / DEFAULT_PAGE_SIZE)}
-        />}
+        <Suspense>
+          <InfinityScrollControls
+            totalPages={Math.ceil(total / DEFAULT_PAGE_SIZE)}
+          />
+        </Suspense>
+      }
     </div>
   )
 }

@@ -4,7 +4,7 @@ import DAppCard from './DappCard'
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import InfinityScrollControls from '../InfinityScrollControls'
 import { DAppService, DAppsFilterParams } from '@/services/ao/dappService'
-import { useEffect, useState, useTransition } from 'react'
+import { Suspense, useEffect, useState, useTransition } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { DappList } from '@/types/dapp'
 import DappCardsSkeleton from './Skeletons/DappCardsSkeleton'
@@ -74,9 +74,12 @@ export function DAppsList() {
             </div>
 
             {totalItems > DEFAULT_PAGE_SIZE && dapps &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

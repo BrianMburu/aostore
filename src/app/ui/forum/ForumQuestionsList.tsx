@@ -4,18 +4,20 @@ import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { ForumPostItem } from "./ForumPostItem";
 import { ForumPost } from "@/types/forum";
 import InfinityScrollControls from "../InfinityScrollControls";
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ForumFilterParams, ForumService } from "@/services/ao/forumService";
 import { EmptyState } from "../EmptyState";
 import { ForumPostsSkeleton } from "./skeletons/ForumPostSkeleton";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 
 // QuestionsList component
 export function ForumQuestionsList() {
-    const appId = useParams().appId as string;
+    // const appId = useParams().appId as string;
     const searchParams = useSearchParams();
+    const appId = searchParams.get('appId') as string || "";
+
 
     const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
     const [totalItems, setTotalItems] = useState(0);
@@ -72,9 +74,12 @@ export function ForumQuestionsList() {
             ))}
 
             {forumPosts &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

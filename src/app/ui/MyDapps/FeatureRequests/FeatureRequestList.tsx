@@ -5,17 +5,17 @@ import { AnimatedList } from "../../animations/AnimatedList";
 import { AnimatedListItem } from "../../animations/AnimatedListItem";
 import InfinityScrollControls from "../../InfinityScrollControls";
 import { FeatureRequestItem } from "./FeatureRequestItem";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { FeatureRequestsListSkeleton } from "./skeletons/FeatureRequestSkeleton";
 import { FeatureBugParams, SupportService } from "@/services/ao/supportServices";
 import { BugReport, FeatureRequest } from "@/types/support";
 import { EmptyState } from "../../EmptyState";
 import { useAuth } from "@/context/AuthContext";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export function FeatureRequestList() {
-    const appId = useParams().appId as string;
     const searchParams = useSearchParams();
+    const appId = searchParams.get('appId') as string || "";
 
     const [requests, setRequests] = useState<(BugReport | FeatureRequest)[]>([]);
     const [total, setTotal] = useState(0);
@@ -100,9 +100,12 @@ export function FeatureRequestList() {
 
 
             {requests &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(total / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(total / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

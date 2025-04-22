@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import DappSupportForm from './DappSupportForm';
 import { BugAntIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 
@@ -36,23 +36,29 @@ const DappSupportTabs: React.FC = () => {
             {/* Tab Content */}
             <div>
                 {activeTab === 'bug' ? (
-                    <DappSupportForm
-                        requestType="bug"
-                        icon={<BugAntIcon className="h-5 w-5" />}
-                        title="Report a Bug"
-                        placeholder="Describe the issue you're experiencing..."
-                        submitText="Submit Bug Report"
-                        submitButtonClasses="px-4 py-2 bg-red-100 text-red-700 rounded-full hover:bg-red-200 dark:bg-red-900 dark:text-red-100"
-                    />
+                    <Suspense>
+                        <DappSupportForm
+                            requestType="bug"
+                            icon={<BugAntIcon className="h-5 w-5" />}
+                            title="Report a Bug"
+                            placeholder="Describe the issue you're experiencing..."
+                            submitText="Submit Bug Report"
+                            submitButtonClasses="px-4 py-2 bg-red-100 text-red-700 rounded-full hover:bg-red-200 dark:bg-red-900 dark:text-red-100"
+                        />
+                    </Suspense>
+
                 ) : (
-                    <DappSupportForm
-                        requestType="feature"
-                        icon={<LightBulbIcon className="h-5 w-5" />}
-                        title="Request Feature"
-                        placeholder="Describe your feature request..."
-                        submitText="Submit Feature Request"
-                        submitButtonClasses="px-4 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 dark:bg-green-900 dark:text-green-100"
-                    />
+                    <Suspense>
+                        <DappSupportForm
+                            requestType="feature"
+                            icon={<LightBulbIcon className="h-5 w-5" />}
+                            title="Request Feature"
+                            placeholder="Describe your feature request..."
+                            submitText="Submit Feature Request"
+                            submitButtonClasses="px-4 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 dark:bg-green-900 dark:text-green-100"
+                        />
+                    </Suspense>
+
                 )}
             </div>
         </div>

@@ -5,8 +5,20 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 
 import { Navigation } from 'swiper/modules';
+import { useAppContext } from '@/context/DappContexts';
+import { BannerSkeleton } from './Skeletons/BannerSkeleton';
 
-export default function DappBanner({ mainBannerImageUrls }: { mainBannerImageUrls: string[] }) {
+export default function DappBanner() {
+    const { loading, appData } = useAppContext();
+
+    if (loading) {
+        return <BannerSkeleton />
+    }
+
+    if (!appData) return null;
+
+    const mainBannerImageUrls = Object.values(appData.bannerUrls);
+
     return (
         <div className="mb-8">
             <Swiper

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useEffect } from 'react'
+import React, { useState, useTransition, useEffect, Suspense } from 'react'
 
 import { ForumPost } from "@/types/forum"
 import { DEFAULT_PAGE_SIZE } from "@/config/page"
@@ -17,12 +17,12 @@ import ForumCardsSkeleton from './skeletons/ForumCardsSkeleton'
 import { useAuth } from '@/context/AuthContext'
 import { HelpfulButton } from '../../Dapps/HelpfulButton'
 import { Voters } from '@/types/voter'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 // QuestionsList component
 export function QuestionsList() {
-    const appId = useParams().appId as string;
     const searchParams = useSearchParams();
+    const appId = searchParams.get('appId') as string || "";
 
     const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
     const [totalItems, setTotalItems] = useState(0);
@@ -85,9 +85,12 @@ export function QuestionsList() {
 
 
             {forumPosts &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

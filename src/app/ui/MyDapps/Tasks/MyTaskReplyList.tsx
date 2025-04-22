@@ -1,7 +1,7 @@
 'use client'
 
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { EmptyState } from "../../EmptyState";
 import InfinityScrollControls from "../../InfinityScrollControls";
@@ -54,9 +54,12 @@ export function MyTaskReplyList({ replies, appId, taskId }: { appId: string, tas
             ))}
 
             {taskReplies &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     )
 }

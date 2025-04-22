@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useActionState } from 'react';
-import { useSearchParams, usePathname, useRouter, useParams } from 'next/navigation'
+import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast';
 
 // import { State, createDapp, createTemporaryDApp, dappSchema } from '@/lib/mydappActions';
@@ -20,8 +20,7 @@ export const AddAirDropForm = () => {
     const { replace } = useRouter()
 
     // Get appId from URL
-    const params = useParams()
-    const appId = params.appId as string;
+    const appId = searchParams.get('appId') as string || "";
 
     // Get userId from session
     const { user } = useAuth()
