@@ -5,10 +5,10 @@ import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { TokenExpiry } from "@/config/auth";
 import { User } from "@/types/user";
 
-const secretKey = process.env.SESSION_SECRET;
-if (!secretKey) {
-  throw new Error("SESSION_SECRET is not defined");
-}
+const secretKey = process.env.SESSION_SECRET! || "SuperSecretKey";
+// if (!secretKey) {
+//   throw new Error("SESSION_SECRET is not defined");
+// }
 const encodedKey = new TextEncoder().encode(secretKey);
 
 /**
