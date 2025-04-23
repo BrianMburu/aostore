@@ -1,5 +1,4 @@
 import React from "react"
-import { Dapp } from "@/types/dapp"
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 import { AnimatedButton } from "../animations/AnimatedButton"
@@ -9,8 +8,18 @@ import { DAppService } from "@/services/ao/dappService"
 import toast from "react-hot-toast"
 import { capitalizeFirstLetter } from "@/utils/message"
 import Link from "next/link"
+import { useAppContext } from "@/context/DappContexts"
+import { HeaderSkeleton } from "./Skeletons/HeaderSkeleton"
 
-export function DappHeader({ appData }: { appData: Dapp }) {
+export function DappHeader() {
+    const { loading, appData } = useAppContext();
+
+    if (loading) {
+        return <HeaderSkeleton />
+    }
+
+    if (!appData) return null;
+
     const addToFavorites = async () => {
 
         try {

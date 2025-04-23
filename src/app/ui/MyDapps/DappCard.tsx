@@ -60,7 +60,7 @@ export const DAppCard = ({ dapp, isOptimistic }: { dapp: DappList, isOptimistic:
                     {dapp.verified ? 'Verified' : 'Pending Verification'}
                 </Chip> */}
                 <Link
-                    href={`/mydapps/${dapp.appId}`}
+                    href={`/mydapps/details/?appId=${dapp.appId}`}
                     className="text-indigo-600 dark:text-indigo-400 hover:underline"
                 // rel="noopener noreferrer"
                 >

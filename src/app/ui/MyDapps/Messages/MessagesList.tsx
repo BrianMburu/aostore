@@ -3,7 +3,7 @@
 import { Message } from "@/types/message";
 import { MessageCard } from "./MessageCard";
 import { AnimatedListItem } from "../../animations/AnimatedListItem";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { aoMessageService, MessageFilterParams } from "@/services/ao/messageService";
 import InfinityScrollControls from "../../InfinityScrollControls";
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
@@ -12,8 +12,10 @@ import { EmptyState } from "../../EmptyState";
 import { MessageCircle } from "lucide-react";
 import SentMessageListSkeleton from "./skeletons/SentMessageListSkeleton";
 import { useAuth } from "@/context/AuthContext";
+import { useSearchParams } from "next/navigation";
 
-export function MessagesList({ searchParams }: { searchParams: MessageFilterParams }) {
+export function MessagesList() {
+    const searchParams = useSearchParams();
     const [messages, setMessages] = useState<Message[]>([]);
     const [totalItems, setTotalItems] = useState(0);
 
@@ -22,15 +24,23 @@ export function MessagesList({ searchParams }: { searchParams: MessageFilterPara
 
     useEffect(() => {
         const loadMessages = async () => {
+            const filterParams = Object.fromEntries(searchParams.entries()) as MessageFilterParams;
+
             try {
                 setIsLoading(true);
 
-                const { messages, total } = await aoMessageService.getSentMessages(searchParams, true);
+                if (!isAuthLoading && isConnected) {
+                    const { messages, total } = await aoMessageService.getSentMessages(filterParams, true);
 
-                if (messages) {
-                    setMessages(messages);
-                    setTotalItems(total);
+                    if (messages) {
+                        setMessages(messages);
+                        setTotalItems(total);
+                    }
+                } else {
+                    setMessages([]);
+                    setTotalItems(0);
                 }
+
             } catch (error) {
                 toast.error('Failed to load messages');
                 console.error('Failed to load messages:', error);
@@ -66,9 +76,12 @@ export function MessagesList({ searchParams }: { searchParams: MessageFilterPara
                 </AnimatedListItem>
             ))}
             {messages.length > 0 &&
-                <InfinityScrollControls
-                    totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
-                />}
+                <Suspense>
+                    <InfinityScrollControls
+                        totalPages={Math.ceil(totalItems / DEFAULT_PAGE_SIZE)}
+                    />
+                </Suspense>
+            }
         </div>
     );
 }

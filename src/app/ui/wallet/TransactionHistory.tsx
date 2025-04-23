@@ -9,8 +9,10 @@ import { DEFAULT_PAGE_SIZE } from '@/config/page';
 import TransactionHistorySkeleton from './skeletons/TransactionHistorySkeleton';
 import { formatActivityTime } from '@/utils/forum';
 import { useRank } from '@/context/RankContext';
+import { useSearchParams } from 'next/navigation';
 
-export default function TransactionHistory({ accessPage, searchParams }: { accessPage: string, searchParams: TransactionsFilterParams }) {
+export default function TransactionHistory({ accessPage }: { accessPage: string }) {
+    const searchParams = useSearchParams();
     const [isFetching, startTransition] = useTransition();
     const [transactions, setTransactions] = useState<AppTransactionData[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
@@ -18,11 +20,13 @@ export default function TransactionHistory({ accessPage, searchParams }: { acces
     const { rank } = useRank();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as TransactionsFilterParams;
+
         startTransition(
             async () => {
                 try {
                     // Fetch transactions from the server
-                    const { data: fetchedTransactions, total } = await TokenService.fetchTransactions(accessPage, searchParams);
+                    const { data: fetchedTransactions, total } = await TokenService.fetchTransactions(accessPage, filterParams);
                     // console.log("Fetched Transactions => ", fetchedTransactions);
                     setTransactions(fetchedTransactions);
                     setTotalItems(total);
@@ -83,7 +87,7 @@ function EmptyState() {
     return (
         <div className="text-center py-12">
             <div className="mb-4 text-6xl">📭</div>
-            <h3 className="text-lg font-medium">No transactions yet</h3>
+            <h3 className="text-lg font-medium dark:text-gray-300">No transactions yet</h3>
             <p className="text-gray-500 mt-2">
                 Your transaction history will appear here once you start using your wallet
             </p>

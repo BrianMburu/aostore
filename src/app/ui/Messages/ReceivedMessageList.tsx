@@ -12,8 +12,11 @@ import MessageListSkeleton from "./skeletons/MessageListSkeleton";
 import { useAuth } from "@/context/AuthContext";
 import { EmptyState } from "../EmptyState";
 import { MessageCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
-export function ReceivedMessageList({ searchParams }: { searchParams: MessageFilterParams }) {
+export function ReceivedMessageList() {
+    const searchParams = useSearchParams();
+
     const [messages, setMessages] = useState<Message[]>([]);
     const [totalItems, setTotalItems] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -22,9 +25,11 @@ export function ReceivedMessageList({ searchParams }: { searchParams: MessageFil
     useEffect(() => {
         const loadMessages = async () => {
             try {
+                const filterParams = Object.fromEntries(searchParams.entries()) as MessageFilterParams;
+
                 setIsLoading(true);
 
-                const { messages, total } = await aoMessageService.getReceivedMessages(searchParams, true);
+                const { messages, total } = await aoMessageService.getReceivedMessages(filterParams, true);
 
                 if (messages) {
                     setMessages(messages);

@@ -7,8 +7,10 @@ import { Table } from "@tremor/react";
 import PaginationControls from "../PaginationControls";
 import { DEFAULT_PAGE_SIZE } from "@/config/page";
 import { formatActivityTime } from "@/utils/forum";
+import { useSearchParams } from "next/navigation";
 
-export default function TipTransactionHistory({ searchParams }: { searchParams: TransactionsFilterParams }) {
+export default function TipTransactionHistory() {
+    const searchParams = useSearchParams();
     const [isFetching, startTransition] = useTransition();
     const [transactions, setTransactions] = useState<AppTipTransactionData[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
@@ -16,11 +18,13 @@ export default function TipTransactionHistory({ searchParams }: { searchParams: 
     const { rank } = useRank();
 
     useEffect(() => {
+        const filterParams = Object.fromEntries(searchParams.entries()) as TransactionsFilterParams;
+
         startTransition(
             async () => {
                 try {
                     // Fetch transactions from the server
-                    const { data: fetchedTransactions, total } = await TokenService.fetchTipTransactions(searchParams);
+                    const { data: fetchedTransactions, total } = await TokenService.fetchTipTransactions(filterParams);
                     // console.log("Fetched Transactions => ", fetchedTransactions);
                     setTransactions(fetchedTransactions);
                     setTotalItems(total);

@@ -4,9 +4,13 @@ import { DonutChart } from '@tremor/react'
 import { ChartSkeleton } from '../../Analytics/skeletons/ChartSkeleton';
 import { useEffect, useState, useTransition } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
 
 
-export function FeatureBugChart({ appId, title }: { appId: string, title: string }) {
+export function FeatureBugChart({ title }: { title: string }) {
+    // const appId = useParams().appId as string;
+    const appId = useSearchParams().get('appId') as string || "";
+
     const [featureBugData, setFeatureBugData] = useState<{ names: string[], categories: string[] }>({ names: ["feature", "bug"], categories: [] });
     const [isLoading, startTransition] = useTransition();
 

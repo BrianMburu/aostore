@@ -1,32 +1,34 @@
 'use client'
 
-import { useParams, usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import { Menu, MenuItems, MenuButton, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 export const tabs = [
-    { name: 'Details', href: '' },
-    { name: 'Reviews', href: '/reviews' },
-    { name: 'Forum', href: '/forum' },
-    { name: 'Feature Requests', href: '/feature-requests' },
-    { name: 'Analytics', href: '/analytics' },
-    { name: 'Airdrops', href: '/airdrops' },
-    { name: 'Tasks', href: '/tasks' },
+    { name: 'Details', href: 'details' },
+    { name: 'Reviews', href: 'details/reviews' },
+    { name: 'Forum', href: 'details/forum' },
+    { name: 'Feature Requests', href: 'details/feature-requests' },
+    { name: 'Analytics', href: 'details/analytics' },
+    { name: 'Airdrops', href: 'details/airdrops' },
+    { name: 'Tasks', href: 'details/tasks' },
 ];
 
 export function DesktopTabs() {
     const pathname = usePathname();
-    const params = useParams();
+    // const params = useParams();
+    const appId = useSearchParams().get('appId') as string || "";
+
     return (
         <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                 {tabs.map((tab) => (
                     <Link
                         key={tab.name}
-                        href={`/dapps/${params.appId}${tab.href}`}
-                        className={`px-1 py-4 border-b-2 font-medium text-sm ${pathname === `/dapps/${params.appId}${tab.href}`
+                        href={`/dapps/${tab.href}/?appId=${appId}`}
+                        className={`px-1 py-4 border-b-2 font-medium text-sm ${pathname === `/dapps/${tab.href}/`
                             ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'
                             }`}
@@ -41,7 +43,8 @@ export function DesktopTabs() {
 
 export function MobileTabs() {
     const pathname = usePathname();
-    const params = useParams();
+    // const params = useParams();
+    const appId = useSearchParams().get('appId') as string || "";
 
     const currentTab = tabs.find(tab => tab.href === pathname) || tabs[0];
 
@@ -69,8 +72,8 @@ export function MobileTabs() {
                             <MenuItems key={tab.name}>
                                 {({ }) => (
                                     <Link
-                                        href={`/dapps/${params.appId}${tab.href}`}
-                                        className={`block px-4 py-2 text-sm ${pathname === `/dapps/${params.appId}${tab.href}`
+                                        href={`/dapps/${tab.href}/?appId=${appId}`}
+                                        className={`block px-4 py-2 text-sm ${pathname === `/dapps/${tab.href}/?appId=${appId}`
                                             ? 'bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200'
                                             : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
                                             }`}

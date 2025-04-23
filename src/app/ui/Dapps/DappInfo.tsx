@@ -1,21 +1,20 @@
 'use client'
 
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { DAppsListLimit } from "./DappListLimit";
 import { Suspense } from "react";
 import DappSupport from "./Support/DappSupport";
 import DappCardsSkeleton from "./Skeletons/DappCardsSkeleton";
 import { AirdropsListLimit } from "../AirDrops/AirdropListLimit";
 import { AirdropsSkeletonVertical } from "../AirDrops/skeletons/AirdropsSkeleton";
-import { AppDataContext, AppLoadingContext } from '@/app/dapps/[appId]/layout';
 import { ContentSkeleton } from './Skeletons/ContentSkeleton';
+import { useAppContext } from '@/context/DappContexts';
 
 export function DappInfo() {
-    const appData = useContext(AppDataContext);
-    const fetching = useContext(AppLoadingContext);
+    const { appData, loading } = useAppContext();
     const [showFullDescription, setShowFullDescription] = useState(false);
 
-    if (!appData || fetching) {
+    if (!appData || loading) {
         return <ContentSkeleton />;
     }
 
@@ -51,7 +50,9 @@ export function DappInfo() {
                 {/* // Add new sections in the Details tab */}
                 <div className="mt-12 space-y-12">
                     {/* Support Section */}
-                    <DappSupport appData={appData} />
+                    <Suspense fallback={<DappCardsSkeleton n={4} />}>
+                        <DappSupport appData={appData} />
+                    </Suspense>
 
                     {/* Similar DApps Section */}
                     <section>
@@ -68,7 +69,6 @@ export function DappInfo() {
                             <DAppsListLimit params={{ companyName: appData.companyName }} />
                         </Suspense>
                     </section>
-
                 </div>
             </div>
 

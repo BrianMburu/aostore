@@ -1,10 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+// import Image from 'next/image'
 import { formatActivityTime } from '@/utils/forum'
 import { TaskReply } from '@/types/task'
 import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/outline"
+import ProfileImage from '../../ProfilePic'
 
 export function TaskReplyItem({ reply }: { reply: TaskReply }) {
     return (
@@ -15,13 +16,7 @@ export function TaskReplyItem({ reply }: { reply: TaskReply }) {
         >
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <Image
-                        src={reply.profileUrl}
-                        alt={reply.username}
-                        width={40}
-                        height={40}
-                        className="rounded-full"
-                    />
+                    <ProfileImage imgUrl={reply.profileUrl} alt={reply.username} className={'rounded-full'} />
                     <div>
                         <h4 className="font-medium text-gray-900 dark:text-white">{reply.username}</h4>
                         <span className="text-sm text-indigo-600 dark:text-indigo-400">{reply.rank}</span>

@@ -33,7 +33,7 @@ export default function DAppCard({ dapp }: { dapp: DappList }) {
                 </a>
             )}
 
-            <Link href={`/dapps/${dapp.appId}`}>
+            <Link href={`/dapps/details/?appId=${dapp.appId}`}>
                 <div className="flex flex-row gap-4 sm:flex-col items-center justify-center w-full">
                     <Image
                         src={dapp.appIconUrl}

@@ -3,7 +3,7 @@
 
 import { MessageState, sendMessage } from '@/lib/messageActions'
 import { messageTypes } from '@/types/message'
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useActionState, useState } from 'react'
 import Loader from '../../Loader'
 import toast from 'react-hot-toast';
@@ -11,8 +11,7 @@ import { motion } from 'framer-motion';
 import { capitalizeFirstLetter } from '@/utils/message';
 
 export default function MessagesForm() {
-    const params = useParams();
-    const appId = params.appId as string;
+    const appId = useSearchParams().get('appId') as string || "";
 
     const initialState: MessageState = { message: null, errors: {}, messageData: null }
     const router = useRouter();
@@ -141,7 +140,7 @@ export default function MessagesForm() {
                             sending...
                         </div>
                     ) : (
-                        'Send Question'
+                        'Send Message'
                     )}
                 </button>
             </form>

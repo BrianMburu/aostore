@@ -11,7 +11,7 @@ export default function ForumPageSkeleton() {
             </div>
 
             <div className="space-y-6">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(3)].map((_, i) => (
                     <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl" />
                 ))}
             </div>

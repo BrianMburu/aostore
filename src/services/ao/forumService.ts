@@ -8,12 +8,54 @@ import { User } from '@/types/user';
 import { HelpfulData } from '@/types/voter';
 import { cleanAoJson, fetchAOmessages } from '@/utils/ao';
 export interface ForumFilterParams {
+    sort?: string;
     topic?: string;
     search?: string;
     page?: string;
 }
 
 export const ForumService = {
+    getAllForumIds: async (page = 1, limit = 10): Promise<{ data: { postId: string }[], pagination: { total: number, page: number, totalPages: number } }> => {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetDevForumIds" },
+                { name: "page", value: page.toString() },
+                { name: "limit", value: limit.toString() }
+            ], PROCESS_ID_DEV_FORUM_TABLE);
+
+            if (!messages?.length) throw new Error("No messages returned from ao");
+
+            const lastMessage = messages[messages.length - 1];
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            const messageData = JSON.parse(cleanedData);
+            let postIds: { postId: string }[] = []
+
+            if (messageData?.code == 200 && messageData.data) {
+                postIds = Object.values(messageData.data as string[]).map((postId) => ({ postId }))
+
+            } else {
+                throw new Error(messageData.message)
+            }
+
+            return {
+                data: postIds,
+                pagination: {
+                    total: messageData.total,
+                    page: messageData.page,
+                    totalPages: Math.ceil(messageData.total / limit)
+                }
+            };
+
+        } catch (error) {
+            console.error(error);
+            if (error instanceof Error) {
+                throw new Error(`Failed to get Forum Posts: ${error.message}`);
+            } else {
+                throw new Error("Failed to get Forum Posts: An unknown error occurred.");
+            }
+        }
+    },
+
     async fetchForumPosts(appId: string, params: ForumFilterParams, useInfiniteScroll: boolean = false): Promise<{ posts: ForumPost[], total: number }> {
         let forumPosts: ForumPost[] = [];
         try {
@@ -61,8 +103,15 @@ export const ForumService = {
         const itemsPerPage = DEFAULT_PAGE_SIZE; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort and slice the data for the current page
-        const sortedData = filtered
-            .sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
+        const sortedData = filtered.sort((a, b) => {
+            if (!params.sort || params.sort === 'latest') {
+                return new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime();
+            }
+            if (params.sort === 'top') {
+                return b.voters.foundHelpful.count - a.voters.foundHelpful.count;
+            }
+            return 0; // Default case if no sorting criteria matches
+        });
 
         const posts = useInfiniteScroll
             ? sortedData.slice(0, page * itemsPerPage)

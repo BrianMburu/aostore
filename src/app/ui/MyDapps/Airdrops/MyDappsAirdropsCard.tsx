@@ -9,7 +9,7 @@ import ProfileImage from "../../ProfilePic";
 import { applyPrecision } from "@/utils/ao";
 
 
-export function MyDappsAirDropCard({ airdrop }: { airdrop: Airdrop }) {
+export function MyDappsAirDropCard({ airdrop, appId }: { airdrop: Airdrop, appId: string }) {
     const timeFormatter = new Intl.DateTimeFormat('en-US', {
         month: 'long',
         day: 'numeric',
@@ -58,7 +58,7 @@ export function MyDappsAirDropCard({ airdrop }: { airdrop: Airdrop }) {
                     {airdrop.status.toUpperCase()}
                 </span>
                 <Link
-                    href={`airdrops/${airdrop.airdropId}`}
+                    href={`details/?appId=${appId}&airdropId=${airdrop.airdropId}`}
                     className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center"
                 >
                     Details <ChevronRightIcon className="h-4 w-4 ml-1" />

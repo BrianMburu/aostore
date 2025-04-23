@@ -67,7 +67,7 @@ export function ForumPostItem({ post, appId }: { post: ForumPost, appId: string 
             </div>
 
             <Link
-                href={`/dapps/${appId}/forum/${post.devForumId}`}
+                href={`/dapps/details/forum/details/?appId=${appId}&postId=${post.devForumId}`}
                 className="text-xl font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-600"
             >
                 {post.title}

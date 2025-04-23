@@ -1,6 +1,6 @@
 'use client'
 
-import { ThemeProvider } from "@/context/ThemeContext";
+import { SiteSettingsProvider } from "@/context/SettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
 import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
@@ -13,7 +13,7 @@ export function RootBodyLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <ThemeProvider>
+        <SiteSettingsProvider>
             <AuthProvider>
                 <Header />
                 <div className="flex-1">{children}</div>
@@ -21,6 +21,6 @@ export function RootBodyLayout({
                 <AppToaster />
                 <SessionRefreshOverlay />
             </AuthProvider>
-        </ThemeProvider>
+        </SiteSettingsProvider>
     );
 }

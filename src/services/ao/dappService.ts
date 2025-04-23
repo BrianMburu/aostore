@@ -64,6 +64,49 @@ export const DAppService = {
         }
     },
 
+    // For DAppService (getAllAppIds)
+    async getAllDappIds(page = 1, limit = 10): Promise<{ data: { appId: string }[], pagination: { total: number, page: number, totalPages: number } }> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetAppIds" },
+                { name: "page", value: page.toString() },
+                { name: "limit", value: limit.toString() }
+            ], PROCESS_ID_DAPPS);
+
+            if (!messages?.length) throw new Error("No messages returned from ao");
+
+            const lastMessage = messages[messages.length - 1];
+            // console.log("Last Message Decode:=> ", lastMessage)
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            const messageData = JSON.parse(cleanedData);
+
+            let appIds: { appId: string }[] = []
+
+            if (messageData?.code == 200 && messageData.data) {
+                appIds = messageData.data.map((appId: { appId: string }) => ({ appId }))
+            } else {
+                throw new Error(messageData.message)
+            }
+
+            return {
+                data: appIds,
+                pagination: {
+                    total: messageData.total,
+                    page: messageData.page,
+                    totalPages: Math.ceil(messageData.total / limit)
+                }
+            };
+
+        } catch (error) {
+            console.error(error);
+            if (error instanceof Error) {
+                throw new Error(`Failed to fetch appIds: ${error.message}`);
+            } else {
+                throw new Error("Failed to fetch appIds: An unknown error occurred.");
+            }
+        }
+    },
+
     async getDApps(params: DAppsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: DappList[], total: number }> {
         let dapps: DappList[] = [];
 
@@ -126,6 +169,47 @@ export const DAppService = {
             data,
             total: filtered.length
         };
+    },
+
+    async getAllMyDappIds(page = 1, limit = 10): Promise<{ data: { appId: string }[], pagination: { total: number, page: number, totalPages: number } }> {
+        try {
+            const messages = await fetchAOmessages([
+                { name: "Action", value: "GetAppIds" },
+                { name: "page", value: page.toString() },
+                { name: "limit", value: limit.toString() }
+            ], PROCESS_ID_DAPPS);
+
+            if (!messages?.length) throw new Error("No messages returned from ao");
+
+            const lastMessage = messages[messages.length - 1];
+            const cleanedData = cleanAoJson(lastMessage.Data);
+            const messageData = JSON.parse(cleanedData);
+
+            let appIds: { appId: string }[] = []
+
+            if (messageData?.code == 200 && messageData.data) {
+                appIds = messageData.data.map((appId: { appId: string }) => ({ appId }))
+            } else {
+                throw new Error(messageData.message)
+            }
+
+            return {
+                data: appIds,
+                pagination: {
+                    total: messageData.total,
+                    page: messageData.page,
+                    totalPages: Math.ceil(messageData.total / limit)
+                }
+            };
+
+        } catch (error) {
+            console.error(error);
+            if (error instanceof Error) {
+                throw new Error(`Failed to fetch apps: ${error.message}`);
+            } else {
+                throw new Error("Failed to fetch apps: An unknown error occurred.");
+            }
+        }
     },
 
     async getMyDApps(params: DAppsFilterParams, useInfiniteScroll: boolean = false): Promise<{ data: DappList[], total: number }> {
@@ -289,7 +373,7 @@ export const DAppService = {
         });
 
         // Pagination
-        const page = 1;
+        const page = Number(params?.fv_page) || 1;
         const itemsPerPage = 8; // Ensure DEFAULT_PAGE_SIZE is defined
 
         // Sort the filtered data
