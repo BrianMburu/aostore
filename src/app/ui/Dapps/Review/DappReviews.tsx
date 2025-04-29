@@ -3,14 +3,14 @@
 import { ReviewItem } from './ReviewItem';
 import InfinityScrollControls from '../../InfinityScrollControls';
 import { DEFAULT_PAGE_SIZE } from '@/config/page';
-import { ReviewService, ReviewFilterParams } from "@/services/ao/reviewService";
-// import { notFound } from "next/navigation";
-import { useAuth } from '@/context/AuthContext';
 import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+import { useAuth } from '@/context/AuthContext';
 import { Review } from '@/types/review';
 import ReviewsListSkeleton from './skeletons/ReviewsListSkeleton';
 import { EmptyState } from '../../EmptyState';
-import { useSearchParams } from 'next/navigation';
+import { ReviewFilterParams, ReviewService } from '@/services/ao/reviewService';
 
 export default function DappReviews() {
     // const appId = useParams().appId as string;

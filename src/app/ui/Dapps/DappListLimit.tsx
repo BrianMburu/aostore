@@ -13,21 +13,18 @@ export function DAppsListLimit({ params }: { params: DAppsFilterParams }) {
     const [dapps, setDapps] = useState<DappList[]>([]);
 
     const [fetching, StartTransition] = useTransition();
-    const { isConnected, isLoading } = useAuth();
+    const { isConnected } = useAuth();
 
     useEffect(() => {
         StartTransition(
             async () => {
                 try {
-                    if (!isLoading && isConnected) {
-                        const { data, } = await DAppService.getDAppsLimited(params, 4);
+                    const { data, } = await DAppService.getDAppsLimited(params, 4);
 
-                        if (data) {
-                            setDapps(data);
-                        }
-                    } else {
-                        setDapps([]);
+                    if (data) {
+                        setDapps(data);
                     }
+
                 } catch (error) {
                     setDapps([]);
                     console.error(error)
@@ -37,7 +34,7 @@ export function DAppsListLimit({ params }: { params: DAppsFilterParams }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnected]);
 
-    if (!isLoading && !fetching && dapps.length === 0) {
+    if (!fetching && dapps.length === 0) {
         return (
             <EmptyState
                 title="No Dapps Found"

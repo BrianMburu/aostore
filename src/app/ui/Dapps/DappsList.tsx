@@ -19,23 +19,23 @@ export function DAppsList() {
     const [totalItems, setTotalItems] = useState(0);
 
     const [isLoading, startTransition] = useTransition();
-    const { isConnected, isLoading: isAuthLoading } = useAuth();
+    const { isConnected } = useAuth();
 
     useEffect(() => {
         startTransition(
             async () => {
                 try {
-                    if (!isAuthLoading && isConnected) {
-                        const { data, total } = await DAppService.getDApps(filterParams, true);
+                    // if (!isAuthLoading && isConnected) {
+                    const { data, total } = await DAppService.getDApps(filterParams, true);
 
-                        if (data) {
-                            setDapps(data);
-                            setTotalItems(total)
-                        }
-                    } else {
-                        setDapps([]);
-                        setTotalItems(0)
+                    if (data) {
+                        setDapps(data);
+                        setTotalItems(total)
                     }
+                    // } else {
+                    //     setDapps([]);
+                    //     setTotalItems(0)
+                    // }
                 } catch (error) {
                     setDapps([]);
                     setTotalItems(0);

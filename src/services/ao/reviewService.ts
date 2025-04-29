@@ -6,7 +6,7 @@ import { Review } from "@/types/review";
 import { Tip } from "@/types/tip";
 import { User } from "@/types/user";
 import { HelpfulData } from "@/types/voter";
-import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
+import { cleanAoJson, fetchAOmessages, fetchAOmessagesServer } from "@/utils/ao";
 export interface ReviewFilterParams {
     sort?: string,
     rating?: string,
@@ -19,7 +19,7 @@ export const ReviewService = {
         let reviews: Review[] = [];
 
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchAppReviews" },
                 { name: "appId", value: appId }
 

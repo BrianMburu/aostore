@@ -35,21 +35,19 @@ const Header: React.FC = () => {
     const [isDisconnecting, setIsDisconnecting] = useState(false);
 
     const navigation: NavLink[] = [
-        // { href: '/games', label: 'Games' },
         { href: "/dapps", label: "Dapps" },
         // { href: "/airdrops", label: "Airdrops" },
         { href: "/about", label: "About" },
-        // { href: '/decentralized', label: 'Decentralized' },
-        // { href: '/dao', label: 'DAO Verified' },
     ];
 
     const handleConnectWallet = async () => {
         setIsLoading(true);
         try {
-            // Replace with actual wallet connection logic
             await login();
 
-            toast.success("Wallet connected successfully");
+            if (isConnected) {
+                toast.success("Wallet connected successfully");
+            }
         } catch (error) {
             toast.error("Wallet connection failed");
             console.error("Connection error:", error);

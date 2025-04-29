@@ -1,21 +1,10 @@
 import { Suspense } from "react";
 
-import DappReviewForm from "@/app/ui/Dapps/Review/DappReviewForm"
-import DappReviews from "@/app/ui/Dapps/Review/DappReviews"
-import ReviewsFilters from "@/app/ui/MyDapps/Reviews/ReviewFilters";
-// import { fetchAllPages } from "@/helpers/idsPaginator";
-// import { DAppService } from "@/services/ao/dappService";
+import DappReviewForm from "@/app/ui/Dapps/Review/DappReviewForm";
+import DappReviews from "@/app/ui/Dapps/Review/DappReviews";
 import ReviewsListSkeleton from "@/app/ui/Dapps/Review/skeletons/ReviewsListSkeleton";
+import ReviewsFilters from "@/app/ui/MyDapps/Reviews/ReviewFilters";
 
-// export async function generateStaticParams() {
-//     try {
-//         const appIds = await fetchAllPages((page) => DAppService.getAllDappIds(page));
-//         return appIds;
-//     } catch (error) {
-//         console.error('Error generating static params:', error);
-//         return [{ appId: "TX1" }];
-//     }
-// }
 
 export default function ReviewsPage() {
     return (

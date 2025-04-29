@@ -55,7 +55,8 @@ export function FavoriteDAppsList() {
         return (
             <EmptyState
                 title="No Favorite DApps Found"
-                description="Bookmark a Dapp to add it to your favorites."
+                description={!isConnected ? " Connect your wallet to see your favorite Dapps." :
+                    "Bookmark a Dapp to add it to your favorites."}
                 interactive
             />
         );

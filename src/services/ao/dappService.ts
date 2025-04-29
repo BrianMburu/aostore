@@ -1,13 +1,12 @@
 
 import { CreateDapp, Dapp, DappList } from "@/types/dapp";
 import { DEFAULT_PAGE_SIZE } from '@/config/page'
-// import { generateDAppTestData } from "@/utils/dataGenerators";
-import { Tip } from "@/types/tip";
 import {
     PROCESS_ID_BUG_REPORT_TABLE, PROCESS_ID_DAPPS, PROCESS_ID_DEV_FORUM_TABLE,
     PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FEATURE_REQUEST_TABLE, PROCESS_ID_FLAG_TABLE, PROCESS_ID_REVIEW_TABLE,
 } from "@/config/ao";
-import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
+import { cleanAoJson, fetchAOmessages, fetchAOmessagesServer } from "@/utils/ao";
+
 // services/dapps.ts
 export interface DAppsFilterParams {
     companyName?: string;
@@ -30,7 +29,7 @@ export const processes: Record<string, string> = {
 export const DAppService = {
     async getDApp(appId: string): Promise<Dapp> {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchAppDetails" },
                 { name: "appId", value: appId }
             ], PROCESS_ID_DAPPS);
@@ -67,7 +66,7 @@ export const DAppService = {
     // For DAppService (getAllAppIds)
     async getAllDappIds(page = 1, limit = 10): Promise<{ data: { appId: string }[], pagination: { total: number, page: number, totalPages: number } }> {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "GetAppIds" },
                 { name: "page", value: page.toString() },
                 { name: "limit", value: limit.toString() }
@@ -112,7 +111,7 @@ export const DAppService = {
 
         // Fetch Data from AO
         try {
-            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
+            const messages = await fetchAOmessagesServer([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
@@ -277,7 +276,7 @@ export const DAppService = {
         let dapps: DappList[] = [];
 
         try {
-            const messages = await fetchAOmessages([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
+            const messages = await fetchAOmessagesServer([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
 
             if (!messages || messages.length === 0) {
                 throw new Error("No messages were returned from ao. Please try later.");
@@ -524,14 +523,6 @@ export const DAppService = {
         // Simulate verification process
     },
 
-    async tip(tipData: Tip) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        // Add Ao handler
-
-        const newTip = tipData;
-        return newTip
-    },
-
     async changeDappOwner(appId: string, newOwnerId: string): Promise<void> {
         try {
             const messages = await fetchAOmessages([
@@ -676,7 +667,7 @@ export const DAppService = {
         let rating = { rating: 0, totalReviews: 0 };
 
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchAppReviewsInfo" },
                 { name: "appId", value: appId }
             ], PROCESS_ID_REVIEW_TABLE);

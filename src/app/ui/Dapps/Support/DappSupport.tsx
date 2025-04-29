@@ -9,6 +9,7 @@ import { AnimatedButton } from '../../animations/AnimatedButton';
 import { DAppService } from '@/services/ao/dappService';
 import { FlagIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
 
 interface DappSupportProps {
     appData: Dapp;
@@ -16,13 +17,20 @@ interface DappSupportProps {
 
 const DappSupport: React.FC<DappSupportProps> = ({ appData }) => {
     const [isFlagging, startTransition] = useTransition();
+    const { isConnected } = useAuth();
+
     const flagDapp = async () => {
         startTransition(async () => {
             try {
+                if (!isConnected) {
+                    toast.error("Sign in to flag dapp!");
+                    return;
+                }
                 await DAppService.flagDappAsInappropriate(appData.appId)
                 toast.success('Dapp flagged successfully');
             } catch (error) {
                 console.error(error);
+                toast.error("Failed to flag dapp!")
             }
         })
 
