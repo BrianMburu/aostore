@@ -35,14 +35,18 @@ export function TipForm({ appId, tipId, recipientWallet, }: { appId: string, tip
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const initialState: TipState = { message: null, errors: {} };
 
-    const { isConnected } = useAuth();
+    const { isConnected, isLoading: isAuthLoading } = useAuth();
 
     useEffect(() => {
         const fetchTokens = async () => {
             try {
-                const fetchedTokens = await TokenService.fetchTokens();
-                if (fetchedTokens.length > 0) {
-                    setTokens(fetchedTokens)
+                if (!isAuthLoading && isConnected) {
+                    const fetchedTokens = await TokenService.fetchTokens();
+                    if (fetchedTokens.length > 0) {
+                        setTokens(fetchedTokens)
+                    }
+                } else {
+                    setTokens([]);
                 }
             } catch (error) {
                 console.error(error);
@@ -50,11 +54,15 @@ export function TipForm({ appId, tipId, recipientWallet, }: { appId: string, tip
             }
         }
         fetchTokens();
-    }, [isConnected]);
+    }, [isAuthLoading, isConnected]);
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: TipState, _formData: FormData) => {
             try {
+                if (!isConnected) {
+                    toast.error("Please connect your wallet to send a tip.");
+                    return prevState;
+                }
                 // Call createDapp to submit the data to the server
                 const newState = await sendTip(appId, tipId, tokenBalance, activeToken, recipientWallet, prevState, _formData);
 

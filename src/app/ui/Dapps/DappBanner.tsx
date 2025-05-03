@@ -5,7 +5,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 
 import { Navigation } from 'swiper/modules';
-import { useAppContext } from '@/context/DappContexts';
+import { useAppContext } from '@/context/DappContext';
 import { BannerSkeleton } from './Skeletons/BannerSkeleton';
 
 export default function DappBanner() {

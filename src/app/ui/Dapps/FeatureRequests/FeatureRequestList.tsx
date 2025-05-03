@@ -29,35 +29,35 @@ export function FeatureRequestList() {
     }, [searchParams])
 
     const filterParams = fetchfilterParams();
-    useEffect(() => {
 
+    useEffect(() => {
         const fetchRequests = async () => {
             setIsFetching(true);
             const filterParams = fetchfilterParams();
             try {
-                if (!isAuthLoading && isConnected) {
-                    let requestData = [];
-                    let totalRequests = 0;
-                    const type = filterParams.type;
+                // if (!isAuthLoading && isConnected) {
+                let requestData = [];
+                let totalRequests = 0;
+                const type = filterParams.type;
 
-                    if (type === "feature" || !type) {
-                        const { data, total } = await SupportService.getFeatureRequests(appId, filterParams, true);
-                        requestData = data
-                        totalRequests = total
-                    } else {
-                        const { data, total } = await SupportService.getBugReports(appId, filterParams, true);
-                        requestData = data
-                        totalRequests = total
-                    }
-
-                    if (requestData) {
-                        setRequests(requestData);
-                        setTotal(totalRequests);
-                    }
+                if (type === "feature" || !type) {
+                    const { data, total } = await SupportService.getFeatureRequests(appId, filterParams, true);
+                    requestData = data
+                    totalRequests = total
                 } else {
-                    setRequests([]);
-                    setTotal(0)
+                    const { data, total } = await SupportService.getBugReports(appId, filterParams, true);
+                    requestData = data
+                    totalRequests = total
                 }
+
+                if (requestData) {
+                    setRequests(requestData);
+                    setTotal(totalRequests);
+                }
+                // } else {
+                //     setRequests([]);
+                //     setTotal(0)
+                // }
 
             } catch (error) {
                 console.error(error);

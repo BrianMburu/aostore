@@ -20,13 +20,13 @@ export function DappRatingsChart({ title }: { title: string }) {
         startTransition(
             async () => {
                 try {
-                    if (isConnected) {
-                        const ratingsData = await AnalyticsService.fetchDappRatingsData(appId);
+                    // if (isConnected) {
+                    const ratingsData = await AnalyticsService.fetchDappRatingsData(appId);
 
-                        if (ratingsData) {
-                            setRatingsData(ratingsData);
-                        }
+                    if (ratingsData) {
+                        setRatingsData(ratingsData);
                     }
+                    // }
                 } catch (error) {
                     console.error("Error fetching total reviews:", error);
                 }

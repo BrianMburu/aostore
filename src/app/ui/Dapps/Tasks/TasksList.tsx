@@ -60,7 +60,8 @@ export function TasksList() {
         return (
             <EmptyState
                 title="No Tasks Found"
-                description="We couldn't find any Tasks from the results"
+                description={!isConnected ? "Connect your Wallet to view Tasks!" :
+                    "We couldn't find any Tasks from the results"}
                 interactive
                 className="my-8"
             />

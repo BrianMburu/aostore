@@ -11,6 +11,7 @@ import TransactionHistorySkeleton from '../wallet/skeletons/TransactionHistorySk
 import { TokenService } from '@/services/ao/tokenService';
 import { AppTipTransactionData } from '@/types/dapp';
 import StatePaginationControls from '../StatePaginationControls';
+import { useAuth } from '@/context/AuthContext';
 
 export function TipHistoryButton({ onClick }: { onClick: () => void }) {
     return (
@@ -48,23 +49,29 @@ export default function TipsTransactionHistory({ appId, userId, taskId }: { appI
     const [transactions, setTransactions] = useState<AppTipTransactionData[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1)
+    const { isConnected, isLoading: isAuthLoading } = useAuth()
 
     useEffect(() => {
         startTransition(
             async () => {
                 try {
-                    // Fetch transactions from the server
-                    const { data: fetchedTransactions, total } = await TokenService.fetchItemTipTransactions(appId, userId, taskId, { page: currentPage });
-                    // console.log("Fetched Transactions => ", fetchedTransactions);
-                    setTransactions(fetchedTransactions);
-                    setTotalItems(total);
+                    if (!isAuthLoading && isConnected) {
+                        // Fetch transactions from the server
+                        const { data: fetchedTransactions, total } = await TokenService.fetchItemTipTransactions(appId, userId, taskId, { page: currentPage });
+                        // console.log("Fetched Transactions => ", fetchedTransactions);
+                        setTransactions(fetchedTransactions);
+                        setTotalItems(total);
+                    } else {
+                        setTransactions([]);
+                        setTotalItems(0)
+                    }
                 } catch (error) {
                     console.error(error);
                 }
             }
         )
 
-    }, [appId, currentPage, taskId, userId]);
+    }, [appId, currentPage, isAuthLoading, isConnected, taskId, userId]);
 
     if (isFetching) {
         return (
@@ -73,7 +80,7 @@ export default function TipsTransactionHistory({ appId, userId, taskId }: { appI
     }
 
     if (transactions.length === 0) {
-        return <EmptyState />
+        return <EmptyState isConnected={isConnected} />
     }
 
     return (
@@ -112,13 +119,14 @@ export default function TipsTransactionHistory({ appId, userId, taskId }: { appI
     )
 }
 
-function EmptyState() {
+function EmptyState({ isConnected }: { isConnected?: boolean }) {
     return (
         <div className="text-center py-12">
             <div className="mb-4 text-6xl">📭</div>
             <h3 className="text-lg font-medium">No Tips yet</h3>
             <p className="text-gray-500 mt-2">
-                Your tips history will appear here once people start tipping you.
+                {isConnected ? "Your tips history will appear here once people start tipping you."
+                    : "Connect your wallet to view this user's tips history!"}
             </p>
         </div>
     )

@@ -20,12 +20,12 @@ export default function ReviewTotals() {
         startTransition(
             async () => {
                 try {
-                    if (isConnected) {
-                        const fetchedReviewsTotal = await AnalyticsService.fetchTotalDappRatings(appId);
-                        if (fetchedReviewsTotal) {
-                            setTotalReview(Number(fetchedReviewsTotal));
-                        }
+                    // if (isConnected) {
+                    const fetchedReviewsTotal = await AnalyticsService.fetchTotalDappRatings(appId);
+                    if (fetchedReviewsTotal) {
+                        setTotalReview(Number(fetchedReviewsTotal));
                     }
+                    // }
                 } catch (error) {
                     console.error("Error fetching total reviews:", error);
                 }

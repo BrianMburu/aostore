@@ -21,12 +21,17 @@ interface FeatureRequestItemProps {
 }
 
 export function FeatureRequestItem({ request, appId, requestType }: FeatureRequestItemProps) {
-    const { user } = useAuth();
+    const { user, isConnected } = useAuth();
     const [isPending, startTransition] = useTransition();
     const [voters, setVoters] = useState<Voters>(request.voters);
 
 
     const handleVote = async (action: 'helpful' | 'unhelpful') => {
+        if (!isConnected) {
+            toast.error("Please connect your wallet to vote.");
+            return;
+        }
+
         // Store previous state for potential rollback
         const previousVoters = { ...voters };
 

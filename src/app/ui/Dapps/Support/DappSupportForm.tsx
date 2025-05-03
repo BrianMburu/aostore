@@ -37,7 +37,7 @@ function DappSupportForm({
             let newState: FeatureRequestState;
             try {
                 if (!isConnected) {
-                    toast.error(`Sign In to submit ${requestType == "feature" ? "Support request" : "Bug report"}!`);
+                    toast.error(`Connect wallet to submit ${requestType == "feature" ? "Support request" : "Bug report"}!`);
                     return initialState;
                 }
                 if (requestType === "feature") {

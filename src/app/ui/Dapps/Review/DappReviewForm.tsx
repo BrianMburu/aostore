@@ -17,7 +17,7 @@ const initialState: ReviewState = { message: null, errors: {}, review: null };
 export default function DappReviewForm() {
     const appId = useSearchParams().get("appId") as string;
 
-    const { user } = useAuth();
+    const { user, isConnected } = useAuth();
     const { rank } = useRank();
 
     // const { rank } = useRank();
@@ -36,6 +36,12 @@ export default function DappReviewForm() {
             // Optimistically update local request state
             const updatedRequest = { ...localReview, title: newTitle, description: newDescription };
             setLocalReview(updatedRequest);
+
+            // Check if the user is connected
+            if (!isConnected) {
+                toast.error("Connect Wallet to post a review.");
+                return initialState;
+            }
 
             try {
                 const newState = await sendReview(appId, user, rank, prevState, _formData);

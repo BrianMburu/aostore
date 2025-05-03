@@ -8,7 +8,6 @@ import ForumQuestion from '@/app/ui/forum/ForumQuestion';
 import ForumAnswer from '@/app/ui/forum/ForumAnswer';
 import { notFound, useSearchParams } from 'next/navigation';
 import ForumPageSkeleton from './skeletons/ForumSkeleton';
-import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import SuggestedForumQuestionsList from './SuggestedForumQuestionsList';
@@ -22,7 +21,6 @@ export default function ForumDetails() {
 
     const [post, setPost] = useState<ForumPost | null>(null);
     const [loading, setLoading] = useState(true);
-    const { isConnected } = useAuth()
 
     const loadPost = useCallback(async () => {
         try {
@@ -42,7 +40,7 @@ export default function ForumDetails() {
 
     useEffect(() => {
         loadPost();
-    }, [loadPost, isConnected]);
+    }, [loadPost]);
 
     if (loading) return <ForumPageSkeleton />;
 

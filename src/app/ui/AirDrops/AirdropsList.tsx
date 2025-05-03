@@ -57,7 +57,8 @@ export function AirdropsList() {
         return (
             <EmptyState
                 title="No Airdrops Found"
-                description="We couldn't find any Airdrops from the results"
+                description={!isConnected ? "Connect your Wallet to view Airdrops!" :
+                    "We couldn't find any Airdrops from the results"}
                 interactive
                 className="my-8"
             />

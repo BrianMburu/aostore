@@ -272,40 +272,41 @@ export const DAppService = {
         };
     },
 
-    async getDAppsLimited(params: DAppsFilterParams, limit: number = 4): Promise<{ data: DappList[], total: number }> {
-        let dapps: DappList[] = [];
+    getDAppsLimited(dapps: DappList[], params: DAppsFilterParams, limit: number = 4): { data: DappList[], total: number } {
+        // let dapps: DappList[] = [];
 
-        try {
-            const messages = await fetchAOmessagesServer([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
+        // try {
+        //     const messages = await fetchAOmessagesServer([{ name: "Action", value: "FetchAllApps" }], PROCESS_ID_DAPPS);
 
-            if (!messages || messages.length === 0) {
-                throw new Error("No messages were returned from ao. Please try later.");
-            }
+        //     if (!messages || messages.length === 0) {
+        //         throw new Error("No messages were returned from ao. Please try later.");
+        //     }
 
-            // Fetch the last message
-            const lastMessage = messages[messages.length - 1];
-            // console.log("Last Messages Data => ", lastMessage.Data);
+        //     // Fetch the last message
+        //     const lastMessage = messages[messages.length - 1];
+        //     // console.log("Last Messages Data => ", lastMessage.Data);
 
-            // Parse the Messages
-            const cleanedData = cleanAoJson(lastMessage.Data)
+        //     // Parse the Messages
+        //     const cleanedData = cleanAoJson(lastMessage.Data)
 
-            const messageData = JSON.parse(cleanedData);
+        //     const messageData = JSON.parse(cleanedData);
 
-            // console.log("Dapps Messages Data => ", messageData);
+        //     // console.log("Dapps Messages Data => ", messageData);
 
-            if (messageData && messageData.code == 200) {
-                dapps = Object.values(messageData.data);
+        //     if (messageData && messageData.code == 200) {
+        //         dapps = Object.values(messageData.data);
 
-            } else {
-                throw new Error(messageData.message)
-            }
+        //     } else {
+        //         throw new Error(messageData.message)
+        //     }
 
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to fetch Data, ${error}`)
-        }
+        // } catch (error) {
+        //     console.error(error);
+        //     throw new Error(`Failed to fetch Data, ${error}`)
+        // }
 
         // Filter the dummyDApps based on the parameters
+
         const filtered = dapps.filter(dapp => {
             const matchesProtocol = !params.protocol || params.protocol === 'all' || dapp.protocol === params.protocol;
             const matchesCategory = !params.category || params.category === 'all' || dapp.projectType === params.category;

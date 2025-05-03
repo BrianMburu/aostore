@@ -60,7 +60,8 @@ export function ForumQuestionsList() {
         return (
             <EmptyState
                 title="No ForumPosts Found"
-                description="We couldn't find any ForumPosts from the results"
+                description={!isConnected ? "Connect wallet to view Forum Posts!" :
+                    "We couldn't find any Forum Posts from the results!"}
                 interactive
                 className="my-8"
             />
@@ -70,7 +71,8 @@ export function ForumQuestionsList() {
     return (
         <div className="space-y-6">
             {forumPosts.map(post => (
-                <ForumPostItem key={post.devForumId} post={post} appId={appId as string} />
+                <ForumPostItem key={post.devForumId} post={post} appId={appId as string}
+                    isConnected={isConnected} />
             ))}
 
             {forumPosts &&

@@ -8,7 +8,7 @@ import { DAppService } from "@/services/ao/dappService"
 import toast from "react-hot-toast"
 import { capitalizeFirstLetter } from "@/utils/message"
 import Link from "next/link"
-import { useAppContext } from "@/context/DappContexts"
+import { useAppContext } from "@/context/DappContext"
 import { HeaderSkeleton } from "./Skeletons/HeaderSkeleton"
 import { useAuth } from "@/context/AuthContext"
 
@@ -25,7 +25,7 @@ export function DappHeader() {
     const addToFavorites = async () => {
         try {
             if (!isConnected) {
-                toast.error("Sign in to App to favorites!");
+                toast.error("Connect your Wallet to add DApp to favorites!");
                 return;
             }
             await DAppService.addDappToFavorites(appData.appId);

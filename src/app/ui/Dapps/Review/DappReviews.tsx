@@ -18,11 +18,10 @@ export default function DappReviews() {
     const appId = searchParams.get('appId') as string || "";
 
 
-    const { user } = useAuth();
+    const { user, isConnected } = useAuth();
     const [reviews, setReviews] = useState<Review[]>([]);
     const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const { isConnected } = useAuth();
 
     const loadReviews = useCallback(async () => {
         const filterParams = Object.fromEntries(searchParams.entries()) as ReviewFilterParams;
@@ -42,10 +41,8 @@ export default function DappReviews() {
     }, [appId, searchParams]);
 
     useEffect(() => {
-        if (isConnected) {
-            loadReviews();
-        }
-    }, [isConnected, loadReviews]);
+        loadReviews();
+    }, [loadReviews]);
 
     const refreshReviews = () => {
         loadReviews();
@@ -70,12 +67,14 @@ export default function DappReviews() {
         <div className="space-y-8">
             {/* Display the current user's review first */}
             {currentUserReview && (
-                <ReviewItem key={currentUserReview.reviewId} appId={appId} review={currentUserReview} refreshReviews={refreshReviews} />
+                <ReviewItem key={currentUserReview.reviewId} appId={appId} review={currentUserReview} refreshReviews={refreshReviews}
+                    isConnected={isConnected} />
             )}
 
             {/* Display the rest of the reviews */}
             {otherReviews.map(review => (
-                <ReviewItem key={review.reviewId} appId={appId} review={review} refreshReviews={refreshReviews} />
+                <ReviewItem key={review.reviewId} appId={appId} review={review} refreshReviews={refreshReviews}
+                    isConnected={isConnected} />
             ))}
 
             {/* Load More Reviews */}

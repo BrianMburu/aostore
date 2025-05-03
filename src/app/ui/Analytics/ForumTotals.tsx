@@ -21,13 +21,13 @@ export default function ForumTotals() {
         startTransition(
             async () => {
                 try {
-                    if (isConnected) {
-                        const fetchedForumTotal = await AnalyticsService.fetchForumCount(appId);
+                    // if (isConnected) {
+                    const fetchedForumTotal = await AnalyticsService.fetchForumCount(appId);
 
-                        if (fetchedForumTotal) {
-                            setTotalForums(Number(fetchedForumTotal));
-                        }
+                    if (fetchedForumTotal) {
+                        setTotalForums(Number(fetchedForumTotal));
                     }
+                    // }
                 } catch (error) {
                     console.error("Error fetching total reviews:", error);
                 }

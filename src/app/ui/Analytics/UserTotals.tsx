@@ -21,13 +21,13 @@ export default function UserTotals() {
         startTransition(
             async () => {
                 try {
-                    if (isConnected) {
-                        const fetchedUserTotal = await AnalyticsService.fetchFavoritesCount(appId);
+                    // if (isConnected) {
+                    const fetchedUserTotal = await AnalyticsService.fetchFavoritesCount(appId);
 
-                        if (fetchedUserTotal) {
-                            setTotalUsers(Number(fetchedUserTotal));
-                        }
+                    if (fetchedUserTotal) {
+                        setTotalUsers(Number(fetchedUserTotal));
                     }
+                    // }
                 } catch (error) {
                     console.error("Error fetching total reviews:", error);
                 }
