@@ -39,7 +39,7 @@ export function AirdropsListLimit({ params, appId }: { appId: string, params: Ai
     }, [params.appId]);
 
     if (fetching) {
-        return <AirdropsSkeletonVertical n={8} />
+        return <AirdropsSkeletonVertical n={3} />
     }
 
     if (!fetching && airdrops.length == 0) {
