@@ -4,7 +4,7 @@ import { DEFAULT_PAGE_SIZE } from '@/config/page'
 import { Tip } from "@/types/tip";
 // import { NextResponse } from "next/server";
 import { BugReport, FeatureRequest } from '@/types/support';
-import { cleanAoJson, fetchAOmessages } from '@/utils/ao';
+import { cleanAoJson, fetchAOmessages, fetchAOmessagesServer } from '@/utils/ao';
 import { PROCESS_ID_BUG_REPORT_TABLE, PROCESS_ID_FEATURE_REQUEST_TABLE } from '@/config/ao';
 import { User } from '@/types/user';
 import { Rank } from '@/types/rank';
@@ -26,7 +26,7 @@ export const SupportService = {
         let featureRequests: FeatureRequest[] = [];
 
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchFeatureRequests" },
                 { name: "appId", value: appId }
 
@@ -91,8 +91,9 @@ export const SupportService = {
 
     async getBugReports(appId: string, params: FeatureBugParams, useInfiniteScroll: boolean = false): Promise<{ data: BugReport[], total: number }> {
         let bugReports: BugReport[] = []
+
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchBugReports" },
                 { name: "appId", value: appId }
 

@@ -3,16 +3,18 @@ import { ArrowUpTrayIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 import { AnimatedButton } from "../animations/AnimatedButton"
 import { BookHeartIcon } from "lucide-react"
-import { RatingStars } from "./RatingStars"
+import RatingStars from "./RatingStars"
 import { DAppService } from "@/services/ao/dappService"
 import toast from "react-hot-toast"
 import { capitalizeFirstLetter } from "@/utils/message"
 import Link from "next/link"
-import { useAppContext } from "@/context/DappContexts"
+import { useAppContext } from "@/context/DappContext"
 import { HeaderSkeleton } from "./Skeletons/HeaderSkeleton"
+import { useAuth } from "@/context/AuthContext"
 
 export function DappHeader() {
     const { loading, appData } = useAppContext();
+    const { isConnected } = useAuth()
 
     if (loading) {
         return <HeaderSkeleton />
@@ -21,14 +23,16 @@ export function DappHeader() {
     if (!appData) return null;
 
     const addToFavorites = async () => {
-
         try {
+            if (!isConnected) {
+                toast.error("Connect your Wallet to add DApp to favorites!");
+                return;
+            }
             await DAppService.addDappToFavorites(appData.appId);
             toast.success("Dapp successfully added to Favorites.")
         } catch (error) {
             console.error(error);
             toast.error("Failed to add App to favorites!")
-
         }
 
     }

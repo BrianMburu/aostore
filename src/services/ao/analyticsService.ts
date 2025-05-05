@@ -1,5 +1,5 @@
 import { PROCESS_ID_BUG_REPORT_TABLE, PROCESS_ID_DEV_FORUM_TABLE, PROCESS_ID_FAVORITE_DAPPS, PROCESS_ID_FEATURE_REQUEST_TABLE, PROCESS_ID_REVIEW_TABLE } from "@/config/ao";
-import { cleanAoJson, fetchAOmessages } from "@/utils/ao";
+import { cleanAoJson, fetchAOmessagesServer } from "@/utils/ao";
 
 export async function generateDailyDataSpec(days: number, metric: string) {
     const baseValues: Record<string, number> = {
@@ -134,7 +134,7 @@ export const AnalyticsService = {
     // Dapps Latest Functions
     fetchFavoritesCount: async (appId: string): Promise<string> => {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchFavoritesCount" },
                 { name: "appId", value: appId },
 
@@ -167,7 +167,7 @@ export const AnalyticsService = {
 
     fetchFavoritesData: async (appId: string): Promise<{ date: string; users: number }[]> => {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchFavoritesCountHistory" },
                 { name: "appId", value: appId },
 
@@ -205,7 +205,7 @@ export const AnalyticsService = {
 
     fetchForumCount: async (appId: string): Promise<string> => {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "GetDevForumCount" },
                 { name: "appId", value: appId },
 
@@ -240,7 +240,7 @@ export const AnalyticsService = {
 
     fetchTotalDappRatings: async (appId: string): Promise<string> => {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchAppReviewsCount" },
                 { name: "appId", value: appId },
 
@@ -273,7 +273,7 @@ export const AnalyticsService = {
 
     fetchDappRatingsData: async (appId: string): Promise<{ name: string; value: number }[]> => {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "FetchAppRatings" },
                 { name: "appId", value: appId },
 
@@ -307,7 +307,7 @@ export const AnalyticsService = {
 
     fetchFeatureTotals: async (appId: string): Promise<string> => {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "GetFeatureRequestCount" },
                 { name: "appId", value: appId },
 
@@ -340,7 +340,7 @@ export const AnalyticsService = {
 
     fetchBugTotals: async (appId: string): Promise<string> => {
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "GetBugReportCount" },
                 { name: "appId", value: appId },
 

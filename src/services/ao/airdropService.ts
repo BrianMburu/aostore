@@ -161,7 +161,7 @@ export const AirdropService = {
         let airdrops: Airdrop[] = [];
 
         try {
-            const messages = await fetchAOmessages([
+            const messages = await fetchAOmessagesServer([
                 { name: "Action", value: "GetAirdropsByAppId" },
                 { name: "appId", value: appId }
 

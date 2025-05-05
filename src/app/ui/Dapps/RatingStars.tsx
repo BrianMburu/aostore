@@ -5,7 +5,7 @@ import { StarIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState, useTransition } from "react";
 import { Skeleton } from "../skeleton";
 
-export function RatingStars({ appId }: { appId: string }) {
+export default function RatingStars({ appId }: { appId: string }) {
     const [ratingsData, setRatingsData] = useState<{ rating: number, totalReviews: number }>({ rating: 0, totalReviews: 0 });
     const [fetching, startTransition] = useTransition();
 

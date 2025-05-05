@@ -29,13 +29,17 @@ function DappSupportForm({
 
     const appId = useSearchParams().get('appId') as string || "";
 
-    const { user } = useAuth();
+    const { user, isConnected } = useAuth();
     const { rank } = useRank();
 
     const [state, formAction, isSubmitting] = useActionState(
         async (prevState: FeatureRequestState, _formData: FormData) => {
             let newState: FeatureRequestState;
             try {
+                if (!isConnected) {
+                    toast.error(`Connect wallet to submit ${requestType == "feature" ? "Support request" : "Bug report"}!`);
+                    return initialState;
+                }
                 if (requestType === "feature") {
                     newState = await sendFeatureRequest(appId, user, rank, prevState, _formData);
                 } else {

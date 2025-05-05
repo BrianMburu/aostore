@@ -19,20 +19,20 @@ export function FeatureBugChart({ title }: { title: string }) {
     useEffect(() => {
         startTransition(async () => {
             try {
-                if (isConnected) {
-                    const [fetchedFeatureTotal, fetchedBugTotal] = await Promise.all([
-                        AnalyticsService.fetchFeatureTotals(appId),
-                        AnalyticsService.fetchBugTotals(appId)
-                    ]);
+                // if (isConnected) {
+                const [fetchedFeatureTotal, fetchedBugTotal] = await Promise.all([
+                    AnalyticsService.fetchFeatureTotals(appId),
+                    AnalyticsService.fetchBugTotals(appId)
+                ]);
 
-                    if (fetchedFeatureTotal !== undefined && fetchedBugTotal !== undefined) {
-                        setFeatureBugData((prev) => ({
-                            ...prev, categories: [fetchedFeatureTotal, fetchedBugTotal],
-                        }));
-                    } else {
-                        console.warn("One or both totals are undefined.");
-                    }
+                if (fetchedFeatureTotal !== undefined && fetchedBugTotal !== undefined) {
+                    setFeatureBugData((prev) => ({
+                        ...prev, categories: [fetchedFeatureTotal, fetchedBugTotal],
+                    }));
+                } else {
+                    console.warn("One or both totals are undefined.");
                 }
+                // }
             } catch (error) {
                 console.error("Error fetching feature or bug totals:", error);
             }

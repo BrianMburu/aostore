@@ -9,28 +9,26 @@ import { GiftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import ChevronRightIcon from "@heroicons/react/24/outline/ChevronRightIcon";
 import { EmptyState } from "../EmptyState";
-import { useAuth } from "@/context/AuthContext";
 import ProfileImage from "../ProfilePic";
 
 export function AirdropsListLimit({ params, appId }: { appId: string, params: AidropsFilterParams }) {
     const [airdrops, setAirdrops] = useState<Airdrop[]>([]);
 
     const [fetching, StartTransition] = useTransition();
-    const { isConnected, isLoading } = useAuth();
 
     useEffect(() => {
         StartTransition(
             async () => {
                 try {
-                    if (!isLoading && isConnected) {
-                        const { data, } = await AirdropService.fetchAirdropsLimit(appId, params, 4)
+                    // if (!isLoading && isConnected) {
+                    const { data, } = await AirdropService.fetchAirdropsLimit(appId, params, 4)
 
-                        if (data) {
-                            setAirdrops(data);
-                        }
-                    } else {
-                        setAirdrops([]);
+                    if (data) {
+                        setAirdrops(data);
                     }
+                    // } else {
+                    //     setAirdrops([]);
+                    // }
                 } catch (error) {
                     setAirdrops([]);
                     console.error(error)
@@ -38,10 +36,10 @@ export function AirdropsListLimit({ params, appId }: { appId: string, params: Ai
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, params.appId]);
+    }, [params.appId]);
 
     if (fetching) {
-        return <AirdropsSkeletonVertical n={8} />
+        return <AirdropsSkeletonVertical n={3} />
     }
 
     if (!fetching && airdrops.length == 0) {

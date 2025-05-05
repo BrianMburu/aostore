@@ -12,12 +12,16 @@ import { ForumService } from "@/services/ao/forumService";
 import toast from "react-hot-toast";
 
 
-export function ForumPostItem({ post, appId }: { post: ForumPost, appId: string }) {
+export function ForumPostItem({ post, appId, isConnected }: { post: ForumPost, appId: string, isConnected: boolean }) {
     const [isPending, startTransition] = useTransition();
     const [voters, setVoters] = useState<Voters>(post.voters);
 
-
     const handleVote = async (action: 'helpful' | 'unhelpful') => {
+        if (!isConnected) {
+            toast.error("Please connect your wallet to vote.");
+            return;
+        }
+
         // Store previous state for potential rollback
         const previousVoters = { ...voters };
 

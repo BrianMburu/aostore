@@ -16,7 +16,7 @@ export default function ForumQuestionForm() {
     // const appId = useParams().appId as string;
     const appId = useSearchParams().get('appId') as string || "";
 
-    const { user } = useAuth();
+    const { user, isConnected } = useAuth();
     const { rank } = useRank();
     const router = useRouter()
 
@@ -33,6 +33,12 @@ export default function ForumQuestionForm() {
             // Optimistically update local request state
             const updatedRequest = { ...localRequest, ...formValues };
             setLocalRequest(updatedRequest);
+
+            // Check if the user is connected
+            if (!isConnected) {
+                toast.error("Connect Wallet to post a question.");
+                return initialState;
+            }
 
             try {
                 const newState = await postForumQuestion(appId, user, rank, prevState, _formData);

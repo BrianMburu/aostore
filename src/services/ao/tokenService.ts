@@ -286,7 +286,7 @@ export const TokenService = {
             // Parse the Messages
             const messageData = JSON.parse(cleanedData);
 
-            console.log("Dapps Messages Data => ", messageData);
+            // console.log("Dapps Messages Data => ", messageData);
 
             if (messageData && messageData.code == 200) {
                 transactions = Object.values(messageData.data);

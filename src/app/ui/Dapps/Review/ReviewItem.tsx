@@ -14,12 +14,20 @@ import { Reply } from '@/types/reply'
 import ProfileImage from '../../ProfilePic'
 import { TipHistoryDialog } from '../TipHistoryButton'
 
-export function ReviewItem({ appId, review, refreshReviews }: { appId: string, review: Review, refreshReviews: () => void }) {
+export function ReviewItem({ appId, review, refreshReviews, isConnected }: {
+    appId: string, review: Review, refreshReviews: () => void,
+    isConnected: boolean
+}) {
     const { user } = useAuth();
     const [isPending, startTransition] = useTransition();
     const [voters, setVoters] = useState<Voters>(review.voters);
 
     const handleVote = async (action: 'helpful' | 'unhelpful') => {
+        if (!isConnected) {
+            toast.error("Please connect your wallet to vote.");
+            return;
+        }
+
         // Store previous state for potential rollback
         const previousVoters = { ...voters };
 

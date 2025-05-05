@@ -5,7 +5,7 @@ import { MobileTabs, DesktopTabs } from '@/app/ui/Dapps/Tabs';
 import DappHeader from '@/app/ui/Dapps/DappHeader';
 import DappBanner from '@/app/ui/Dapps/DappBanner';
 import { BackLink } from '@/app/ui/BackLink';
-import { AppContextProvider } from '@/context/DappContexts';
+import { AppContextProvider } from '@/context/DappContext';
 
 export default function MyDAppsLayout({
     children,

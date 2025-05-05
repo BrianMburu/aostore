@@ -19,13 +19,13 @@ export function DappUserAcquisitionChart({ title }: { title: string }) {
         startTransition(
             async () => {
                 try {
-                    if (isConnected) {
-                        const ratingsData = await AnalyticsService.fetchFavoritesData(appId);
+                    // if (isConnected) {
+                    const ratingsData = await AnalyticsService.fetchFavoritesData(appId);
 
-                        if (ratingsData) {
-                            setUserData(ratingsData);
-                        }
+                    if (ratingsData) {
+                        setUserData(ratingsData);
                     }
+                    // }
                 } catch (error) {
                     console.error("Error fetching total reviews:", error);
                 }

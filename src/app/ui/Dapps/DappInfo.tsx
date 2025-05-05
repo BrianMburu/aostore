@@ -8,7 +8,8 @@ import DappCardsSkeleton from "./Skeletons/DappCardsSkeleton";
 import { AirdropsListLimit } from "../AirDrops/AirdropListLimit";
 import { AirdropsSkeletonVertical } from "../AirDrops/skeletons/AirdropsSkeleton";
 import { ContentSkeleton } from './Skeletons/ContentSkeleton';
-import { useAppContext } from '@/context/DappContexts';
+import { useAppContext } from '@/context/DappContext';
+import { DappsContextProvider } from '@/context/DappsContext';
 
 export function DappInfo() {
     const { appData, loading } = useAppContext();
@@ -55,27 +56,29 @@ export function DappInfo() {
                     </Suspense>
 
                     {/* Similar DApps Section */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Similar DApps</h2>
-                        <Suspense fallback={<DappCardsSkeleton n={4} />}>
-                            <DAppsListLimit params={{ category: appData.projectType }} />
-                        </Suspense>
-                    </section>
+                    <DappsContextProvider>
+                        <section>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Similar DApps</h2>
+                            <Suspense fallback={<DappCardsSkeleton n={4} />}>
+                                <DAppsListLimit params={{ category: appData.projectType }} />
+                            </Suspense>
+                        </section>
 
-                    {/* More from Company Section */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">More from {appData.companyName}</h2>
-                        <Suspense fallback={<DappCardsSkeleton n={4} />}>
-                            <DAppsListLimit params={{ companyName: appData.companyName }} />
-                        </Suspense>
-                    </section>
+                        {/* More from Company Section */}
+                        <section>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">More from {appData.companyName}</h2>
+                            <Suspense fallback={<DappCardsSkeleton n={4} />}>
+                                <DAppsListLimit params={{ companyName: appData.companyName }} />
+                            </Suspense>
+                        </section>
+                    </DappsContextProvider>
                 </div>
             </div>
 
             {/* Events & Offers */}
             <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Events & Offers</h2>
-                <Suspense fallback={<AirdropsSkeletonVertical n={4} />}>
+                <Suspense fallback={<AirdropsSkeletonVertical n={3} />}>
                     <AirdropsListLimit appId={appData.appId} params={{ appId: appData.appId }} />
                 </Suspense>
             </div>

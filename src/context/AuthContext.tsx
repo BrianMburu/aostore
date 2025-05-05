@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         try {
             address = await window.arweaveWallet.getActiveAddress().catch(() => {
-                logout();
+                // logout();
                 return null;
             });
 

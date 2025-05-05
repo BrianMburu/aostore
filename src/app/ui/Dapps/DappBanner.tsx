@@ -5,7 +5,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 
 import { Navigation } from 'swiper/modules';
-import { useAppContext } from '@/context/DappContexts';
+import { useAppContext } from '@/context/DappContext';
 import { BannerSkeleton } from './Skeletons/BannerSkeleton';
 
 export default function DappBanner() {
@@ -40,7 +40,7 @@ export default function DappBanner() {
                                 alt={`Banner ${i + 1}`}
                                 width={1200}
                                 height={800}
-                                className="w-full max-h-96 object-fill"
+                                className="w-full max-h-96 object-cover"
                             />
                         </SwiperSlide>
                         {url}

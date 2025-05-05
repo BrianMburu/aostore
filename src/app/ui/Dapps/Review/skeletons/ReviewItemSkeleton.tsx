@@ -1,11 +1,13 @@
+'use client'
+
 import { Skeleton } from "@/app/ui/skeleton";
 import { motion } from "framer-motion";
 
 export function ReviewItemSkeleton() {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            // initial={{ opacity: 0, y: 20 }}
+            // animate={{ opacity: 1, y: 0 }}
             className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm"
         >
             <div className="flex items-start gap-4 mb-4">
